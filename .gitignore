@@ -1,0 +1,32 @@
+# Dependencies & build
+node_modules/
+dist/
+.output/
+.vercel/
+.tanstack/
+*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Local / Grok workspace (not needed to run the app)
+attachments/
+screenshots/
+artifacts/
+.project_id
+.grok/*
+!.grok/app-env.json
+
+# Editor
+.idea/
+.vscode/
