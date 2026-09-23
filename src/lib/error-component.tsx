@@ -28,6 +28,12 @@ function isStaleChunk(error: unknown): boolean {
   );
 }
 
+function freshUrl(): string {
+  const url = new URL(window.location.href);
+  url.searchParams.set("v", String(Date.now()));
+  return url.toString();
+}
+
 export function AppErrorComponent({ error }: ErrorComponentProps) {
   const stale = isStaleChunk(error);
 
@@ -35,29 +41,19 @@ export function AppErrorComponent({ error }: ErrorComponentProps) {
     if (!stale) return;
     const now = Date.now();
     let last = 0;
-    let count = 0;
     try {
-      const raw = sessionStorage.getItem(CHUNK_RELOAD_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as { t?: number; n?: number };
-        last = Number(parsed.t) || 0;
-        count = Number(parsed.n) || 0;
-      }
+      last = Number(sessionStorage.getItem(CHUNK_RELOAD_KEY)) || 0;
     } catch {
       /* ignore */
     }
-    // A flag from an earlier deploy must not block the next update.
-    if (now - last > 20000) count = 0;
-    if (count >= 2) return;
-    const next = count + 1;
+    // One automatic refresh per update. A second failure stays on screen so we don't loop.
+    if (now - last < 8000) return;
     try {
-      sessionStorage.setItem(CHUNK_RELOAD_KEY, JSON.stringify({ t: now, n: next }));
+      sessionStorage.setItem(CHUNK_RELOAD_KEY, String(now));
     } catch {
       /* ignore */
     }
-    const delay = next === 1 ? 0 : 1200;
-    const id = window.setTimeout(() => window.location.reload(), delay);
-    return () => window.clearTimeout(id);
+    window.location.replace(freshUrl());
   }, [stale]);
 
   return (
@@ -76,7 +72,7 @@ export function AppErrorComponent({ error }: ErrorComponentProps) {
         className="mt-2 text-sm font-semibold text-accent-deep underline underline-offset-4"
         onClick={() => {
           clearChunkReloadFlag();
-          window.location.reload();
+          window.location.replace(freshUrl());
         }}
       >
         Reload
