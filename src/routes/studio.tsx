@@ -924,7 +924,7 @@ function Calendar({ dogs }: { dogs: DogRow[] }) {
               ))}
             </div>
             <div className="grid grid-cols-7 gap-1">
-              {cells.map((cell) => {
+              {cells.map((cell, index) => {
                 const items = byDay.get(cell.key) ?? [];
                 const shown = items.slice(0, 2);
                 return (
@@ -933,7 +933,7 @@ function Calendar({ dogs }: { dogs: DogRow[] }) {
                     type="button"
                     onClick={() => setSelected(cell.key)}
                     className={cn(
-                      "flex min-h-16 flex-col gap-1 rounded-lg bg-pearl p-1.5 text-left sm:min-h-24 sm:p-2",
+                      "relative flex min-h-16 flex-col gap-1 rounded-lg bg-pearl p-1.5 text-left hover:z-30 sm:min-h-24 sm:p-2",
                       !cell.inMonth && "opacity-40",
                       cell.key === todayKey && "ring-1 ring-accent",
                       cell.key === selected && "ring-2 ring-ink",
@@ -941,15 +941,11 @@ function Calendar({ dogs }: { dogs: DogRow[] }) {
                   >
                     <span className="text-xs font-semibold tabular-nums text-ink">{cell.day}</span>
                     {shown.map((session) => (
-                      <span
+                      <ApptChip
                         key={session.id}
-                        className={cn(
-                          "truncate rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-ink sm:text-[11px]",
-                          sessionTint(session.status),
-                        )}
-                      >
-                        {chicagoTime(session.scheduled_at)} {session.dog_name}
-                      </span>
+                        session={session}
+                        align={index % 7 >= 5 ? "end" : "start"}
+                      />
                     ))}
                     {items.length > shown.length ? (
                       <span className="text-[10px] text-muted">+{items.length - shown.length}</span>
@@ -980,17 +976,50 @@ function Calendar({ dogs }: { dogs: DogRow[] }) {
   );
 }
 
+function ApptChip({ session, align }: { session: SessionRow; align: "start" | "end" }) {
+  const place = session.location?.trim();
+  return (
+    <span className="group/appt relative block min-w-0">
+      <span
+        className={cn(
+          "block truncate rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-ink sm:text-[11px]",
+          sessionTint(session.status),
+        )}
+      >
+        {chicagoTime(session.scheduled_at)} {session.dog_name}
+      </span>
+      <span
+        role="tooltip"
+        className={cn(
+          "pointer-events-none invisible absolute top-[calc(100%+4px)] z-40 w-56 rounded-lg bg-ink px-3 py-2 text-left shadow-[0_10px_24px_-14px_rgba(44,24,16,0.7)] group-hover/appt:visible",
+          align === "end" ? "right-0" : "left-0",
+        )}
+      >
+        <span className="block truncate text-xs font-semibold text-bg">{session.dog_name}</span>
+        <span className="mt-0.5 block text-[11px] font-medium text-accent-soft">
+          {chicagoTime(session.scheduled_at)} · {sessionTypeById(session.session_type).name}
+        </span>
+        <span className="mt-1 block text-[11px] leading-snug text-bg/85">
+          {place || "No address on file"}
+        </span>
+      </span>
+    </span>
+  );
+}
+
 function SessionLine({ session }: { session: SessionRow }) {
+  const place = session.location?.trim();
   return (
     <Card>
       <CardBody className="flex flex-wrap items-center justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="font-medium">
             {session.dog_name} · {sessionTypeById(session.session_type).name}
           </p>
           <p className="text-sm text-muted">
             {session.owner_name} · {formatWhen(session.scheduled_at)}
           </p>
+          {place ? <p className="mt-1 text-sm text-ink">{place}</p> : null}
         </div>
         <Badge tone={statusTone(session.status)}>{session.status}</Badge>
       </CardBody>
