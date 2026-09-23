@@ -418,7 +418,7 @@ function ClientDetail({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }
             [
               ["pending", "bg-[#e0a23b] text-ink hover:bg-[#d0922c]"],
               ["active", "bg-[#3d9460] text-bg hover:bg-[#348556]"],
-              ["paused", "bg-[#8d6a45] text-bg hover:bg-[#7c5c3b]"],
+              ["paused", "bg-[#7c6aab] text-bg hover:bg-[#6d5c99]"],
               ["archived", "bg-[#4a6670] text-bg hover:bg-[#3f5861]"],
             ] as const
           ).map(([st, on]) => (
