@@ -5,6 +5,14 @@ import { TriangleAlert } from "lucide-react";
 const FALLBACK_MESSAGE = "An unexpected error occurred. Try reloading the page.";
 const CHUNK_RELOAD_KEY = "dtwe-chunk-reload";
 
+export function clearChunkReloadFlag() {
+  try {
+    sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
 function errorMessage(error: unknown): string {
   if (error instanceof Error && error.message) return error.message;
   if (typeof error === "string" && error) return error;
@@ -25,13 +33,31 @@ export function AppErrorComponent({ error }: ErrorComponentProps) {
 
   useEffect(() => {
     if (!stale) return;
+    const now = Date.now();
+    let last = 0;
+    let count = 0;
     try {
-      if (sessionStorage.getItem(CHUNK_RELOAD_KEY)) return;
-      sessionStorage.setItem(CHUNK_RELOAD_KEY, "1");
-      window.location.reload();
+      const raw = sessionStorage.getItem(CHUNK_RELOAD_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { t?: number; n?: number };
+        last = Number(parsed.t) || 0;
+        count = Number(parsed.n) || 0;
+      }
     } catch {
       /* ignore */
     }
+    // A flag from an earlier deploy must not block the next update.
+    if (now - last > 20000) count = 0;
+    if (count >= 2) return;
+    const next = count + 1;
+    try {
+      sessionStorage.setItem(CHUNK_RELOAD_KEY, JSON.stringify({ t: now, n: next }));
+    } catch {
+      /* ignore */
+    }
+    const delay = next === 1 ? 0 : 1200;
+    const id = window.setTimeout(() => window.location.reload(), delay);
+    return () => window.clearTimeout(id);
   }, [stale]);
 
   return (
@@ -49,11 +75,7 @@ export function AppErrorComponent({ error }: ErrorComponentProps) {
         type="button"
         className="mt-2 text-sm font-semibold text-accent-deep underline underline-offset-4"
         onClick={() => {
-          try {
-            sessionStorage.removeItem(CHUNK_RELOAD_KEY);
-          } catch {
-            /* ignore */
-          }
+          clearChunkReloadFlag();
           window.location.reload();
         }}
       >
