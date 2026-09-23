@@ -601,7 +601,11 @@ function SessionsTab({ dog, active }: { dog: DogRow; active: boolean }) {
             <WhenPicker value={when} onChange={setWhen} enabled={active} />
           </Field>
           <Field label="What should we work on?">
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Recall in the yard, loose leash on the block…"
+            />
           </Field>
           <Button
             disabled={busy || !when}

@@ -4,6 +4,7 @@ import { getSql } from "@/lib/db";
 import type { DogRow, MePayload } from "@/lib/types";
 import { linkDogsByEmail, loadStudio, stripPrivate, userEmail } from "./helpers";
 import { ensureDemoSeed } from "./seed-demo";
+import { normalizeUsPhone } from "@/lib/phone";
 
 export const getMe = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
@@ -84,7 +85,7 @@ export const updateStudioContact = createServerFn({ method: "POST" })
     await sql`
       update studio set
         email = ${data.email.trim()},
-        phone = ${data.phone.trim()},
+        phone = ${normalizeUsPhone(data.phone, false)},
         instagram = ${data.instagram.trim()},
         facebook = ${data.facebook.trim()},
         x_url = ${data.x_url.trim()},

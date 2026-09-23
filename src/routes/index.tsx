@@ -10,6 +10,7 @@ import { Input, Textarea } from "@/components/ui/input";
 import { HOUSTON_AREAS, SESSION_TYPES, dollars } from "@/lib/catalog";
 import { createInquiry } from "@/lib/server/inquiries";
 import { notifyStudioInbox } from "@/lib/notify-studio";
+import { formatUsPhone } from "@/lib/phone";
 import { scrollToSection, allowHomePin, scrollAppTo } from "@/lib/scroll-to-section";
 
 export const Route = createFileRoute("/")({ component: HomePage });
@@ -436,10 +437,22 @@ function Contact() {
             <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </Field>
           <Field label="Phone">
-            <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <Input
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              value={phone}
+              onChange={(e) => setPhone(formatUsPhone(e.target.value))}
+              placeholder="713-555-0148"
+            />
           </Field>
           <Field label="What’s going on at home?">
-            <Textarea value={message} onChange={(e) => setMessage(e.target.value)} required />
+            <Textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Leash pulling, doorbell barking, extra energy…"
+              required
+            />
           </Field>
           <div className="relative flex justify-center">
             <Button type="submit" className="book-cta" disabled={busy} onClick={() => setPaws((n) => n + 1)}>

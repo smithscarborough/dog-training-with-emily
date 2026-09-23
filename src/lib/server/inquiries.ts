@@ -3,6 +3,7 @@ import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
 import type { InquiryRow } from "@/lib/types";
 import { requireTrainer } from "./helpers";
+import { normalizeUsPhone } from "@/lib/phone";
 
 export const createInquiry = createServerFn({ method: "POST" })
   .validator((data: { name: string; email: string; phone: string; dogName: string; message: string }) => data)
@@ -15,7 +16,7 @@ export const createInquiry = createServerFn({ method: "POST" })
     const sql = await getSql();
     await sql`
       insert into inquiries (name, email, phone, dog_name, message)
-      values (${name}, ${email}, ${data.phone.trim()}, ${dogName}, ${message})
+      values (${name}, ${email}, ${normalizeUsPhone(data.phone, false)}, ${dogName}, ${message})
     `;
     return { ok: true };
   });

@@ -14,6 +14,7 @@ import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { PHASES, SESSION_TYPES, SKILLS, TRICKS, checkinById, dollars, sessionTypeById } from "@/lib/catalog";
 import { formatWhen, statusTone, checkinTone } from "@/lib/format";
+import { formatUsPhone } from "@/lib/phone";
 import {
   saveTrainerNotes,
   setDogCredits,
@@ -851,7 +852,7 @@ function Settings({
   onRefresh: () => void;
 }) {
   const [email, setEmail] = useState(studio.email);
-  const [phone, setPhone] = useState(studio.phone);
+  const [phone, setPhone] = useState(() => formatUsPhone(studio.phone));
   const [instagram, setInstagram] = useState(studio.instagram);
   const [facebook, setFacebook] = useState(studio.facebook);
   const [x_url, setX] = useState(studio.x_url);
@@ -866,7 +867,14 @@ function Settings({
           <Input value={email} onChange={(e) => setEmail(e.target.value)} />
         </Field>
         <Field label="Phone">
-          <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <Input
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            value={phone}
+            onChange={(e) => setPhone(formatUsPhone(e.target.value))}
+            placeholder="713-555-0148"
+          />
         </Field>
         <Field label="Instagram URL">
           <Input value={instagram} onChange={(e) => setInstagram(e.target.value)} />

@@ -4,6 +4,7 @@ import { getSql } from "@/lib/db";
 import type { DogRow } from "@/lib/types";
 import { assertDogAccess, requireTrainer, stripPrivate } from "./helpers";
 import { seedProgressForDog } from "./progress-seed";
+import { normalizeUsPhone } from "@/lib/phone";
 
 export type IntakeInput = {
   owner_name: string;
@@ -41,7 +42,7 @@ function cleanIntake(data: IntakeInput): IntakeInput {
     ...data,
     owner_name: trim(data.owner_name),
     owner_email: trim(data.owner_email),
-    owner_phone: trim(data.owner_phone),
+    owner_phone: normalizeUsPhone(data.owner_phone, true),
     address: trim(data.address),
     name: trim(data.name),
     breed: trim(data.breed),

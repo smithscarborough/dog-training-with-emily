@@ -4,6 +4,7 @@ import { Field } from "@/components/ui/label";
 import { Input, Textarea } from "@/components/ui/input";
 import { GOALS } from "@/lib/catalog";
 import type { IntakeInput } from "@/lib/server/dogs";
+import { formatUsPhone } from "@/lib/phone";
 import { cn } from "@/lib/utils";
 
 const empty: IntakeInput = {
@@ -93,10 +94,23 @@ export function IntakeForm({
             <Input type="email" value={form.owner_email} onChange={(e) => set("owner_email", e.target.value)} required />
           </Field>
           <Field label="Phone" required className="sm:col-span-2">
-            <Input value={form.owner_phone} onChange={(e) => set("owner_phone", e.target.value)} required />
+            <Input
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              value={form.owner_phone}
+              onChange={(e) => set("owner_phone", formatUsPhone(e.target.value))}
+              placeholder="713-555-0148"
+              required
+            />
           </Field>
           <Field label="Home address" required className="sm:col-span-2">
-            <Input value={form.address} onChange={(e) => set("address", e.target.value)} required />
+            <Input
+              value={form.address}
+              onChange={(e) => set("address", e.target.value)}
+              placeholder="1234 Westheimer Rd, Houston, TX"
+              required
+            />
           </Field>
           <Field label="Preferred days / times" className="sm:col-span-2">
             <Input
@@ -122,7 +136,11 @@ export function IntakeForm({
             <Input value={form.name} onChange={(e) => set("name", e.target.value)} required />
           </Field>
           <Field label="Breed">
-            <Input value={form.breed} onChange={(e) => set("breed", e.target.value)} />
+            <Input
+              value={form.breed}
+              onChange={(e) => set("breed", e.target.value)}
+              placeholder="Lab mix"
+            />
           </Field>
           <Field label="Age">
             <Input
@@ -146,10 +164,18 @@ export function IntakeForm({
             />
           </Field>
           <Field label="Spayed or neutered">
-            <Input value={form.spayed_neutered} onChange={(e) => set("spayed_neutered", e.target.value)} />
+            <Input
+              value={form.spayed_neutered}
+              onChange={(e) => set("spayed_neutered", e.target.value)}
+              placeholder="Yes, no, or not yet"
+            />
           </Field>
           <Field label="Allergies or dietary restrictions" className="sm:col-span-2">
-            <Input value={form.allergies} onChange={(e) => set("allergies", e.target.value)} />
+            <Input
+              value={form.allergies}
+              onChange={(e) => set("allergies", e.target.value)}
+              placeholder="None, or chicken…"
+            />
           </Field>
         </div>
       </section>
@@ -174,7 +200,11 @@ export function IntakeForm({
           })}
         </div>
         <Field label="Anything else — in your words">
-          <Textarea value={form.goals_other} onChange={(e) => set("goals_other", e.target.value)} />
+          <Textarea
+            value={form.goals_other}
+            onChange={(e) => set("goals_other", e.target.value)}
+            placeholder="Leash pulling, doorbell barking…"
+          />
         </Field>
       </section>
 
@@ -203,16 +233,32 @@ export function IntakeForm({
         </Field>
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Household (who lives here)">
-            <Textarea value={form.household} onChange={(e) => set("household", e.target.value)} />
+            <Textarea
+              value={form.household}
+              onChange={(e) => set("household", e.target.value)}
+              placeholder="Two adults"
+            />
           </Field>
           <Field label="Other pets">
-            <Textarea value={form.other_pets} onChange={(e) => set("other_pets", e.target.value)} />
+            <Textarea
+              value={form.other_pets}
+              onChange={(e) => set("other_pets", e.target.value)}
+              placeholder="One cat"
+            />
           </Field>
           <Field label="Kids in the home">
-            <Input value={form.kids_in_home} onChange={(e) => set("kids_in_home", e.target.value)} />
+            <Input
+              value={form.kids_in_home}
+              onChange={(e) => set("kids_in_home", e.target.value)}
+              placeholder="None, or ages 4 and 7"
+            />
           </Field>
           <Field label="Veterinarian / emergency clinic">
-            <Input value={form.vet_info} onChange={(e) => set("vet_info", e.target.value)} />
+            <Input
+              value={form.vet_info}
+              onChange={(e) => set("vet_info", e.target.value)}
+              placeholder="Clinic name"
+            />
           </Field>
         </div>
       </section>
