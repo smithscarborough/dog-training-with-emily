@@ -405,8 +405,8 @@ function ProgressTab({ dog }: { dog: DogRow }) {
           </button>
         ))}
       </div>
-      <SkillGrid title="Tricks" items={filtered(TRICKS)} byKey={byKey} log={log} open={open} setOpen={setOpen} />
-      <SkillGrid title="Skills" items={filtered(SKILLS)} byKey={byKey} log={log} open={open} setOpen={setOpen} />
+      <SkillGrid title="Tricks" items={filtered(TRICKS)} byKey={byKey} log={log} open={open} setOpen={setOpen} quietIdle={filter === "all"} />
+      <SkillGrid title="Skills" items={filtered(SKILLS)} byKey={byKey} log={log} open={open} setOpen={setOpen} quietIdle={filter === "all"} />
     </div>
   );
 }
@@ -447,6 +447,7 @@ function SkillGrid({
   log,
   open,
   setOpen,
+  quietIdle = false,
 }: {
   title: string;
   items: { key: string; name: string; summary: string }[];
@@ -454,6 +455,7 @@ function SkillGrid({
   log: ProgressLogRow[];
   open: string | null;
   setOpen: (k: string | null) => void;
+  quietIdle?: boolean;
 }) {
   const mobile = useIsMobileList();
   const cols = useMasonryCols();
@@ -489,13 +491,15 @@ function SkillGrid({
     const row = byKey[item.key];
     const rating = row?.rating ?? 0;
     const isOpen = open === item.key;
+    const quiet = quietIdle && rating === 0 && !isOpen;
     return (
       <button
         key={item.key}
         type="button"
         onClick={() => setOpen(isOpen ? null : item.key)}
         className={cn(
-          "w-full rounded-xl bg-pearl p-4 text-left transition-[transform,box-shadow] duration-150 hairline",
+          "w-full rounded-xl bg-pearl p-4 text-left transition-[transform,box-shadow,opacity,filter] duration-150 hairline",
+          quiet && "skill-card-idle",
           isOpen && "ring-2 ring-accent/40",
         )}
       >
@@ -523,8 +527,9 @@ function SkillGrid({
             const row = byKey[item.key];
             const rating = row?.rating ?? 0;
             const isOpen = open === item.key;
+            const quiet = quietIdle && rating === 0 && !isOpen;
             return (
-              <li key={item.key}>
+              <li key={item.key} className={cn(quiet && "skill-card-idle")}>
                 <button
                   type="button"
                   onClick={() => setOpen(isOpen ? null : item.key)}

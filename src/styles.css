@@ -121,6 +121,18 @@
     0 10px 22px -14px rgba(44, 24, 16, 0.5);
 }
 
+.skill-card-idle {
+  background: color-mix(in oklab, var(--color-pearl) 55%, var(--color-bg));
+  box-shadow: none;
+  opacity: 0.78;
+  filter: saturate(0.45);
+}
+.skill-card-idle:hover,
+.skill-card-idle:focus-visible {
+  opacity: 0.92;
+  filter: none;
+}
+
 .shell-card {
   background: var(--color-surface);
   border: 1px solid color-mix(in oklab, var(--color-ink) 32%, transparent);
