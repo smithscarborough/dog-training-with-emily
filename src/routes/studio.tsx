@@ -991,15 +991,15 @@ function ApptChip({ session, align }: { session: SessionRow; align: "start" | "e
       <span
         role="tooltip"
         className={cn(
-          "pointer-events-none invisible absolute top-[calc(100%+4px)] z-40 w-56 rounded-lg bg-ink px-3 py-2 text-left shadow-[0_10px_24px_-14px_rgba(44,24,16,0.7)] group-hover/appt:visible",
+          "pointer-events-none invisible absolute top-[calc(100%+4px)] z-40 w-64 rounded-lg bg-ink px-3.5 py-2.5 text-left shadow-[0_10px_24px_-14px_rgba(44,24,16,0.7)] group-hover/appt:visible",
           align === "end" ? "right-0" : "left-0",
         )}
       >
-        <span className="block truncate text-xs font-semibold text-bg">{session.dog_name}</span>
-        <span className="mt-0.5 block text-[11px] font-medium text-accent-soft">
+        <span className="block truncate text-sm font-semibold text-bg">{session.dog_name}</span>
+        <span className="mt-1 block text-sm font-medium text-accent-soft">
           {chicagoTime(session.scheduled_at)} · {sessionTypeById(session.session_type).name}
         </span>
-        <span className="mt-1 block text-[11px] leading-snug text-bg/85">
+        <span className="mt-1.5 block text-sm leading-snug text-bg/85">
           {place || "No address on file"}
         </span>
       </span>
