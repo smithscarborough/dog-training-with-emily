@@ -74,11 +74,6 @@ export function SiteHeader(_props?: { solid?: boolean }) {
             </Button>
           </SignedOut>
           <SignedIn>
-            {me?.isTrainer ? (
-              <Button asChild className="book-cta shrink-0">
-                <Link to="/studio">Studio</Link>
-              </Button>
-            ) : null}
             <UserButton nameTo={me?.isTrainer ? "/studio" : "/portal"} />
           </SignedIn>
           <button
