@@ -791,32 +791,295 @@ function SessionEditor({ session, onChange }: { session: SessionRow; onChange: (
 
 function Calendar({ dogs }: { dogs: DogRow[] }) {
   const [sessions, setSessions] = useState<SessionRow[]>([]);
+  const [view, setView] = useState<"month" | "list">("month");
+  const [status, setStatus] = useState<"all" | SessionRow["status"]>("all");
+  const todayKey = chicagoTodayKey();
+  const [cursor, setCursor] = useState(() => {
+    const [year, month] = todayKey.split("-").map(Number);
+    return { year: year!, month: month! };
+  });
+  const [selected, setSelected] = useState(todayKey);
+
   useEffect(() => {
     void listSessions({ data: {} }).then(setSessions).catch(() => setSessions([]));
   }, []);
+
+  const filtered = useMemo(
+    () =>
+      sessions
+        .filter((s) => status === "all" || s.status === status)
+        .slice()
+        .sort((a, b) => +new Date(a.scheduled_at) - +new Date(b.scheduled_at)),
+    [sessions, status],
+  );
+  const byDay = useMemo(() => {
+    const map = new Map<string, SessionRow[]>();
+    for (const session of filtered) {
+      const key = chicagoDayKey(session.scheduled_at);
+      const list = map.get(key) ?? [];
+      list.push(session);
+      map.set(key, list);
+    }
+    return map;
+  }, [filtered]);
+  const cells = useMemo(
+    () => monthCells(cursor.year, cursor.month),
+    [cursor.year, cursor.month],
+  );
+  const selectedSessions = byDay.get(selected) ?? [];
+  const monthLabel = new Date(cursor.year, cursor.month - 1, 1).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+
+  function shiftMonth(delta: number) {
+    setCursor((c) => {
+      const next = new Date(c.year, c.month - 1 + delta, 1);
+      return { year: next.getFullYear(), month: next.getMonth() + 1 };
+    });
+  }
+
   return (
-    <div className="space-y-3">
-      {sessions.length === 0 ? <p className="text-sm text-muted">No sessions scheduled.</p> : null}
-      {sessions.map((s) => (
-        <Card key={s.id}>
-          <CardBody className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="font-medium">
-                {s.dog_name} · {sessionTypeById(s.session_type).name}
-              </p>
-              <p className="text-sm text-muted">
-                {s.owner_name} · {formatWhen(s.scheduled_at)}
-              </p>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2">
+          {(
+            [
+              ["all", "All"],
+              ["requested", "Requested"],
+              ["confirmed", "Confirmed"],
+              ["completed", "Completed"],
+              ["cancelled", "Cancelled"],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setStatus(id)}
+              className={cn("chip-3d rounded-full px-3 py-1.5 text-sm", status === id && "is-on")}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="inline-flex rounded-full bg-ink p-1">
+          {(
+            [
+              ["month", "Calendar"],
+              ["list", "List"],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setView(id)}
+              className={cn(
+                "h-9 rounded-full px-4 text-sm font-medium transition-colors duration-150",
+                view === id ? "bg-white text-ink" : "text-bg/80 hover:text-bg",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {view === "list" ? (
+        <div className="space-y-3">
+          {filtered.length === 0 ? <p className="text-sm text-muted">No sessions in this view.</p> : null}
+          {filtered.map((s) => (
+            <SessionLine key={s.id} session={s} />
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardBody className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="font-display text-2xl tracking-tight">{monthLabel}</h3>
+              <div className="flex items-center gap-2">
+                <button type="button" className="chip-3d rounded-full px-3 py-1.5 text-sm" onClick={() => shiftMonth(-1)}>
+                  Prev
+                </button>
+                <button
+                  type="button"
+                  className="chip-3d rounded-full px-3 py-1.5 text-sm"
+                  onClick={() => {
+                    const [year, month] = todayKey.split("-").map(Number);
+                    setCursor({ year: year!, month: month! });
+                    setSelected(todayKey);
+                  }}
+                >
+                  Today
+                </button>
+                <button type="button" className="chip-3d rounded-full px-3 py-1.5 text-sm" onClick={() => shiftMonth(1)}>
+                  Next
+                </button>
+              </div>
             </div>
-            <Badge tone={statusTone(s.status)}>{s.status}</Badge>
+            <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-semibold uppercase tracking-wide text-muted">
+              {WEEKDAYS.map((day) => (
+                <div key={day} className="py-1">
+                  {day}
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7 gap-1">
+              {cells.map((cell) => {
+                const items = byDay.get(cell.key) ?? [];
+                const shown = items.slice(0, 2);
+                return (
+                  <button
+                    key={cell.key}
+                    type="button"
+                    onClick={() => setSelected(cell.key)}
+                    className={cn(
+                      "flex min-h-16 flex-col gap-1 rounded-lg bg-pearl p-1.5 text-left sm:min-h-24 sm:p-2",
+                      !cell.inMonth && "opacity-40",
+                      cell.key === todayKey && "ring-1 ring-accent",
+                      cell.key === selected && "ring-2 ring-ink",
+                    )}
+                  >
+                    <span className="text-xs font-semibold tabular-nums text-ink">{cell.day}</span>
+                    {shown.map((session) => (
+                      <span
+                        key={session.id}
+                        className={cn(
+                          "truncate rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-ink sm:text-[11px]",
+                          sessionTint(session.status),
+                        )}
+                      >
+                        {chicagoTime(session.scheduled_at)} {session.dog_name}
+                      </span>
+                    ))}
+                    {items.length > shown.length ? (
+                      <span className="text-[10px] text-muted">+{items.length - shown.length}</span>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="border-t border-line pt-4">
+              <p className="text-sm font-semibold text-ink">{formatDayLabel(selected)}</p>
+              {selectedSessions.length === 0 ? (
+                <p className="mt-2 text-sm text-muted">Nothing scheduled.</p>
+              ) : (
+                <div className="mt-3 space-y-2">
+                  {selectedSessions.map((s) => (
+                    <SessionLine key={s.id} session={s} />
+                  ))}
+                </div>
+              )}
+            </div>
           </CardBody>
         </Card>
-      ))}
+      )}
       {dogs.length === 0 ? null : (
-        <p className="text-xs text-faint">Open a client to book or complete a session.</p>
+        <p className="text-xs text-faint">Times are Houston. Open a client to book or complete a session.</p>
       )}
     </div>
   );
+}
+
+function SessionLine({ session }: { session: SessionRow }) {
+  return (
+    <Card>
+      <CardBody className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="font-medium">
+            {session.dog_name} · {sessionTypeById(session.session_type).name}
+          </p>
+          <p className="text-sm text-muted">
+            {session.owner_name} · {formatWhen(session.scheduled_at)}
+          </p>
+        </div>
+        <Badge tone={statusTone(session.status)}>{session.status}</Badge>
+      </CardBody>
+    </Card>
+  );
+}
+
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function chicagoTodayKey() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago" }).format(new Date());
+}
+
+function chicagoDayKey(iso: string) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago" }).format(new Date(iso));
+}
+
+function chicagoTime(iso: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Chicago",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(iso));
+}
+
+function formatDayLabel(key: string) {
+  const [year, month, day] = key.split("-").map(Number);
+  return new Date(year!, month! - 1, day).toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+function sessionTint(status: string) {
+  if (status === "confirmed") return "bg-[#4f9458]/40";
+  if (status === "completed") return "bg-ink/15";
+  if (status === "cancelled") return "bg-danger/30";
+  return "bg-accent/60";
+}
+
+function daysInMonth(year: number, month: number) {
+  return new Date(year, month, 0).getDate();
+}
+
+function weekdayOf(year: number, month: number, day: number) {
+  const key = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  const name = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Chicago",
+    weekday: "short",
+  }).format(new Date(`${key}T18:00:00Z`));
+  const index = WEEKDAYS.indexOf(name);
+  return index < 0 ? 0 : index;
+}
+
+function monthCells(year: number, month: number) {
+  const firstDow = weekdayOf(year, month, 1);
+  const count = daysInMonth(year, month);
+  const prevMonth = month === 1 ? 12 : month - 1;
+  const prevYear = month === 1 ? year - 1 : year;
+  const prevCount = daysInMonth(prevYear, prevMonth);
+  const cells: { key: string; day: number; inMonth: boolean }[] = [];
+  for (let i = firstDow - 1; i >= 0; i -= 1) {
+    const day = prevCount - i;
+    cells.push({
+      key: `${prevYear}-${String(prevMonth).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+      day,
+      inMonth: false,
+    });
+  }
+  for (let day = 1; day <= count; day += 1) {
+    cells.push({
+      key: `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+      day,
+      inMonth: true,
+    });
+  }
+  const nextMonth = month === 12 ? 1 : month + 1;
+  const nextYear = month === 12 ? year + 1 : year;
+  let day = 1;
+  while (cells.length % 7 !== 0) {
+    cells.push({
+      key: `${nextYear}-${String(nextMonth).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+      day,
+      inMonth: false,
+    });
+    day += 1;
+  }
+  return cells;
 }
 
 function Inbox() {
