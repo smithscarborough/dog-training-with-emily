@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/ui/label";
 import { WhenPicker } from "@/components/portal/when-picker";
+import { Input, Textarea } from "@/components/ui/input";
 import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { PHASES, SESSION_TYPES, SKILLS, TRICKS, checkinById, dollars, sessionTypeById } from "@/lib/catalog";
