@@ -761,6 +761,10 @@ function SessionEditor({ session, onChange }: { session: SessionRow; onChange: (
   const [recap, setRecap] = useState(session.recap);
   const [homework, setHomework] = useState(session.homework);
   const [priv, setPriv] = useState(session.trainer_private_notes);
+  const [status, setStatus] = useState(session.status);
+  useEffect(() => {
+    setStatus(session.status);
+  }, [session.id, session.status]);
   return (
     <li className="rounded-lg bg-bg p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -769,21 +773,32 @@ function SessionEditor({ session, onChange }: { session: SessionRow; onChange: (
           <p className="text-xs text-muted">{formatWhen(session.scheduled_at)}</p>
         </div>
         <div className="flex flex-wrap gap-1">
-          {(["requested", "confirmed", "completed", "cancelled"] as const).map((st) => (
-            <Button
+          {(
+            [
+              ["requested", "is-requested"],
+              ["confirmed", "is-confirmed"],
+              ["completed", "is-completed"],
+              ["cancelled", "is-cancelled"],
+            ] as const
+          ).map(([st, on]) => (
+            <button
               key={st}
-              size="sm"
-              variant={session.status === st ? "default" : "ghost"}
+              type="button"
+              className={cn("chip-3d rounded-full px-3 py-1.5 text-sm", status === st && on)}
               onClick={() => {
+                if (status === st) return;
+                const previous = status;
+                setStatus(st);
                 void setSessionStatus({ data: { sessionId: session.id, status: st } })
                   .then(onChange)
-                  .catch((err: unknown) =>
-                    toast.error(err instanceof Error ? err.message : "Could not update."),
-                  );
+                  .catch((err: unknown) => {
+                    setStatus(previous);
+                    toast.error(err instanceof Error ? err.message : "Could not update.");
+                  });
               }}
             >
               {st}
-            </Button>
+            </button>
           ))}
         </div>
       </div>
