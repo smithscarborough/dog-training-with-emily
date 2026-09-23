@@ -117,10 +117,8 @@
 
 .portal-tabs {
   box-shadow:
-    var(--shadow-border),
-    inset 0 1px 0 rgba(255, 255, 255, 0.65),
-    0 1px 0 rgba(44, 24, 16, 0.05),
-    0 8px 18px -12px rgba(44, 24, 16, 0.2);
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 10px 22px -14px rgba(44, 24, 16, 0.5);
 }
 
 .shell-card {

@@ -134,7 +134,7 @@ function PortalApp({ dogs, onRefresh }: { dogs: DogRow[]; onRefresh: () => void 
         </div>
 
         <div className="mt-6 overflow-x-auto">
-          <div className="portal-tabs inline-flex min-w-full gap-1 rounded-full bg-pearl p-1.5">
+          <div className="portal-tabs inline-flex min-w-full gap-1 rounded-full bg-ink p-1.5">
           {tabs.map((t) => (
             <button
               key={t.id}
@@ -142,7 +142,7 @@ function PortalApp({ dogs, onRefresh }: { dogs: DogRow[]; onRefresh: () => void 
               onClick={() => setTab(t.id)}
               className={cn(
                 "h-11 flex-1 shrink-0 rounded-full px-5 text-base font-medium transition-colors duration-150",
-                tab === t.id ? "bg-ink text-bg" : "text-muted hover:text-ink",
+                tab === t.id ? "bg-white text-ink" : "text-bg/80 hover:text-bg",
               )}
             >
               {t.label}
