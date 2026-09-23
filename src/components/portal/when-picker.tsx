@@ -107,7 +107,7 @@ export function WhenPicker({
             className="fixed inset-0 z-20 cursor-default bg-transparent"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute z-30 mt-2 w-[min(100%,20rem)] rounded-xl border border-line bg-surface p-3 shadow-[0_12px_28px_-16px_rgba(44,24,16,0.35)]">
+          <div className="absolute z-30 mt-2 w-80 max-w-[calc(100vw-2.5rem)] rounded-xl border border-line bg-surface p-3 shadow-[0_12px_28px_-16px_rgba(44,24,16,0.35)]">
           <DayPicker
             mode="single"
             selected={selected ?? undefined}

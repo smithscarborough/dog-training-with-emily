@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/ui/label";
-import { Input, Textarea } from "@/components/ui/input";
+import { WhenPicker } from "@/components/portal/when-picker";
 import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { PHASES, SESSION_TYPES, SKILLS, TRICKS, checkinById, dollars, sessionTypeById } from "@/lib/catalog";
@@ -714,9 +714,9 @@ function TrainerBook({ dog, onBooked }: { dog: DogRow; onBooked: () => void }) {
   const [sessionType, setSessionType] = useState(SESSION_TYPES[0]!.id);
   const [when, setWhen] = useState("");
   return (
-    <div className="flex flex-col gap-2 sm:flex-row">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
       <select
-        className="h-11 rounded-md border border-line bg-surface px-3 text-sm"
+        className="h-11 rounded-md border border-line bg-surface px-3 text-sm sm:w-52"
         value={sessionType}
         onChange={(e) => setSessionType(e.target.value as typeof sessionType)}
       >
@@ -726,7 +726,9 @@ function TrainerBook({ dog, onBooked }: { dog: DogRow; onBooked: () => void }) {
           </option>
         ))}
       </select>
-      <Input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} />
+      <div className="min-w-0 flex-1">
+        <WhenPicker value={when} onChange={setWhen} />
+      </div>
       <Button
         disabled={!when}
         onClick={() => {
