@@ -845,18 +845,18 @@ function Calendar({ dogs }: { dogs: DogRow[] }) {
         <div className="flex flex-wrap gap-2">
           {(
             [
-              ["all", "All"],
-              ["requested", "Requested"],
-              ["confirmed", "Confirmed"],
-              ["completed", "Completed"],
-              ["cancelled", "Cancelled"],
+              ["all", "All", "is-on"],
+              ["requested", "Requested", "is-requested"],
+              ["confirmed", "Confirmed", "is-confirmed"],
+              ["completed", "Completed", "is-completed"],
+              ["cancelled", "Cancelled", "is-cancelled"],
             ] as const
-          ).map(([id, label]) => (
+          ).map(([id, label, on]) => (
             <button
               key={id}
               type="button"
               onClick={() => setStatus(id)}
-              className={cn("chip-3d rounded-full px-3 py-1.5 text-sm", status === id && "is-on")}
+              className={cn("chip-3d rounded-full px-3 py-1.5 text-sm", status === id && on)}
             >
               {label}
             </button>
