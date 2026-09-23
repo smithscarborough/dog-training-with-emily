@@ -3,7 +3,7 @@ import type { DogRow, StudioRow } from "@/lib/types";
 
 export async function loadStudio(): Promise<StudioRow> {
   const sql = await getSql();
-  const rows = await sql<StudioRow>`select id, owner_user_id, name, email, phone, instagram, facebook, x_url from studio where id = 1`;
+  const rows = await sql<StudioRow>`select id, owner_user_id, name, email, phone, instagram, facebook, x_url, banner_text from studio where id = 1`;
   const row = rows[0];
   if (!row) {
     throw new Error("Studio is not initialized");

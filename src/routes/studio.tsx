@@ -22,7 +22,7 @@ import {
   trainerCreateClient,
 } from "@/lib/server/dogs";
 import { listInquiries } from "@/lib/server/inquiries";
-import { becomeTrainer, releaseStudio, updateStudioContact, updateTrainerPin } from "@/lib/server/me";
+import { becomeTrainer, releaseStudio, updateStudioBanner, updateStudioContact, updateTrainerPin } from "@/lib/server/me";
 import { getProgress, updateSkillProgress } from "@/lib/server/progress";
 import {
   listSessions,
@@ -122,7 +122,7 @@ function StudioApp({
   onRefresh,
 }: {
   dogs: DogRow[];
-  studio: { email: string; phone: string; instagram: string; facebook: string; x_url: string };
+  studio: { email: string; phone: string; instagram: string; facebook: string; x_url: string; banner_text?: string };
   onRefresh: () => void;
 }) {
   const [tab, setTab] = useState<"board" | "clients" | "calendar" | "inbox" | "settings">("board");
@@ -1111,7 +1111,7 @@ function Settings({
   studio,
   onRefresh,
 }: {
-  studio: { email: string; phone: string; instagram: string; facebook: string; x_url: string };
+  studio: { email: string; phone: string; instagram: string; facebook: string; x_url: string; banner_text?: string };
   onRefresh: () => void;
 }) {
   const [email, setEmail] = useState(studio.email);
@@ -1119,7 +1119,58 @@ function Settings({
   const [instagram, setInstagram] = useState(studio.instagram);
   const [facebook, setFacebook] = useState(studio.facebook);
   const [x_url, setX] = useState(studio.x_url);
+  const [banner, setBanner] = useState(studio.banner_text ?? "");
+  const [bannerBusy, setBannerBusy] = useState(false);
+
+  function saveBanner(next: string) {
+    setBannerBusy(true);
+    void updateStudioBanner({ data: { banner_text: next } })
+      .then((res) => {
+        setBanner(res.banner_text);
+        toast.success(res.banner_text ? "Banner is on the home page." : "Banner removed.");
+        onRefresh();
+      })
+      .catch((err: unknown) =>
+        toast.error(err instanceof Error ? err.message : "Could not save."),
+      )
+      .finally(() => setBannerBusy(false));
+  }
+
   return (
+    <div className="space-y-6">
+    <Card>
+      <CardHeader>
+        <CardTitle>Home page banner</CardTitle>
+      </CardHeader>
+      <CardBody className="space-y-3">
+        <p className="text-sm text-muted">
+          A short note at the top of the home page. Use it for a promotion or a
+          schedule change, then remove it when it’s over.
+        </p>
+        <Field label="Message">
+          <Textarea
+            value={banner}
+            maxLength={240}
+            onChange={(e) => setBanner(e.target.value)}
+            placeholder="September consults are $20 off this week."
+          />
+        </Field>
+        <p className="text-xs text-faint">{banner.trim().length}/240</p>
+        <div className="flex flex-wrap gap-3">
+          <Button disabled={bannerBusy || !banner.trim()} onClick={() => saveBanner(banner)}>
+            {bannerBusy ? "Saving…" : "Post banner"}
+          </Button>
+          <button
+            type="button"
+            className="text-sm text-muted underline underline-offset-4 hover:text-ink disabled:opacity-40"
+            disabled={bannerBusy || !(studio.banner_text ?? "").trim()}
+            onClick={() => saveBanner("")}
+          >
+            Remove banner
+          </button>
+        </div>
+      </CardBody>
+    </Card>
     <div className="grid gap-6 lg:grid-cols-2">
     <Card className="max-w-lg">
       <CardHeader>
@@ -1168,6 +1219,7 @@ function Settings({
       </CardBody>
     </Card>
     <AccessCard />
+    </div>
     </div>
   );
 }

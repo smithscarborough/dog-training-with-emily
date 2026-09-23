@@ -94,3 +94,15 @@ export const updateStudioContact = createServerFn({ method: "POST" })
     `;
     return { ok: true };
   });
+
+export const updateStudioBanner = createServerFn({ method: "POST" })
+  .validator((data: { banner_text: string }) => data)
+  .middleware([authMiddleware])
+  .handler(async ({ context, data }) => {
+    const { requireTrainer } = await import("./helpers");
+    await requireTrainer(context.userId);
+    const text = data.banner_text.trim().slice(0, 240);
+    const sql = await getSql();
+    await sql`update studio set banner_text = ${text}, updated_at = now() where id = 1`;
+    return { ok: true, banner_text: text };
+  });

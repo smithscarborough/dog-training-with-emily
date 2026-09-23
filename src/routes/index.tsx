@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState, type FormEvent } from "react";
+import { useEffect, useLayoutEffect, useState, type FormEvent } from "react";
 import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { ContactMethods, SocialLinks } from "@/components/brand/social-links";
@@ -9,6 +9,7 @@ import { Field } from "@/components/ui/label";
 import { Input, Textarea } from "@/components/ui/input";
 import { HOUSTON_AREAS, SESSION_TYPES, dollars } from "@/lib/catalog";
 import { createInquiry } from "@/lib/server/inquiries";
+import { getPublicStudio } from "@/lib/server/public";
 import { notifyStudioInbox } from "@/lib/notify-studio";
 import { formatUsPhone } from "@/lib/phone";
 import { scrollToSection, allowHomePin, scrollAppTo } from "@/lib/scroll-to-section";
@@ -34,9 +35,16 @@ const SESSION_IMAGES: Record<string, { src: string; alt: string }> = {
 };
 
 function HomePage() {
+  const [banner, setBanner] = useState("");
   const leaving = useRouterState({
     select: (s) => s.isLoading && s.location.pathname !== "/",
   });
+
+  useEffect(() => {
+    void getPublicStudio()
+      .then((studio) => setBanner(studio.banner_text.trim()))
+      .catch(() => setBanner(""));
+  }, []);
 
   useLayoutEffect(() => {
     if (leaving) return;
@@ -68,6 +76,7 @@ function HomePage() {
 
   return (
     <div>
+      {banner ? <HomeBanner message={banner} /> : null}
       <Hero />
       <Philosophy />
       <About />
@@ -77,6 +86,16 @@ function HomePage() {
       <Faq />
       <Contact />
       <SiteFooter />
+    </div>
+  );
+}
+
+function HomeBanner({ message }: { message: string }) {
+  return (
+    <div className="bg-ink text-bg">
+      <p className="mx-auto max-w-3xl px-6 py-3 text-center text-sm leading-relaxed sm:text-base">
+        {message}
+      </p>
     </div>
   );
 }

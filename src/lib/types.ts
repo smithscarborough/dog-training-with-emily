@@ -10,6 +10,7 @@ export type StudioRow = {
   instagram: string;
   facebook: string;
   x_url: string;
+  banner_text: string;
 };
 
 export type DogRow = {
