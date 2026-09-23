@@ -1055,10 +1055,10 @@ function formatDayLabel(key: string) {
 }
 
 function sessionTint(status: string) {
-  if (status === "confirmed") return "bg-[#4f9458]/40";
-  if (status === "completed") return "bg-ink/15";
-  if (status === "cancelled") return "bg-danger/30";
-  return "bg-accent/60";
+  if (status === "confirmed") return "bg-[#3d9460]/40";
+  if (status === "completed") return "bg-[#4a6670]/35";
+  if (status === "cancelled") return "bg-[#9b3a2f]/40";
+  return "bg-[#43C5B9]";
 }
 
 function daysInMonth(year: number, month: number) {
