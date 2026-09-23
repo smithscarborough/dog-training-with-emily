@@ -413,34 +413,48 @@ function ClientDetail({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }
             <p className="text-xs text-faint">{dog.address}</p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {(
-            [
-              ["pending", "bg-[#e0a23b] text-ink hover:bg-[#d0922c]"],
-              ["active", "bg-[#3d9460] text-bg hover:bg-[#348556]"],
-              ["paused", "bg-[#7c6aab] text-bg hover:bg-[#6d5c99]"],
-              ["archived", "bg-[#4a6670] text-bg hover:bg-[#3f5861]"],
-            ] as const
-          ).map(([st, on]) => (
-            <Button
-              key={st}
-              size="sm"
-              variant={dog.status === st ? "default" : "outline"}
-              className={cn("rounded-full", dog.status === st && on)}
-              onClick={() => {
-                void setDogStatus({ data: { dogId: dog.id, status: st } })
-                  .then(() => {
-                    toast.success(`Marked ${st}.`);
-                    onRefresh();
-                  })
-                  .catch((err: unknown) =>
-                    toast.error(err instanceof Error ? err.message : "Could not update."),
-                  );
-              }}
-            >
-              {st}
-            </Button>
-          ))}
+        <div className="flex flex-col items-start gap-1.5 sm:items-end">
+          <p id="client-status-label" className="text-xs font-semibold uppercase tracking-wide text-faint">
+            Client status
+          </p>
+          <div
+            role="radiogroup"
+            aria-labelledby="client-status-label"
+            className="inline-flex flex-wrap gap-1 rounded-full bg-surface-2 p-1 shadow-[inset_0_0_0_1px_rgba(44,24,16,0.14)]"
+          >
+            {(
+              [
+                ["pending", "bg-[#e0a23b] text-ink hover:bg-[#d0922c]"],
+                ["active", "bg-[#3d9460] text-bg hover:bg-[#348556]"],
+                ["paused", "bg-[#7c6aab] text-bg hover:bg-[#6d5c99]"],
+                ["archived", "bg-[#4a6670] text-bg hover:bg-[#3f5861]"],
+              ] as const
+            ).map(([st, on]) => (
+              <button
+                key={st}
+                type="button"
+                role="radio"
+                aria-checked={dog.status === st}
+                className={cn(
+                  "h-9 rounded-full px-3.5 text-xs font-medium capitalize transition-colors duration-150",
+                  dog.status === st ? on : "text-ink hover:bg-bg",
+                )}
+                onClick={() => {
+                  if (dog.status === st) return;
+                  void setDogStatus({ data: { dogId: dog.id, status: st } })
+                    .then(() => {
+                      toast.success(`Marked ${st}.`);
+                      onRefresh();
+                    })
+                    .catch((err: unknown) =>
+                      toast.error(err instanceof Error ? err.message : "Could not update."),
+                    );
+                }}
+              >
+                {st}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
