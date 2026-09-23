@@ -1,8 +1,10 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Wordmark } from "@/components/brand/logo";
 import { ContactMethods, SocialLinks } from "@/components/brand/social-links";
+import { goToHomeSection } from "@/lib/scroll-to-section";
 
 export function SiteFooter() {
+  const navigate = useNavigate();
   return (
     <footer className="mt-auto flex flex-1 flex-col bg-ink text-bg">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr]">
@@ -17,12 +19,26 @@ export function SiteFooter() {
           <p className="text-sm text-accent-soft">Visit</p>
           <ul className="mt-3 space-y-2 text-sm text-bg/70">
             <li>
-              <a href="/#about" className="hover:text-bg">
+              <a
+                href="/#about"
+                className="hover:text-bg"
+                onClick={(e) => {
+                  e.preventDefault();
+                  goToHomeSection("about", navigate);
+                }}
+              >
                 About
               </a>
             </li>
             <li>
-              <a href="/#services" className="hover:text-bg">
+              <a
+                href="/#services"
+                className="hover:text-bg"
+                onClick={(e) => {
+                  e.preventDefault();
+                  goToHomeSection("services", navigate);
+                }}
+              >
                 Sessions
               </a>
             </li>
