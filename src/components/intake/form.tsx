@@ -108,7 +108,7 @@ export function IntakeForm({
             <Input
               value={form.address}
               onChange={(e) => set("address", e.target.value)}
-              placeholder="1234 Westheimer Rd, Houston, TX"
+              placeholder="1234 Westheimer Rd, Houston, TX 77006"
               required
             />
           </Field>

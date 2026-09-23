@@ -44,7 +44,7 @@ export function PhaseLegend() {
           key={p.rating}
           className="flex gap-3 rounded-lg bg-pearl px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.75),0_1px_2px_rgba(44,24,16,0.08),0_8px_16px_-10px_rgba(44,24,16,0.32)]"
         >
-          <span className="font-display text-lg tabular-nums text-accent-deep">{p.rating}</span>
+          <span className="font-display text-lg font-bold tabular-nums text-accent-deep">{p.rating}</span>
           <span>
             <span className="block text-sm font-bold text-ink">{p.label}</span>
             <span className="text-xs text-muted">{p.blurb}</span>
