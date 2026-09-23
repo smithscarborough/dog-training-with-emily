@@ -122,15 +122,11 @@
 }
 
 .skill-card-idle {
-  background: color-mix(in oklab, var(--color-pearl) 55%, var(--color-bg));
-  box-shadow: none;
-  opacity: 0.78;
-  filter: saturate(0.45);
+  opacity: 0.72;
 }
 .skill-card-idle:hover,
 .skill-card-idle:focus-visible {
-  opacity: 0.92;
-  filter: none;
+  opacity: 1;
 }
 
 .shell-card {
