@@ -375,6 +375,11 @@ function ClientDetail({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }
   const [filter, setFilter] = useState<"working" | "all">("working");
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [checkins, setCheckins] = useState<CheckinRow[]>([]);
+  const [status, setStatus] = useState(dog.status);
+
+  useEffect(() => {
+    setStatus(dog.status);
+  }, [dog.id, dog.status]);
 
   useEffect(() => {
     setNotes(dog.trainer_private_notes);
@@ -413,8 +418,8 @@ function ClientDetail({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }
             <p className="text-xs text-faint">{dog.address}</p>
           </div>
         </div>
-        <div className="flex flex-col items-start gap-1.5 sm:items-end">
-          <p id="client-status-label" className="text-xs font-semibold uppercase tracking-wide text-faint">
+        <div className="flex flex-col items-center gap-1.5">
+          <p id="client-status-label" className="text-center text-xs font-semibold uppercase tracking-wide text-faint">
             Client status
           </p>
           <div
@@ -434,21 +439,24 @@ function ClientDetail({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }
                 key={st}
                 type="button"
                 role="radio"
-                aria-checked={dog.status === st}
+                aria-checked={status === st}
                 className={cn(
                   "h-9 rounded-full px-3.5 text-xs font-medium capitalize transition-colors duration-150",
-                  dog.status === st ? on : "text-ink hover:bg-bg",
+                  status === st ? on : "text-ink hover:bg-bg",
                 )}
                 onClick={() => {
-                  if (dog.status === st) return;
+                  if (status === st) return;
+                  const previous = status;
+                  setStatus(st);
                   void setDogStatus({ data: { dogId: dog.id, status: st } })
                     .then(() => {
                       toast.success(`Marked ${st}.`);
                       onRefresh();
                     })
-                    .catch((err: unknown) =>
-                      toast.error(err instanceof Error ? err.message : "Could not update."),
-                    );
+                    .catch((err: unknown) => {
+                      setStatus(previous);
+                      toast.error(err instanceof Error ? err.message : "Could not update.");
+                    });
                 }}
               >
                 {st}
