@@ -414,11 +414,19 @@ function ClientDetail({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          {(["pending", "active", "paused", "archived"] as const).map((st) => (
+          {(
+            [
+              ["pending", "bg-[#e0a23b] text-ink hover:bg-[#d0922c]"],
+              ["active", "bg-[#3d9460] text-bg hover:bg-[#348556]"],
+              ["paused", "bg-[#8d6a45] text-bg hover:bg-[#7c5c3b]"],
+              ["archived", "bg-[#4a6670] text-bg hover:bg-[#3f5861]"],
+            ] as const
+          ).map(([st, on]) => (
             <Button
               key={st}
               size="sm"
               variant={dog.status === st ? "default" : "outline"}
+              className={cn("rounded-full", dog.status === st && on)}
               onClick={() => {
                 void setDogStatus({ data: { dogId: dog.id, status: st } })
                   .then(() => {
