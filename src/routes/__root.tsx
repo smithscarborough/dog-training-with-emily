@@ -1,5 +1,5 @@
 import { createRootRoute, HeadContent, Outlet, Scripts, useRouterState } from "@tanstack/react-router";
-import { useLayoutEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { createServerFn } from "@tanstack/react-start";
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { Toaster } from "sonner";
 import { STUDIO_NAME } from "@/lib/catalog";
 import { cancelScrollAnim } from "@/lib/scroll-to-section";
+import { clearChunkReloadFlag } from "@/lib/error-component";
 import appCss from "../styles.css?url";
 
 /** Same host guard the injector uses for og:image — skip vercel/IP/local. */
@@ -79,6 +80,18 @@ function ScrollToTop() {
   return null;
 }
 
+function RecoveredLoad() {
+  useEffect(() => {
+    clearChunkReloadFlag();
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has("v")) return;
+    url.searchParams.delete("v");
+    const next = `${url.pathname}${url.search}${url.hash}`;
+    window.history.replaceState(window.history.state, "", next);
+  }, []);
+  return null;
+}
+
 function RootDocument() {
   return (
     <html lang="en" className="h-full overflow-hidden antialiased" suppressHydrationWarning>
@@ -93,6 +106,7 @@ function RootDocument() {
       </head>
       <body className="h-full overflow-hidden bg-bg text-ink">
         <div id="app-scroll" className="app-scroll">
+          <RecoveredLoad />
           <ScrollToTop />
           <PreviewHostBridge />
           <AuthProvider>

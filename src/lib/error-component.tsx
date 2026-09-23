@@ -34,26 +34,38 @@ function freshUrl(): string {
   return url.toString();
 }
 
+function readAttempt(): { n: number; t: number } {
+  try {
+    const raw = sessionStorage.getItem(CHUNK_RELOAD_KEY);
+    if (!raw) return { n: 0, t: 0 };
+    if (raw.startsWith("{")) {
+      const parsed = JSON.parse(raw) as { n?: number; t?: number };
+      return { n: Number(parsed.n) || 0, t: Number(parsed.t) || 0 };
+    }
+    return { n: Number(raw) || 0, t: Date.now() };
+  } catch {
+    return { n: 0, t: 0 };
+  }
+}
+
 export function AppErrorComponent({ error }: ErrorComponentProps) {
   const stale = isStaleChunk(error);
 
   useEffect(() => {
     if (!stale) return;
     const now = Date.now();
-    let last = 0;
+    let { n, t } = readAttempt();
+    if (now - t > 60000) n = 0;
+    if (n >= 8) return;
+    const next = n + 1;
     try {
-      last = Number(sessionStorage.getItem(CHUNK_RELOAD_KEY)) || 0;
+      sessionStorage.setItem(CHUNK_RELOAD_KEY, JSON.stringify({ n: next, t: now }));
     } catch {
       /* ignore */
     }
-    // One automatic refresh per update. A second failure stays on screen so we don't loop.
-    if (now - last < 8000) return;
-    try {
-      sessionStorage.setItem(CHUNK_RELOAD_KEY, String(now));
-    } catch {
-      /* ignore */
-    }
-    window.location.replace(freshUrl());
+    const delay = next === 1 ? 300 : 1200;
+    const id = window.setTimeout(() => window.location.replace(freshUrl()), delay);
+    return () => window.clearTimeout(id);
   }, [stale]);
 
   return (
