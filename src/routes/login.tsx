@@ -7,6 +7,7 @@ import { Card, CardBody } from "@/components/ui/card";
 import { Field } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { GROK_PROVIDERS, authClient, authEnabled, signIn } from "@/lib/auth/client";
+import { QA_ADMIN } from "@/lib/qa-admin";
 import { SignInGate } from "@/lib/auth/gates";
 import { becomeTrainer } from "@/lib/server/me";
 import { seedDemoIfNeeded } from "@/lib/server/seed-demo-fn";
@@ -37,9 +38,8 @@ function LoginPage() {
   return (
     <div className="min-h-dvh">
       <EspressoBanner kicker="Emily — studio">
-        No email code. Create an account with a password, then enter studio code{" "}
-        <span className="font-semibold text-accent-soft">TEDDY</span>. You can
-        change that code once you’re inside.
+        For testing, use <span className="font-semibold text-accent-soft">Sign in as Emily</span>.
+        Studio code <span className="font-semibold text-accent-soft">TEDDY</span> still works.
       </EspressoBanner>
       <main className="mx-auto w-full max-w-lg px-5 py-12 text-center sm:px-6 lg:py-16">
         <p className="text-sm text-muted">Login</p>
@@ -65,7 +65,11 @@ function LoginPage() {
           <br />
           <span className="text-ink">luis.ortega@demo.local</span> · Gus
           <br />
-          Emily: create an account, then studio code{" "}
+          Emily (studio) —{" "}
+          <span className="text-ink">{QA_ADMIN.email}</span> · password{" "}
+          <span className="font-semibold text-ink">{QA_ADMIN.password}</span>
+          <br />
+          Or just press Sign in as Emily. Studio code{" "}
           <span className="font-semibold text-ink">TEDDY</span>.
         </p>
         <div className="mx-auto mt-10 w-full max-w-md text-left">
@@ -87,6 +91,7 @@ function AlreadyIn({ preferStudio }: { preferStudio: boolean }) {
           Open your portal, or the studio if you train here.
         </p>
         <div className="flex flex-wrap gap-2">
+          <QaEmilyButton />
           <Button asChild>
             <Link to={preferStudio ? "/studio" : "/portal"}>
               {preferStudio ? "Open trainer studio" : "Open portal"}
@@ -100,6 +105,37 @@ function AlreadyIn({ preferStudio }: { preferStudio: boolean }) {
         </div>
       </CardBody>
     </Card>
+  );
+}
+
+function QaEmilyButton() {
+  const [busy, setBusy] = useState(false);
+  const navigate = useNavigate();
+
+  async function go() {
+    if (!authEnabled) return;
+    setBusy(true);
+    try {
+      await seedDemoIfNeeded();
+      await authClient.signOut().catch(() => undefined);
+      const { error } = await authClient.signIn.email({
+        email: QA_ADMIN.email,
+        password: QA_ADMIN.password,
+      });
+      if (error) throw new Error(error.message ?? "Could not sign in.");
+      toast.success("Signed in as Emily.");
+      await navigate({ to: "/studio" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not open the studio.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Button type="button" className="book-cta w-full" disabled={busy || !authEnabled} onClick={() => void go()}>
+      {busy ? "Opening studio…" : "Sign in as Emily"}
+    </Button>
   );
 }
 
@@ -157,6 +193,7 @@ function AuthCard({ preferStudio }: { preferStudio: boolean }) {
   return (
     <Card className="bg-white">
       <CardBody className="space-y-5">
+        <QaEmilyButton />
         <div className="flex rounded-md bg-ink p-1">
           {(["in", "up"] as const).map((m) => (
             <button

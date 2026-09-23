@@ -3,6 +3,7 @@ import { hashPassword } from "better-auth/crypto";
 import { getSql } from "@/lib/db";
 import { CATALOG } from "@/lib/catalog";
 import { seedProgressForDog } from "./progress-seed";
+import { QA_ADMIN } from "@/lib/qa-admin";
 
 const DEMO_PASS = "PortalDemo1";
 const DEMO_DOMAIN = "demo.local";
@@ -377,6 +378,41 @@ async function ensureUser(name: string, email: string, password: string) {
   `;
 	return id;
 }
+
+/** Always restore the QA studio login so testing does not depend on who claimed TEDDY. */
+export async function ensureQaAdmin() {
+	const sql = await getSql();
+	const hash = await hashPassword(QA_ADMIN.password);
+	const now = new Date().toISOString();
+	const existing = await sql<{ id: string }>`select id from "user" where email = ${QA_ADMIN.email}`;
+	let userId = existing[0]?.id;
+	if (!userId) {
+		userId = await ensureUser(QA_ADMIN.name, QA_ADMIN.email, QA_ADMIN.password);
+	} else {
+		await sql`update "user" set name = ${QA_ADMIN.name}, "emailVerified" = true, "updatedAt" = ${now} where id = ${userId}`;
+		const acct = await sql<{ id: string }>`
+      select id from "account" where "userId" = ${userId} and "providerId" = 'credential'
+    `;
+		if (acct[0]) {
+			await sql`update "account" set password = ${hash}, "updatedAt" = ${now} where id = ${acct[0].id}`;
+		} else {
+			await sql`
+        insert into "account" (
+          id, "accountId", "providerId", "userId", password, "createdAt", "updatedAt"
+        ) values (
+          ${randomUUID()}, ${userId}, 'credential', ${userId}, ${hash}, ${now}, ${now}
+        )
+      `;
+		}
+	}
+	await sql`
+    update studio
+    set owner_user_id = ${userId}, trainer_pin = 'TEDDY', updated_at = now()
+    where id = 1
+  `;
+	return { ok: true as const };
+}
+
 export async function ensureDemoSeed() {
 	const sql = await getSql();
 	if (((await sql<{ n: number }>`
