@@ -205,30 +205,28 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
     void listSessions({ data: {} }).then(setSessions).catch(() => setSessions([]));
     void listCheckins({ data: { limit: 8 } }).then(setCheckins).catch(() => setCheckins([]));
   }, []);
-  const upcoming = sessions.filter((s) => s.status === "requested" || s.status === "confirmed").slice(0, 6);
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const byTime = (a: SessionRow, b: SessionRow) =>
+    +new Date(a.scheduled_at) - +new Date(b.scheduled_at);
+  const toConfirm = sessions.filter((s) => s.status === "requested").sort(byTime).slice(0, 6);
+  const comingUp = sessions
+    .filter((s) => s.status === "confirmed" && +new Date(s.scheduled_at) >= +startOfToday)
+    .sort(byTime)
+    .slice(0, 6);
   const pending = dogs.filter((d) => d.status === "pending");
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle>Needs a confirm</CardTitle>
+          <CardTitle>To confirm</CardTitle>
         </CardHeader>
         <CardBody className="space-y-3">
-          {upcoming.length === 0 ? (
-            <p className="text-sm text-muted">No open sessions.</p>
+          {toConfirm.length === 0 ? (
+            <p className="text-sm text-muted">Nothing to confirm.</p>
           ) : (
-            upcoming.map((s) => (
-              <div key={s.id} className="flex items-start justify-between gap-3 border-b border-line pb-3 last:border-0">
-                <div>
-                  <p className="font-medium">{s.dog_name}</p>
-                  <p className="text-xs text-muted">
-                    {sessionTypeById(s.session_type).name} · {formatWhen(s.scheduled_at)}
-                  </p>
-                </div>
-                <Badge tone={statusTone(s.status)}>{s.status}</Badge>
-              </div>
-            ))
+            toConfirm.map((s) => <BoardSession key={s.id} session={s} onOpen={onOpen} />)
           )}
         </CardBody>
       </Card>
@@ -254,6 +252,18 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
                 </span>
               </button>
             ))
+          )}
+        </CardBody>
+      </Card>
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle>Coming up</CardTitle>
+        </CardHeader>
+        <CardBody className="space-y-3">
+          {comingUp.length === 0 ? (
+            <p className="text-sm text-muted">Nothing confirmed on the calendar yet.</p>
+          ) : (
+            comingUp.map((s) => <BoardSession key={s.id} session={s} onOpen={onOpen} />)
           )}
         </CardBody>
       </Card>
@@ -290,6 +300,24 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
         </CardBody>
       </Card>
     </div>
+  );
+}
+
+function BoardSession({ session, onOpen }: { session: SessionRow; onOpen: (id: number) => void }) {
+  return (
+    <button
+      type="button"
+      className="flex w-full items-start justify-between gap-3 border-b border-line pb-3 text-left last:border-0"
+      onClick={() => onOpen(session.dog_id)}
+    >
+      <span>
+        <span className="block font-medium">{session.dog_name}</span>
+        <span className="text-xs text-muted">
+          {sessionTypeById(session.session_type).name} · {formatWhen(session.scheduled_at)}
+        </span>
+      </span>
+      <Badge tone={statusTone(session.status)}>{session.status}</Badge>
+    </button>
   );
 }
 
