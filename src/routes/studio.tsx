@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { DogAvatar } from "@/components/dogs/dog-avatar";
 import { EspressoBanner } from "@/components/layout/espresso-banner";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { IntakeForm } from "@/components/intake/form";
 import { PhaseMeter } from "@/components/progress/phase-meter";
 import { Badge } from "@/components/ui/badge";
@@ -132,7 +133,7 @@ function StudioApp({
   const active = dogs.filter((d) => d.status === "active");
 
   return (
-    <div className="min-h-dvh pb-16">
+    <div className="flex min-h-full flex-col">
       <EspressoBanner kicker="Studio">
         Clients, progress, sessions, and inbox — owners never see this side.
       </EspressoBanner>
@@ -192,6 +193,7 @@ function StudioApp({
           {tab === "settings" ? <Settings studio={studio} onRefresh={onRefresh} /> : null}
         </div>
       </main>
+      <SiteFooter />
     </div>
   );
 }
