@@ -220,7 +220,7 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
     <div className="grid gap-4 lg:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle>Pending confirmation</CardTitle>
+          <CardTitle>Pending Confirmation</CardTitle>
         </CardHeader>
         <CardBody className="space-y-3">
           {toConfirm.length === 0 ? (
