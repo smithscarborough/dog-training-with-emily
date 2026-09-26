@@ -16,7 +16,7 @@ import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { PHASES, SESSION_TYPES, SKILLS, TRICKS, checkinById, dollars, sessionTypeById } from "@/lib/catalog";
 import { formatWhen, statusTone, checkinTone } from "@/lib/format";
-import { formatUsPhone } from "@/lib/phone";
+import { formatUsPhone, phoneDigits } from "@/lib/phone";
 import {
   saveTrainerNotes,
   setDogCredits,
@@ -399,6 +399,24 @@ function Clients({
   );
 }
 
+function FileFact({ label, value, href }: { label: string; value: string; href?: string }) {
+  const text = value.trim();
+  return (
+    <div>
+      <dt className="text-sm font-bold text-[#1a0e0a]">{label}</dt>
+      <dd className={cn("mt-0.5 text-sm leading-relaxed", text ? "text-ink" : "text-muted")}>
+        {text && href ? (
+          <a href={href} className="underline decoration-line underline-offset-4 hover:text-accent-deep">
+            {text}
+          </a>
+        ) : (
+          text || "None listed"
+        )}
+      </dd>
+    </div>
+  );
+}
+
 function ClientDetail({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }) {
   const [notes, setNotes] = useState(dog.trainer_private_notes);
   const [credits, setCredits] = useState(String(dog.credits));
@@ -542,13 +560,17 @@ function ClientDetail({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }
             >
               Update credits
             </Button>
-            <div className="space-y-1 border-t border-line pt-3 text-sm">
-              <p><span className="text-muted">Phone </span>{dog.owner_phone}</p>
-              <p><span className="text-muted">Email </span>{dog.owner_email}</p>
-              <p><span className="text-muted">Allergies </span>{dog.allergies || "none listed"}</p>
-              <p><span className="text-muted">Dislikes </span>{dog.dislikes || "—"}</p>
-              <p><span className="text-muted">Limits </span>{dog.physical_limitations || "—"}</p>
-            </div>
+            <dl className="space-y-3 border-t border-line pt-4">
+              <FileFact
+                label="Phone"
+                value={dog.owner_phone ? formatUsPhone(dog.owner_phone) : ""}
+                href={dog.owner_phone ? `tel:${phoneDigits(dog.owner_phone)}` : undefined}
+              />
+              <FileFact label="Email" value={dog.owner_email} href={dog.owner_email ? `mailto:${dog.owner_email}` : undefined} />
+              <FileFact label="Allergies" value={dog.allergies} />
+              <FileFact label="Dislikes" value={dog.dislikes} />
+              <FileFact label="Limits" value={dog.physical_limitations} />
+            </dl>
           </CardBody>
         </Card>
       </div>
