@@ -625,30 +625,44 @@ function ClientDetail({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }
             </div>
           </div>
         </CardHeader>
-        <CardBody className="space-y-4">
+        <CardBody>
           {shown.length === 0 ? (
             <p className="text-sm text-muted">Nothing in work yet — open the full catalog and score a first intro.</p>
-          ) : null}
-          {shown.map((item) => {
-            const row = byKey[item.key];
-            return (
-              <SkillEditor
-                key={item.key}
-                dogId={dog.id}
-                skillKey={item.key}
-                name={item.name}
-                kind={item.kind}
-                rating={row?.rating ?? 0}
-                comment={row?.comment ?? ""}
-                onSaved={(next) => {
-                  setCurrent((cur) => {
-                    const rest = cur.filter((p) => p.skill_key !== item.key);
-                    return [...rest, next];
-                  });
-                }}
-              />
-            );
-          })}
+          ) : (
+            (["trick", "skill"] as const).map((kind) => {
+              const items = shown.filter((item) => item.kind === kind);
+              if (!items.length) return null;
+              return (
+                <section key={kind} className="mt-5 first:mt-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+                    {kind === "trick" ? "Tricks" : "Skills"}
+                  </p>
+                  <div className="mt-3 grid items-start gap-3 xl:grid-cols-2">
+                    {items.map((item) => {
+                      const row = byKey[item.key];
+                      return (
+                        <SkillEditor
+                          key={item.key}
+                          dogId={dog.id}
+                          skillKey={item.key}
+                          name={item.name}
+                          kind={item.kind}
+                          rating={row?.rating ?? 0}
+                          comment={row?.comment ?? ""}
+                          onSaved={(next) => {
+                            setCurrent((cur) => {
+                              const rest = cur.filter((p) => p.skill_key !== item.key);
+                              return [...rest, next];
+                            });
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                </section>
+              );
+            })
+          )}
         </CardBody>
       </Card>
 
@@ -708,14 +722,14 @@ function SkillEditor({
         </div>
         <PhaseMeter rating={r} compact />
       </div>
-      <div className="mt-3 flex flex-wrap gap-1">
+      <div className="mt-3 grid grid-cols-8 gap-1">
         {[0, ...PHASES.map((p) => p.rating)].map((n) => (
           <button
             key={n}
             type="button"
             onClick={() => setR(n)}
             className={cn(
-              "size-9 rounded-full text-xs tabular-nums",
+              "mx-auto size-9 rounded-full text-xs tabular-nums",
               r === n ? "bg-accent text-accent-fg" : "bg-surface text-muted hairline",
             )}
             title={n === 0 ? "Not started" : PHASES[n - 1]?.label}
