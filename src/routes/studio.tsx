@@ -220,11 +220,11 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
     <div className="grid gap-4 lg:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle>Pending Confirmation</CardTitle>
+          <CardTitle>Session Requests</CardTitle>
         </CardHeader>
         <CardBody className="space-y-3">
           {toConfirm.length === 0 ? (
-            <p className="text-sm text-muted">Nothing to confirm.</p>
+            <p className="text-sm text-muted">No session requests.</p>
           ) : (
             toConfirm.map((s) => <BoardSession key={s.id} session={s} onOpen={onOpen} />)
           )}
@@ -232,11 +232,11 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>New intakes</CardTitle>
+          <CardTitle>Client Requests</CardTitle>
         </CardHeader>
         <CardBody className="space-y-3">
           {pending.length === 0 ? (
-            <p className="text-sm text-muted">No pending households.</p>
+            <p className="text-sm text-muted">No client requests.</p>
           ) : (
             pending.map((d) => (
               <button
