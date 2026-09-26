@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { DogAvatar } from "@/components/dogs/dog-avatar";
@@ -137,7 +137,7 @@ function StudioApp({
       <EspressoBanner kicker="Studio">
         Clients, progress, sessions, and inbox — owners never see this side.
       </EspressoBanner>
-      <main className="mx-auto max-w-6xl px-5 py-8 sm:px-6">
+      <main className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-6 xl:max-w-[92rem]">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-sm text-muted">Trainer studio</p>
@@ -339,9 +339,33 @@ function Clients({
     return hay.includes(q.toLowerCase());
   });
   const dog = dogs.find((d) => d.id === selected) ?? null;
+  const onboardForm = showNew ? (
+    <Card>
+      <CardHeader>
+        <CardTitle>Onboard</CardTitle>
+      </CardHeader>
+      <CardBody>
+        <IntakeForm
+          submitLabel="Create client"
+          onSubmit={async (data) => {
+            try {
+              const res = await trainerCreateClient({ data });
+              toast.success("Client on file.");
+              setShowNew(false);
+              onRefresh();
+              setSelected(res.id);
+            } catch (err) {
+              toast.error(err instanceof Error ? err.message : "Could not create.");
+              throw err;
+            }
+          }}
+        />
+      </CardBody>
+    </Card>
+  ) : null;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+    <div className="grid items-start gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
       <div>
         <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search dogs or owners" />
         <Button variant="outline" className="mt-3 w-full" onClick={() => setShowNew((v) => !v)}>
@@ -368,33 +392,14 @@ function Clients({
           ))}
         </ul>
       </div>
-      <div>
-        {showNew ? (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Onboard</CardTitle>
-            </CardHeader>
-            <CardBody>
-              <IntakeForm
-                submitLabel="Create client"
-                onSubmit={async (data) => {
-                  try {
-                    const res = await trainerCreateClient({ data });
-                    toast.success("Client on file.");
-                    setShowNew(false);
-                    onRefresh();
-                    setSelected(res.id);
-                  } catch (err) {
-                    toast.error(err instanceof Error ? err.message : "Could not create.");
-                    throw err;
-                  }
-                }}
-              />
-            </CardBody>
-          </Card>
-        ) : null}
-        {dog ? <ClientDetail dog={dog} onRefresh={onRefresh} /> : <p className="text-sm text-muted">Select a client.</p>}
-      </div>
+      {dog ? (
+        <ClientDetail dog={dog} onRefresh={onRefresh} leading={onboardForm} />
+      ) : (
+        <div className="space-y-6">
+          {onboardForm}
+          <p className="text-sm text-muted">Select a client.</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -417,7 +422,15 @@ function FileFact({ label, value, href }: { label: string; value: string; href?:
   );
 }
 
-function ClientDetail({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }) {
+function ClientDetail({
+  dog,
+  onRefresh,
+  leading,
+}: {
+  dog: DogRow;
+  onRefresh: () => void;
+  leading?: ReactNode;
+}) {
   const [notes, setNotes] = useState(dog.trainer_private_notes);
   const [credits, setCredits] = useState(String(dog.credits));
   const [current, setCurrent] = useState<ProgressRow[]>([]);
@@ -455,7 +468,9 @@ function ClientDetail({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }
   });
 
   return (
-    <div className="space-y-6">
+    <>
+    <div className="min-w-0 space-y-6">
+      {leading}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           <DogAvatar dog={dog} size="lg" />
@@ -602,7 +617,9 @@ function ClientDetail({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }
           )}
         </CardBody>
       </Card>
+    </div>
 
+    <div className="min-w-0 space-y-6 lg:col-span-2">
       <Card>
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -637,7 +654,7 @@ function ClientDetail({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }
                   <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
                     {kind === "trick" ? "Tricks" : "Skills"}
                   </p>
-                  <div className="mt-3 grid items-start gap-3 xl:grid-cols-2">
+                  <div className="mt-3 grid items-start gap-4 lg:grid-cols-2">
                     {items.map((item) => {
                       const row = byKey[item.key];
                       return (
@@ -684,6 +701,7 @@ function ClientDetail({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }
         </CardBody>
       </Card>
     </div>
+    </>
   );
 }
 
