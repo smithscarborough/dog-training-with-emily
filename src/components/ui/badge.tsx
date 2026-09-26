@@ -12,7 +12,7 @@ export function Badge({
       className={cn(
         "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-wide uppercase",
         tone === "default" && "bg-surface-2 text-ink-soft",
-        tone === "accent" && "bg-[#43C5B9] px-3 py-1 font-bold text-ink",
+        tone === "accent" && "bg-[#0e7c74] px-3 py-1 font-bold text-bg shadow-[inset_0_1px_0_rgba(255,255,255,0.28)]",
         tone === "solid" && "badge-confirmed px-3 py-1 font-bold text-bg",
         tone === "done" && "bg-[#4a6670] px-3 py-1 font-bold text-bg",
         tone === "ok" && "bg-ok/40 font-semibold text-ink",
