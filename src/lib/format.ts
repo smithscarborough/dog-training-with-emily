@@ -42,9 +42,9 @@ export function statusTone(status: string): "default" | "accent" | "ok" | "warn"
   return "default";
 }
 
-export function checkinTone(status: string): "ok" | "muted" | "warn" | "default" {
-  if (status === "practiced") return "ok";
-  if (status === "skipped") return "muted";
-  if (status === "stuck") return "warn";
+export function checkinTone(status: string): "practiced" | "skipped" | "stuck" | "default" {
+  if (status === "practiced") return "practiced";
+  if (status === "skipped") return "skipped";
+  if (status === "stuck") return "stuck";
   return "default";
 }
