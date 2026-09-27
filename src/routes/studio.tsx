@@ -1310,11 +1310,27 @@ function Inbox() {
       {rows.map((r) => (
         <Card key={r.id}>
           <CardBody>
-            <p className="font-medium">{r.name}{r.dog_name ? ` · ${r.dog_name}` : ""}</p>
-            <p className="text-xs text-muted">
-              {r.email} · {r.phone} · {formatWhen(r.created_at)}
+            <p>
+              <span className="font-semibold text-ink">{r.name}</span>
+              {r.dog_name ? (
+                <>
+                  <span className="text-faint"> · </span>
+                  <span className="font-medium text-ink">{r.dog_name}</span>
+                </>
+              ) : null}
             </p>
-            <p className="mt-2 whitespace-pre-wrap text-sm">{r.message}</p>
+            <p className="mt-0.5 text-xs text-muted">
+              {r.email ? <span className="font-medium text-ink">{r.email}</span> : null}
+              {r.email && r.phone ? <span className="text-faint"> · </span> : null}
+              {r.phone ? <span>{r.phone}</span> : null}
+              {(r.email || r.phone) ? <span className="text-faint"> · </span> : null}
+              {formatWhen(r.created_at)}
+            </p>
+            {r.message ? (
+              <p className="mt-2.5 whitespace-pre-wrap border-t border-line pt-2.5 text-sm leading-relaxed text-ink">
+                {r.message}
+              </p>
+            ) : null}
           </CardBody>
         </Card>
       ))}
