@@ -259,7 +259,7 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
         </CardBody>
       </Card>
       <Card>
-        <CardHeader className="items-center text-center">
+        <CardHeader>
           <CardTitle>Pending Clients</CardTitle>
         </CardHeader>
         <CardBody className="space-y-3">
