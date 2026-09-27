@@ -148,6 +148,48 @@ export const GOALS = [
   { id: "other", label: "Other" },
 ] as const;
 
+const FULL_CATALOG_GOAL_IDS = new Set(["obedience", "puppy-basics"]);
+
+export function parseGoalIds(goalsJson: string): string[] {
+  try {
+    const parsed = JSON.parse(goalsJson || "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((id): id is string => typeof id === "string" && id.trim().length > 0);
+  } catch {
+    return [];
+  }
+}
+
+export function fullCatalogGoalLabels(goalsJson: string): string[] {
+  const ids = new Set(parseGoalIds(goalsJson));
+  return GOALS.filter((goal) => FULL_CATALOG_GOAL_IDS.has(goal.id) && ids.has(goal.id)).map(
+    (goal) => goal.label,
+  );
+}
+
+export function parseVisibleSkillKeys(json: string | null | undefined): string[] {
+  try {
+    const parsed = JSON.parse(json || "[]");
+    if (!Array.isArray(parsed)) return [];
+    const allowed = new Set(CATALOG.map((item) => item.key));
+    return [
+      ...new Set(parsed.filter((key): key is string => typeof key === "string" && allowed.has(key))),
+    ];
+  } catch {
+    return [];
+  }
+}
+
+/** Obedience or Puppy basics on intake shows the whole catalog. Otherwise only Emily's picks. */
+export function portalCatalog(dog: { goals_json: string; visible_skills_json?: string | null }): {
+  full: boolean;
+  items: CatalogItem[];
+} {
+  if (fullCatalogGoalLabels(dog.goals_json).length > 0) return { full: true, items: CATALOG };
+  const on = new Set(parseVisibleSkillKeys(dog.visible_skills_json));
+  return { full: false, items: CATALOG.filter((item) => on.has(item.key)) };
+}
+
 export const CHECKINS = [
   { id: "practiced", label: "We practiced", hint: "" },
   { id: "skipped", label: "We skipped", hint: "No judgment. Emily will read this before the next session and plan around it." },

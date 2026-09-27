@@ -12,7 +12,7 @@ import { Field } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/input";
 import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
-import { SESSION_TYPES, SKILLS, TRICKS, CHECKINS, checkinById, dollars, sessionTypeById, phaseFor } from "@/lib/catalog";
+import { SESSION_TYPES, CHECKINS, checkinById, dollars, sessionTypeById, phaseFor, portalCatalog } from "@/lib/catalog";
 import { formatWhen, statusTone, checkinTone } from "@/lib/format";
 import { cancelOwnSession, listSessions, requestSession } from "@/lib/server/sessions";
 import { getProgress } from "@/lib/server/progress";
@@ -437,14 +437,17 @@ function ProgressTab({ dog }: { dog: DogRow }) {
   );
   const [filter, setFilter] = useState<"all" | "active" | "idle">("active");
 
+  const plan = portalCatalog(dog);
+  const tricks = plan.items.filter((item) => item.kind === "trick");
+  const skills = plan.items.filter((item) => item.kind === "skill");
+
   function filtered<T extends { key: string }>(items: T[]) {
     if (filter === "active") return items.filter((i) => (byKey[i.key]?.rating ?? 0) > 0);
     if (filter === "idle") return items.filter((i) => !(byKey[i.key]?.rating));
     return items;
   }
 
-  const activeCount =
-    TRICKS.concat(SKILLS).filter((i) => (byKey[i.key]?.rating ?? 0) > 0).length;
+  const activeCount = plan.items.filter((i) => (byKey[i.key]?.rating ?? 0) > 0).length;
 
   return (
     <div className="space-y-8">
@@ -454,7 +457,7 @@ function ProgressTab({ dog }: { dog: DogRow }) {
         </CardHeader>
         <CardBody>
           <p className="max-w-2xl text-sm text-muted">
-            Every trick and skill sits on a seven-phase ladder. Open one to see
+            Each trick and skill sits on a seven-phase ladder. Open one to see
             where {dog.name} is, and the last note from a session.
           </p>
           <div className="mt-5">
@@ -462,26 +465,34 @@ function ProgressTab({ dog }: { dog: DogRow }) {
           </div>
         </CardBody>
       </Card>
-      <div className="flex flex-wrap gap-2">
-        {(
-          [
-            ["active", `In progress (${activeCount})`],
-            ["all", "All"],
-            ["idle", "Not started"],
-          ] as const
-        ).map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setFilter(id)}
-            className={cn("chip-3d rounded-full px-3 py-2 text-sm", filter === id && "is-on")}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-      <SkillGrid title="Tricks" items={filtered(TRICKS)} byKey={byKey} log={log} open={open} setOpen={setOpen} quietIdle={filter === "all"} />
-      <SkillGrid title="Skills" items={filtered(SKILLS)} byKey={byKey} log={log} open={open} setOpen={setOpen} quietIdle={filter === "all"} />
+      {plan.items.length === 0 ? (
+        <p className="text-sm leading-relaxed text-muted">
+          Emily adds tricks and skills here as {dog.name}'s plan takes shape.
+        </p>
+      ) : (
+        <>
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                ["active", `In progress (${activeCount})`],
+                ["all", "All"],
+                ["idle", "Not started"],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setFilter(id)}
+                className={cn("chip-3d rounded-full px-3 py-2 text-sm", filter === id && "is-on")}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <SkillGrid title="Tricks" items={filtered(tricks)} byKey={byKey} log={log} open={open} setOpen={setOpen} quietIdle={filter === "all"} />
+          <SkillGrid title="Skills" items={filtered(skills)} byKey={byKey} log={log} open={open} setOpen={setOpen} quietIdle={filter === "all"} />
+        </>
+      )}
     </div>
   );
 }

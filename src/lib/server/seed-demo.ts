@@ -485,17 +485,19 @@ export async function ensureDemoSeed() {
   `;
 	for (const h of HOUSEHOLDS) {
 		const userId = await ensureUser(h.owner.name, h.owner.email, DEMO_PASS);
+		const seesAll = h.dog.goals.includes("obedience") || h.dog.goals.includes("puppy-basics");
+		const visible = seesAll ? [] : Object.keys(h.progress);
 		const dogId = (await sql<{ id: number }>`
       insert into dogs (
         owner_user_id, owner_name, owner_email, owner_phone, address, name, breed,
         age_text, weight_text, allergies, sex, spayed_neutered, goals_json, goals_other,
-        dislikes, past_experiences, physical_limitations, household, other_pets,
+        visible_skills_json, dislikes, past_experiences, physical_limitations, household, other_pets,
         kids_in_home, vet_info, preferred_days, referral_source, status, credits,
         trainer_private_notes
       ) values (
         ${userId}, ${h.owner.name}, ${h.owner.email}, ${h.owner.phone}, ${h.dog.address},
         ${h.dog.name}, ${h.dog.breed}, ${h.dog.age}, ${h.dog.weight}, '', '—', '—',
-        ${JSON.stringify(h.dog.goals)}, ${h.dog.goalsOther}, ${h.dog.dislikes},
+        ${JSON.stringify(h.dog.goals)}, ${h.dog.goalsOther}, ${JSON.stringify(visible)}, ${h.dog.dislikes},
         ${h.dog.past}, ${h.dog.limits}, ${h.dog.household}, ${h.dog.otherPets},
         ${h.dog.kids}, ${h.dog.vet}, ${h.dog.days}, ${h.dog.referral},
         ${h.dog.status}, ${h.dog.credits}, ${h.dog.privateNotes}

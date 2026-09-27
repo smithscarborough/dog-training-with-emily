@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { DogAvatar } from "@/components/dogs/dog-avatar";
@@ -14,13 +14,14 @@ import { WhenPicker } from "@/components/portal/when-picker";
 import { Input, Textarea } from "@/components/ui/input";
 import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
-import { PHASES, SESSION_TYPES, SKILLS, TRICKS, GOALS, checkinById, dollars, sessionTypeById } from "@/lib/catalog";
+import { PHASES, SESSION_TYPES, SKILLS, TRICKS, GOALS, checkinById, dollars, sessionTypeById, fullCatalogGoalLabels, parseVisibleSkillKeys } from "@/lib/catalog";
 import { formatWhen, statusTone, checkinTone } from "@/lib/format";
 import { formatUsPhone, phoneDigits } from "@/lib/phone";
 import {
   saveTrainerNotes,
   setDogCredits,
   setDogStatus,
+  setVisibleSkills,
   trainerCreateClient,
 } from "@/lib/server/dogs";
 import { listInquiries } from "@/lib/server/inquiries";
@@ -692,6 +693,8 @@ function ClientDetail({
         </CardBody>
       </Card>
 
+      <PortalPlan key={dog.id} dog={dog} />
+
       <Card>
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -773,6 +776,115 @@ function ClientDetail({
         </CardBody>
       </Card>
     </div>
+  );
+}
+
+function PortalPlan({ dog }: { dog: DogRow }) {
+  const unlocked = fullCatalogGoalLabels(dog.goals_json);
+  const [keys, setKeys] = useState<string[]>(() => parseVisibleSkillKeys(dog.visible_skills_json));
+  const [busy, setBusy] = useState(false);
+  const keysRef = useRef(keys);
+  const request = useRef(0);
+  keysRef.current = keys;
+
+  useEffect(() => {
+    const next = parseVisibleSkillKeys(dog.visible_skills_json);
+    keysRef.current = next;
+    setKeys(next);
+  }, [dog.id, dog.visible_skills_json]);
+
+  function save(next: string[]) {
+    const id = ++request.current;
+    const previous = keysRef.current;
+    keysRef.current = next;
+    setKeys(next);
+    setBusy(true);
+    void setVisibleSkills({ data: { dogId: dog.id, keys: next } })
+      .catch((err: unknown) => {
+        if (request.current !== id) return;
+        keysRef.current = previous;
+        setKeys(previous);
+        toast.error(err instanceof Error ? err.message : "Could not update.");
+      })
+      .finally(() => {
+        if (request.current === id) setBusy(false);
+      });
+  }
+
+  function toggle(key: string) {
+    const current = keysRef.current;
+    save(current.includes(key) ? current.filter((id) => id !== key) : [...current, key]);
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <CardTitle>What they see</CardTitle>
+          {unlocked.length === 0 ? (
+            <span className="text-sm tabular-nums text-muted">{keys.length} on</span>
+          ) : null}
+        </div>
+      </CardHeader>
+      <CardBody className="space-y-5">
+        {unlocked.length > 0 ? (
+          <p className="text-sm leading-relaxed text-muted">
+            {dog.name} chose {unlocked.join(" and ")} on intake, so the portal shows every trick and skill.
+          </p>
+        ) : (
+          <>
+            <p className="text-sm leading-relaxed text-muted">
+              {dog.name} did not choose Obedience or Puppy basics, so the portal only shows what you turn on.
+            </p>
+            <div className="flex gap-4 text-sm">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => save([...TRICKS, ...SKILLS].map((item) => item.key))}
+                className="font-semibold text-accent-deep underline-offset-4 hover:underline disabled:opacity-40"
+              >
+                Turn all on
+              </button>
+              <button
+                type="button"
+                disabled={busy || keys.length === 0}
+                onClick={() => save([])}
+                className="font-semibold text-muted underline-offset-4 hover:text-ink hover:underline disabled:opacity-40"
+              >
+                Turn all off
+              </button>
+            </div>
+            {(["trick", "skill"] as const).map((kind) => {
+              const items = (kind === "trick" ? TRICKS : SKILLS);
+              return (
+                <div key={kind}>
+                  <p className="text-xs font-bold uppercase tracking-wide text-accent-deep">
+                    {kind === "trick" ? "Tricks" : "Skills"}
+                  </p>
+                  <div className="mt-2.5 flex flex-wrap gap-2">
+                    {items.map((item) => {
+                      const on = keys.includes(item.key);
+                      return (
+                        <button
+                          key={item.key}
+                          type="button"
+                          aria-pressed={on}
+                          disabled={busy}
+                          onClick={() => toggle(item.key)}
+                          className={cn("chip-3d rounded-full px-3 py-2 text-sm disabled:opacity-60", on && "is-on")}
+                        >
+                          {item.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        )}
+      </CardBody>
+    </Card>
   );
 }
 

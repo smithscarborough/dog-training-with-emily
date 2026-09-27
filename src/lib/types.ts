@@ -29,6 +29,7 @@ export type DogRow = {
   spayed_neutered: string;
   goals_json: string;
   goals_other: string;
+  visible_skills_json: string;
   dislikes: string;
   past_experiences: string;
   physical_limitations: string;

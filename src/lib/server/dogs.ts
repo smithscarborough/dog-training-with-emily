@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
+import { CATALOG } from "@/lib/catalog";
 import type { DogRow } from "@/lib/types";
 import { assertDogAccess, requireTrainer, stripPrivate } from "./helpers";
 import { seedProgressForDog } from "./progress-seed";
@@ -169,6 +170,22 @@ export const saveTrainerNotes = createServerFn({ method: "POST" })
     const sql = await getSql();
     await sql`update dogs set trainer_private_notes = ${data.notes}, updated_at = now() where id = ${data.dogId}`;
     return { ok: true };
+  });
+
+export const setVisibleSkills = createServerFn({ method: "POST" })
+  .validator((data: { dogId: number; keys: string[] }) => data)
+  .middleware([authMiddleware])
+  .handler(async ({ context, data }) => {
+    await requireTrainer(context.userId);
+    const allowed = new Set(CATALOG.map((item) => item.key));
+    const keys = [...new Set(data.keys.filter((key) => allowed.has(key)))];
+    const sql = await getSql();
+    await sql`
+      update dogs
+      set visible_skills_json = ${JSON.stringify(keys)}, updated_at = now()
+      where id = ${data.dogId}
+    `;
+    return { keys };
   });
 
 export const updateDogPhoto = createServerFn({ method: "POST" })
