@@ -247,7 +247,7 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <Card>
-        <CardHeader>
+        <CardHeader className="items-center text-center">
           <CardTitle>Pending Sessions</CardTitle>
         </CardHeader>
         <CardBody className="space-y-3">
@@ -259,7 +259,7 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
         </CardBody>
       </Card>
       <Card>
-        <CardHeader>
+        <CardHeader className="items-center text-center">
           <CardTitle>Pending Clients</CardTitle>
         </CardHeader>
         <CardBody className="space-y-3">
