@@ -635,6 +635,9 @@ function ClientDetail({
             <Field label="Session credits on account">
               <Input value={credits} onChange={(e) => setCredits(e.target.value)} />
             </Field>
+            <p className="text-xs leading-relaxed text-muted">
+              Set this when a series is purchased. One credit comes off when you mark a session completed. The client can see the count, but cannot change it.
+            </p>
             <Button
               size="sm"
               onClick={() => {
