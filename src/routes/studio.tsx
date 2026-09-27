@@ -339,7 +339,7 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
               <button
                 key={c.id}
                 type="button"
-                className="flex w-full items-start justify-between gap-3 rounded-lg px-3 py-3 text-left hairline transition-colors hover:bg-bg"
+                className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-3 text-left hairline transition-colors hover:bg-bg"
                 onClick={() => onOpen(c.dog_id)}
               >
                 <span>
@@ -658,7 +658,7 @@ function ClientDetail({
             checkins.map((c) => (
               <div
                 key={c.id}
-                className="flex items-start justify-between gap-3 rounded-lg px-3 py-3 hairline"
+                className="flex items-center justify-between gap-3 rounded-lg px-3 py-3 hairline"
               >
                 <div>
                   <p className="text-xs text-muted">{formatWhen(c.updated_at || c.created_at)}</p>
