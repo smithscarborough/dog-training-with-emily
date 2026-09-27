@@ -702,6 +702,22 @@ function SessionsTab({ dog, active }: { dog: DogRow; active: boolean }) {
 }
 
 function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }) {
+  const [removing, setRemoving] = useState(false);
+
+  function removePhoto() {
+    if (removing) return;
+    setRemoving(true);
+    void updateDogPhoto({ data: { dogId: dog.id, photo_url: null } })
+      .then(() => {
+        toast.success("Photo removed.");
+        onRefresh();
+      })
+      .catch((err: unknown) =>
+        toast.error(err instanceof Error ? err.message : "Could not remove photo."),
+      )
+      .finally(() => setRemoving(false));
+  }
+
   return (
     <div className="grid w-full gap-4 lg:grid-cols-2">
       <Card>
@@ -736,7 +752,22 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }) 
           <CardTitle>{dog.name}’s photo</CardTitle>
         </CardHeader>
         <CardBody className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <DogAvatar dog={dog} size="lg" />
+          <div className="relative w-fit">
+            <DogAvatar dog={dog} size="lg" />
+            {dog.photo_url ? (
+              <button
+                type="button"
+                aria-label={`Remove ${dog.name}’s photo`}
+                disabled={removing}
+                onClick={removePhoto}
+                className="absolute -right-1 -top-1 grid size-7 place-items-center rounded-full bg-ink text-bg shadow-sm transition-opacity hover:opacity-80 disabled:opacity-50"
+              >
+                <span className="text-sm leading-none" aria-hidden>
+                  ×
+                </span>
+              </button>
+            ) : null}
+          </div>
           <div className="min-w-0">
             <p className="text-sm text-muted">Optional. A clear face shot works best.</p>
             <label className="relative mt-3 inline-flex cursor-pointer overflow-hidden">
