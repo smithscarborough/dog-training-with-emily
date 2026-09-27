@@ -142,7 +142,7 @@
   );
   transform: translate3d(-220%, 0, 0) skewX(-16deg);
   mix-blend-mode: soft-light;
-  animation: logo-gleam 1.5s cubic-bezier(0.42, 0.08, 0.2, 1) 0.4s 1 both;
+  animation: logo-gleam 1.85s cubic-bezier(0.42, 0.08, 0.2, 1) 0.4s 1 both;
 }
 @keyframes logo-gleam {
   to {
