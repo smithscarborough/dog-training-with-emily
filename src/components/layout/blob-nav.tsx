@@ -101,12 +101,17 @@ export function BlobNav({ links }: { links: NavLink[] }) {
           onMouseEnter={() => setHover(i)}
           onFocus={() => setHover(i)}
           onBlur={() => setHover(null)}
-          className={cn(
-            "relative z-10 px-3.5 py-1.5 text-base font-medium transition-colors duration-200",
-            lit === i ? "text-ink" : "text-ink-soft hover:text-ink",
-          )}
+          className="relative z-10 px-3.5 py-1.5 text-base font-medium"
         >
-          {l.label}
+          <span
+            data-text={l.label}
+            className={cn(
+              "nav-label transition-colors duration-200",
+              hover === i ? "font-bold text-accent-deep" : lit === i ? "text-ink" : "text-ink-soft",
+            )}
+          >
+            {l.label}
+          </span>
         </a>
       ))}
     </nav>
