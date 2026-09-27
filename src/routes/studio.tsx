@@ -151,7 +151,7 @@ function StudioApp({
         </div>
 
         <div className="mt-6">
-          <div className="flex w-full gap-0.5 rounded-full bg-ink p-1 sm:gap-1 sm:p-1.5">
+          <div className="flex w-full max-w-full gap-0.5 rounded-full bg-ink p-1 sm:inline-flex sm:w-auto sm:gap-1 sm:p-1.5">
           {(
             [
               ["board", "Board"],
