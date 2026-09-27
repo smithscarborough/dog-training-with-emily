@@ -315,7 +315,7 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Coming up</CardTitle>
+          <CardTitle>Upcoming Sessions</CardTitle>
         </CardHeader>
         <CardBody className="space-y-3">
           {comingUp.length === 0 ? (
