@@ -380,6 +380,53 @@ function BoardSession({ session, onOpen }: { session: SessionRow; onOpen: (id: n
   );
 }
 
+const RECENT_CLIENTS_KEY = "dtwe-recent-clients";
+
+function readRecentClientIds(): number[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(RECENT_CLIENTS_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((id): id is number => typeof id === "number");
+  } catch {
+    return [];
+  }
+}
+
+function rememberClient(id: number) {
+  const next = [id, ...readRecentClientIds().filter((n) => n !== id)].slice(0, 8);
+  window.localStorage.setItem(RECENT_CLIENTS_KEY, JSON.stringify(next));
+  return next;
+}
+
+function ClientPick({
+  dog,
+  selected,
+  onSelect,
+}: {
+  dog: DogRow;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={cn(
+        "flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left",
+        selected ? "bg-bg hairline" : "hover:bg-bg/70",
+      )}
+    >
+      <DogAvatar dog={dog} size="sm" />
+      <span className="min-w-0">
+        <span className="block truncate font-medium">{dog.name}</span>
+        <span className="block truncate text-xs text-muted">{dog.owner_name}</span>
+      </span>
+    </button>
+  );
+}
+
 function Clients({
   dogs,
   selected,
@@ -393,13 +440,27 @@ function Clients({
 }) {
   const [q, setQ] = useState("");
   const [showNew, setShowNew] = useState(false);
+  const [recentIds, setRecentIds] = useState<number[]>([]);
   const query = q.trim().toLowerCase();
   const filtered = dogs.filter((d) => {
     if (!query) return true;
     const hay = `${d.name} ${d.owner_name} ${d.breed} ${d.owner_email}`.toLowerCase();
     return hay.includes(query);
   });
+  const recent = recentIds
+    .map((id) => dogs.find((d) => d.id === id))
+    .filter((d): d is DogRow => Boolean(d))
+    .slice(0, 5);
   const dog = dogs.find((d) => d.id === selected) ?? null;
+
+  useEffect(() => {
+    setRecentIds(readRecentClientIds());
+  }, []);
+
+  useEffect(() => {
+    if (selected == null) return;
+    setRecentIds(rememberClient(selected));
+  }, [selected]);
   const onboardForm = showNew ? (
     <Card>
       <CardHeader>
@@ -442,9 +503,22 @@ function Clients({
         {dogs.length === 0 ? (
           <p className="mt-3 text-sm text-muted">No clients yet.</p>
         ) : !query ? (
-          <p className="mt-3 text-xs leading-relaxed text-muted lg:hidden">
-            Search by dog or owner. Matches show as you type.
-          </p>
+          recent.length > 0 ? (
+            <div className="mt-3 lg:hidden">
+              <p className="px-2 text-[11px] font-medium uppercase tracking-[0.14em] text-faint">Recent</p>
+              <ul className="mt-1 space-y-1">
+                {recent.map((d) => (
+                  <li key={d.id}>
+                    <ClientPick dog={d} selected={selected === d.id} onSelect={() => setSelected(d.id)} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <p className="mt-3 text-xs leading-relaxed text-muted lg:hidden">
+              Search by dog or owner. Matches show as you type.
+            </p>
+          )
         ) : filtered.length === 0 ? (
           <p className="mt-3 text-sm text-muted">No clients match that.</p>
         ) : (
@@ -461,20 +535,7 @@ function Clients({
         >
           {filtered.map((d) => (
             <li key={d.id}>
-              <button
-                type="button"
-                onClick={() => setSelected(d.id)}
-                className={cn(
-                  "flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left",
-                  selected === d.id ? "bg-bg hairline" : "hover:bg-bg/70",
-                )}
-              >
-                <DogAvatar dog={d} size="sm" />
-                <span className="min-w-0">
-                  <span className="block truncate font-medium">{d.name}</span>
-                  <span className="block truncate text-xs text-muted">{d.owner_name}</span>
-                </span>
-              </button>
+              <ClientPick dog={d} selected={selected === d.id} onSelect={() => setSelected(d.id)} />
             </li>
           ))}
         </ul>
