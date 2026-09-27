@@ -280,9 +280,10 @@ function CheckinCard({ dog }: { dog: DogRow }) {
       </CardHeader>
       <CardBody className="space-y-4">
         <p className="text-sm leading-relaxed text-muted">
-          Use this after you work with your dog at home. Choose how practice
-          went, add a note if you want, and send it. Emily will read this
-          before the next session so she can pick up where you left off.
+          Complete this section after you have performed the recommended homework for {dog.name}.
+        </p>
+        <p className="text-sm leading-relaxed text-muted">
+          Emily will review this information prior to the next session to craft next steps appropriately.
         </p>
         <p className="text-sm font-bold text-ink">Choose one</p>
         <div className="flex flex-wrap gap-2">
@@ -297,7 +298,7 @@ function CheckinCard({ dog }: { dog: DogRow }) {
             </button>
           ))}
         </div>
-        {status ? (
+        {status && checkinById(status).hint ? (
           <p className="text-sm text-muted">{checkinById(status).hint}</p>
         ) : null}
         <Field label="Note for Emily (optional)">

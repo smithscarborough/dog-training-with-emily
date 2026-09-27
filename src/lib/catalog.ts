@@ -149,7 +149,7 @@ export const GOALS = [
 ] as const;
 
 export const CHECKINS = [
-  { id: "practiced", label: "We practiced", hint: "You gave the homework a real try. Emily will plan the next session from here." },
+  { id: "practiced", label: "We practiced", hint: "" },
   { id: "skipped", label: "We skipped", hint: "No judgment. Emily will read this before the next session and plan around it." },
   { id: "stuck", label: "We’re stuck", hint: "You tried, and it isn’t working. A short note helps Emily adjust before she comes back." },
 ] as const;
