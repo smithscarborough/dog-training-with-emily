@@ -94,3 +94,35 @@ export const submitCheckin = createServerFn({ method: "POST" })
     `;
     return inserted[0]!;
   });
+
+const EDIT_WINDOW_MS = 18 * 60 * 60 * 1000;
+
+export const clearCheckin = createServerFn({ method: "POST" })
+  .validator((data: { dogId: number }) => data)
+  .middleware([authMiddleware])
+  .handler(async ({ context, data }) => {
+    const studio = await loadStudio();
+    if (studio.owner_user_id === context.userId) {
+      throw new Error("Check-ins come from the household.");
+    }
+    const dog = await assertDogAccess(context.userId, data.dogId);
+    const sql = await getSql();
+    const recent = await sql<CheckinRow>`
+      select * from checkins
+      where dog_id = ${dog.id} and owner_user_id = ${context.userId}
+      order by created_at desc
+      limit 1
+    `;
+    const last = recent[0];
+    if (!last || Date.now() - new Date(last.created_at).getTime() >= EDIT_WINDOW_MS) {
+      throw new Error("That update can no longer be cleared.");
+    }
+    await sql`delete from checkins where id = ${last.id}`;
+    const next = await sql<CheckinRow>`
+      select * from checkins
+      where dog_id = ${dog.id}
+      order by created_at desc
+      limit 1
+    `;
+    return next[0] ?? null;
+  });

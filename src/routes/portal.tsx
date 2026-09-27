@@ -18,7 +18,7 @@ import { cancelOwnSession, listSessions, requestSession } from "@/lib/server/ses
 import { getProgress } from "@/lib/server/progress";
 import { updateDogPhoto } from "@/lib/server/dogs";
 import { fileToJpegDataUrl } from "@/lib/photo";
-import { listCheckins, submitCheckin } from "@/lib/server/checkins";
+import { listCheckins, submitCheckin, clearCheckin } from "@/lib/server/checkins";
 import type { CheckinRow, DogRow, ProgressLogRow, ProgressRow, SessionRow } from "@/lib/types";
 import { WhenPicker } from "@/components/portal/when-picker";
 import { useMe } from "@/lib/use-me";
@@ -271,6 +271,8 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
       .catch(() => setLatest(null));
   }, [dog.id]);
 
+  const canEdit = !!latest && Date.now() - new Date(latest.created_at).getTime() < 18 * 60 * 60 * 1000;
+
   return (
     <Card className="lg:col-span-2">
       <CardHeader>
@@ -342,8 +344,31 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
                 .finally(() => setBusy(false));
             }}
           >
-            {busy ? "Sending…" : latest && Date.now() - new Date(latest.created_at).getTime() < 18 * 60 * 60 * 1000 ? "Update check-in" : "Send to Emily"}
+            {busy ? "Sending…" : canEdit ? "Update check-in" : "Send to Emily"}
           </Button>
+          {canEdit ? (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => {
+                setBusy(true);
+                void clearCheckin({ data: { dogId: dog.id } })
+                  .then((row) => {
+                    setLatest(row);
+                    setStatus("");
+                    setNote("");
+                    toast.success("Cleared. Emily will not see that update.");
+                  })
+                  .catch((err: unknown) =>
+                    toast.error(err instanceof Error ? err.message : "Could not clear."),
+                  )
+                  .finally(() => setBusy(false));
+              }}
+              className="text-sm font-semibold text-muted underline-offset-4 hover:text-ink hover:underline disabled:opacity-40"
+            >
+              Clear
+            </button>
+          ) : null}
           {latest ? (
             <span className="text-sm text-muted">
               Last:{" "}
