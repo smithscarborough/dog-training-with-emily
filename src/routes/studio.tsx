@@ -339,7 +339,7 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
               <button
                 key={c.id}
                 type="button"
-                className="flex w-full items-start justify-between gap-3 border-b border-line pb-3 text-left last:border-0"
+                className="flex w-full items-start justify-between gap-3 rounded-lg px-3 py-3 text-left hairline transition-colors hover:bg-bg"
                 onClick={() => onOpen(c.dog_id)}
               >
                 <span>
@@ -351,7 +351,7 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
                     <span className="mt-1 block text-sm leading-relaxed">{c.note}</span>
                   ) : null}
                 </span>
-                <Badge tone={checkinTone(c.status)}>{checkinById(c.status).label}</Badge>
+                <Badge tone={checkinTone(c.status)} className="shrink-0">{checkinById(c.status).label}</Badge>
               </button>
             ))
           )}
@@ -365,7 +365,7 @@ function BoardSession({ session, onOpen }: { session: SessionRow; onOpen: (id: n
   return (
     <button
       type="button"
-      className="flex w-full items-start justify-between gap-3 border-b border-line pb-3 text-left last:border-0"
+      className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-3 text-left hairline transition-colors hover:bg-bg"
       onClick={() => onOpen(session.dog_id)}
     >
       <span>
@@ -374,7 +374,7 @@ function BoardSession({ session, onOpen }: { session: SessionRow; onOpen: (id: n
           {sessionTypeById(session.session_type).name} · {formatWhen(session.scheduled_at)}
         </span>
       </span>
-      <Badge tone={statusTone(session.status)}>{session.status}</Badge>
+      <Badge tone={statusTone(session.status)} className="shrink-0">{session.status}</Badge>
     </button>
   );
 }
