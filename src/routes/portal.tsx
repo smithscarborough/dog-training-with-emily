@@ -542,21 +542,29 @@ function SkillGrid({
     const row = byKey[item.key];
     const history = log.filter((l) => l.skill_key === item.key).slice(0, 3);
     return (
-      <div className="mt-3 border-t border-line pt-3">
-        {showSummary ? <p className="text-sm text-muted">{item.summary}</p> : null}
-        {row?.comment ? (
-          <p className={cn("text-sm leading-relaxed", showSummary && "mt-2")}>{row.comment}</p>
-        ) : (
-          <p className={cn("text-sm text-muted", showSummary && "mt-2")}>No session note yet.</p>
-        )}
+      <div className="mt-4 space-y-4 border-t border-line pt-4">
+        {showSummary ? <p className="text-sm leading-relaxed text-muted">{item.summary}</p> : null}
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wide text-accent-deep">Emily's note</p>
+          {row?.comment?.trim() ? (
+            <p className="mt-1.5 whitespace-pre-wrap text-base leading-relaxed text-ink">{row.comment}</p>
+          ) : (
+            <p className="mt-1.5 text-sm leading-relaxed text-muted">No note from Emily yet.</p>
+          )}
+        </div>
         {history.length ? (
-          <ul className="mt-3 space-y-1 text-xs text-muted">
-            {history.map((h) => (
-              <li key={h.id}>
-                Phase {h.rating} · {formatWhen(h.created_at)}
-              </li>
-            ))}
-          </ul>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-accent-deep">Recent scores</p>
+            <ul className="mt-1.5 space-y-1.5">
+              {history.map((h) => (
+                <li key={h.id} className="text-sm leading-relaxed text-muted">
+                  <span className="font-semibold text-ink">{phaseFor(h.rating).label}</span>
+                  {" · "}
+                  {formatWhen(h.created_at)}
+                </li>
+              ))}
+            </ul>
+          </div>
         ) : null}
       </div>
     );
@@ -578,11 +586,8 @@ function SkillGrid({
           isOpen && "ring-2 ring-accent/40",
         )}
       >
-        <div className="flex items-start justify-between gap-2">
-          <p className="font-display text-lg font-semibold tracking-tight text-ink">{item.name}</p>
-          <span className="tabular-nums text-xs text-muted">{rating || "—"}</span>
-        </div>
-        <p className="mt-1 text-xs text-muted">{item.summary}</p>
+        <p className="font-display text-lg font-semibold tracking-tight text-ink">{item.name}</p>
+        <p className="mt-1.5 text-sm leading-relaxed text-muted">{item.summary}</p>
         <div className="mt-3">
           <PhaseMeter rating={rating} compact />
         </div>
