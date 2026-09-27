@@ -313,7 +313,7 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
           )}
         </CardBody>
       </Card>
-      <Card className="lg:col-span-2">
+      <Card>
         <CardHeader>
           <CardTitle>Coming up</CardTitle>
         </CardHeader>
@@ -325,7 +325,7 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
           )}
         </CardBody>
       </Card>
-      <Card className="lg:col-span-2">
+      <Card>
         <CardHeader>
           <CardTitle>Between sessions</CardTitle>
         </CardHeader>
