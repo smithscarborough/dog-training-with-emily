@@ -595,24 +595,26 @@ function ClientDetail({
             <CardTitle>Private notes</CardTitle>
           </CardHeader>
           <CardBody className="space-y-3">
-            <p className="text-xs text-muted">Clients never see this. The saved note stays on this dog.</p>
-            {savedNote.trim() ? (
-              <div className="rounded-lg px-3 py-3 hairline">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Saved</p>
-                <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-ink">{savedNote}</p>
-              </div>
-            ) : (
-              <p className="text-sm text-muted">Nothing saved for this dog yet.</p>
-            )}
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <p className="text-xs text-muted">
+              {notes === savedNote
+                ? "Clients never see this. Click the note to edit."
+                : "Unsaved changes. Clients never see this."}
+            </p>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Click to add a private note."
+              aria-label="Private note"
+            />
             <Button
               size="sm"
+              disabled={notes === savedNote}
               onClick={() => {
                 const next = notes;
                 void saveTrainerNotes({ data: { dogId: dog.id, notes: next } })
                   .then(() => {
                     setSavedNote(next);
-                    toast.success("Notes saved.");
+                    toast.success("Note saved.");
                     onRefresh();
                   })
                   .catch((err: unknown) =>
@@ -620,7 +622,7 @@ function ClientDetail({
                   );
               }}
             >
-              Save notes
+              Save note
             </Button>
           </CardBody>
         </Card>
