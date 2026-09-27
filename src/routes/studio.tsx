@@ -247,25 +247,25 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <Card className="flex h-full flex-col">
+      <Card>
         <CardHeader>
           <CardTitle>Pending Sessions</CardTitle>
         </CardHeader>
-        <CardBody className="flex flex-1 flex-col justify-center gap-3">
+        <CardBody className="space-y-3">
           {toConfirm.length === 0 ? (
-            <p className="text-center text-sm text-muted">No pending sessions.</p>
+            <p className="text-sm text-muted">No pending sessions.</p>
           ) : (
-            toConfirm.map((s) => <BoardSession key={s.id} session={s} onOpen={onOpen} centered />)
+            toConfirm.map((s) => <BoardSession key={s.id} session={s} onOpen={onOpen} />)
           )}
         </CardBody>
       </Card>
-      <Card className="flex h-full flex-col">
+      <Card>
         <CardHeader>
           <CardTitle>Pending Clients</CardTitle>
         </CardHeader>
-        <CardBody className="flex flex-1 flex-col justify-center gap-3">
+        <CardBody className="space-y-3">
           {pending.length === 0 ? (
-            <p className="text-center text-sm text-muted">No pending clients.</p>
+            <p className="text-sm text-muted">No pending clients.</p>
           ) : (
             pending.map((d) => {
               const snap = pendingSnapshot(d);
@@ -273,28 +273,30 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
               <button
                 key={d.id}
                 type="button"
-                className="flex w-full flex-col items-center rounded-lg px-4 py-4 text-center hairline transition-colors hover:bg-bg"
+                className="flex w-full items-start gap-3 rounded-lg px-3 py-3 text-left hairline transition-colors hover:bg-bg"
                 onClick={() => onOpen(d.id)}
               >
                 <DogAvatar dog={d} size="sm" />
-                <span className="mt-2 block font-medium">{d.name}</span>
-                <span className="block text-xs text-muted">{d.owner_name}</span>
-                {snap.facts ? (
-                  <span className="mt-1 block max-w-md text-sm text-ink">{snap.facts}</span>
-                ) : null}
-                <span className="mt-3 w-full max-w-sm border-t border-line pt-2.5">
-                  <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
-                    Main goal
-                  </span>
-                  <span className={cn("mt-1 block text-sm", snap.primary ? "font-medium text-ink" : "text-muted")}>
-                    {snap.primary || "No goal on file"}
-                  </span>
-                  {snap.rest ? (
-                    <span className="mt-1 block text-sm text-muted">Also {snap.rest}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium">{d.name}</span>
+                  <span className="block text-xs text-muted">{d.owner_name}</span>
+                  {snap.facts ? (
+                    <span className="mt-1 block text-sm text-ink">{snap.facts}</span>
                   ) : null}
-                  {snap.note ? (
-                    <span className="mt-1 block text-sm leading-relaxed text-muted">{snap.note}</span>
-                  ) : null}
+                  <span className="mt-3 block border-t border-line pt-2.5">
+                    <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+                      Main goal
+                    </span>
+                    <span className={cn("mt-1 block text-sm", snap.primary ? "font-medium text-ink" : "text-muted")}>
+                      {snap.primary || "No goal on file"}
+                    </span>
+                    {snap.rest ? (
+                      <span className="mt-1 block text-sm text-muted">Also {snap.rest}</span>
+                    ) : null}
+                    {snap.note ? (
+                      <span className="mt-1 block text-sm leading-relaxed text-muted">{snap.note}</span>
+                    ) : null}
+                  </span>
                 </span>
               </button>
               );
@@ -350,22 +352,11 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
   );
 }
 
-function BoardSession({
-  session,
-  onOpen,
-  centered = false,
-}: {
-  session: SessionRow;
-  onOpen: (id: number) => void;
-  centered?: boolean;
-}) {
+function BoardSession({ session, onOpen }: { session: SessionRow; onOpen: (id: number) => void }) {
   return (
     <button
       type="button"
-      className={cn(
-        "flex w-full gap-3 border-b border-line pb-3 last:border-0",
-        centered ? "flex-col items-center text-center" : "items-start justify-between text-left",
-      )}
+      className="flex w-full items-start justify-between gap-3 border-b border-line pb-3 text-left last:border-0"
       onClick={() => onOpen(session.dog_id)}
     >
       <span>
