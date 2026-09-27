@@ -172,6 +172,17 @@ function PortalApp({ dogs, onRefresh }: { dogs: DogRow[]; onRefresh: () => void 
   );
 }
 
+const GOAL_PILL = [
+  "bg-[#43C5B9]",
+  "bg-[#E4B15A]",
+  "bg-[#8FB56B]",
+  "bg-[#E39A86]",
+  "bg-[#A9B8E4]",
+  "bg-[#D9899A]",
+  "bg-[#C4A26A]",
+  "bg-[#7EB8C9]",
+] as const;
+
 function HomeTab({ dog }: { dog: DogRow }) {
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   useEffect(() => {
@@ -225,7 +236,11 @@ function HomeTab({ dog }: { dog: DogRow }) {
         </CardHeader>
         <CardBody>
           <div className="flex flex-wrap gap-2">
-            {goals.length ? goals.map((g) => <Badge key={g}>{g.replace(/-/g, " ")}</Badge>) : <span className="text-sm text-muted">None listed yet.</span>}
+            {goals.length ? goals.map((g, i) => (
+              <Badge key={g} className={cn("px-3 py-1 font-bold text-ink", GOAL_PILL[i % GOAL_PILL.length])}>
+                {g.replace(/-/g, " ")}
+              </Badge>
+            )) : <span className="text-sm text-muted">None listed yet.</span>}
           </div>
           {dog.goals_other ? <p className="mt-3 text-sm text-muted">{dog.goals_other}</p> : null}
         </CardBody>
