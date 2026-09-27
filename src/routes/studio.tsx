@@ -921,7 +921,7 @@ function SkillEditor({
           <p className="font-medium">{name}</p>
           <p className="text-[11px] uppercase tracking-[0.14em] text-faint">{kind}</p>
         </div>
-        <PhaseMeter rating={r} compact />
+        <PhaseMeter rating={r} compact stable className="w-56 shrink-0" />
       </div>
       <div className="mt-3 grid grid-cols-8 gap-1">
         {[0, ...PHASES.map((p) => p.rating)].map((n) => (
@@ -930,8 +930,8 @@ function SkillEditor({
             type="button"
             onClick={() => setR(n)}
             className={cn(
-              "mx-auto size-9 rounded-full text-xs tabular-nums",
-              r === n ? "bg-accent text-accent-fg" : "bg-surface text-muted hairline",
+              "mx-auto inline-flex size-9 shrink-0 items-center justify-center rounded-full border text-xs font-semibold tabular-nums leading-none outline-none focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ink",
+              r === n ? "border-transparent bg-accent text-accent-fg" : "border-line bg-surface text-ink",
             )}
             title={n === 0 ? "Not started" : PHASES[n - 1]?.label}
           >

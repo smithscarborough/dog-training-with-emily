@@ -4,16 +4,20 @@ import { cn } from "@/lib/utils";
 export function PhaseMeter({
   rating,
   compact = false,
+  stable = false,
+  className,
 }: {
   rating: number;
   compact?: boolean;
+  stable?: boolean;
+  className?: string;
 }) {
   const phase = phaseFor(rating);
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-sm font-medium text-ink">{phase.label}</span>
-        <span className="tabular-nums text-xs text-muted">
+    <div className={cn("flex w-full min-w-0 flex-col gap-1.5", className)}>
+      <div className={cn("flex items-start justify-between gap-2", stable && "min-h-10")}>
+        <span className="min-w-0 text-sm font-medium leading-snug text-ink">{phase.label}</span>
+        <span className="shrink-0 pt-0.5 tabular-nums text-xs text-muted">
           {rating > 0 ? `${rating} / 7` : "—"}
         </span>
       </div>
@@ -23,7 +27,7 @@ export function PhaseMeter({
             key={p.rating}
             title={p.label}
             className={cn(
-              "h-1.5 flex-1 rounded-full transition-colors duration-200",
+              "h-1.5 min-w-0 flex-1 rounded-full",
               rating >= p.rating ? "bg-accent" : "bg-surface-2",
             )}
           />
