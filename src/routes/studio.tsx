@@ -137,7 +137,7 @@ function StudioApp({
       <EspressoBanner kicker="Studio">
         Clients, progress, sessions, and inbox — owners never see this side.
       </EspressoBanner>
-      <main className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-6 xl:max-w-[92rem]">
+      <main className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-6 xl:max-w-[84rem]">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-sm text-muted">Trainer studio</p>
@@ -468,7 +468,6 @@ function ClientDetail({
   });
 
   return (
-    <>
     <div className="min-w-0 space-y-6">
       {leading}
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -617,9 +616,7 @@ function ClientDetail({
           )}
         </CardBody>
       </Card>
-    </div>
 
-    <div className="min-w-0 space-y-6 lg:col-span-2">
       <Card>
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -701,7 +698,6 @@ function ClientDetail({
         </CardBody>
       </Card>
     </div>
-    </>
   );
 }
 
