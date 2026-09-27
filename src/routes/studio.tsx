@@ -217,12 +217,11 @@ function pendingSnapshot(dog: DogRow) {
   });
   const facts = [dog.breed, dog.sex, dog.spayed_neutered, dog.age_text, dog.weight_text]
     .map((value) => value.trim())
-    .filter(Boolean)
-    .join(" · ");
+    .filter(Boolean);
   return {
     facts,
     primary: labels[0] ?? "",
-    rest: labels.slice(1).join(", "),
+    rest: labels.slice(1),
     note: dog.goals_other.trim(),
   };
 }
@@ -278,23 +277,33 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
               >
                 <DogAvatar dog={d} size="sm" />
                 <span className="min-w-0 flex-1">
-                  <span className="block font-medium">{d.name}</span>
+                  <span className="block font-semibold text-ink">{d.name}</span>
                   <span className="block text-xs text-muted">{d.owner_name}</span>
-                  {snap.facts ? (
-                    <span className="mt-1 block text-sm text-ink">{snap.facts}</span>
+                  {snap.facts.length ? (
+                    <span className="mt-1.5 block text-sm leading-relaxed text-ink">
+                      {snap.facts.map((fact, index) => (
+                        <span key={`${fact}-${index}`}>
+                          {index > 0 ? <span className="text-faint"> · </span> : null}
+                          <span className="font-medium">{fact}</span>
+                        </span>
+                      ))}
+                    </span>
                   ) : null}
                   <span className="mt-3 block border-t border-line pt-2.5">
                     <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
                       Main goal
                     </span>
-                    <span className={cn("mt-1 block text-sm", snap.primary ? "font-medium text-ink" : "text-muted")}>
+                    <span className={cn("mt-1 block text-base", snap.primary ? "font-semibold text-ink" : "text-sm text-muted")}>
                       {snap.primary || "No goal on file"}
                     </span>
-                    {snap.rest ? (
-                      <span className="mt-1 block text-sm text-muted">Also {snap.rest}</span>
+                    {snap.rest.length ? (
+                      <span className="mt-1 block text-sm text-muted">
+                        Also{" "}
+                        <span className="font-medium text-ink">{snap.rest.join(", ")}</span>
+                      </span>
                     ) : null}
                     {snap.note ? (
-                      <span className="mt-1 block text-sm leading-relaxed text-muted">{snap.note}</span>
+                      <span className="mt-1.5 block text-sm leading-relaxed text-ink">{snap.note}</span>
                     ) : null}
                   </span>
                 </span>
