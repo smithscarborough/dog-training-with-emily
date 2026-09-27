@@ -1313,7 +1313,10 @@ function ApptChip({ session, align }: { session: SessionRow; align: "start" | "e
           align === "end" ? "right-0" : "left-0",
         )}
       >
-        <span className="block truncate text-sm font-semibold text-bg">{session.dog_name}</span>
+        <span className="block truncate text-sm font-semibold text-bg">
+          {session.dog_name}{" "}
+          <span className="font-medium capitalize text-bg/80">({session.status})</span>
+        </span>
         <span className="mt-1 block text-sm font-medium text-accent-soft">
           {chicagoTime(session.scheduled_at)} · {sessionTypeById(session.session_type).name}
         </span>
