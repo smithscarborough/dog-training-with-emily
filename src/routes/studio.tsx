@@ -490,6 +490,7 @@ function ClientDetail({
   leading?: ReactNode;
 }) {
   const [notes, setNotes] = useState(dog.trainer_private_notes);
+  const [savedNote, setSavedNote] = useState(dog.trainer_private_notes);
   const [credits, setCredits] = useState(String(dog.credits));
   const [current, setCurrent] = useState<ProgressRow[]>([]);
   const [filter, setFilter] = useState<"working" | "all">("working");
@@ -503,6 +504,7 @@ function ClientDetail({
 
   useEffect(() => {
     setNotes(dog.trainer_private_notes);
+    setSavedNote(dog.trainer_private_notes);
     setCredits(String(dog.credits));
     void getProgress({ data: { dogId: dog.id } })
       .then((r) => setCurrent(r.current))
@@ -593,13 +595,26 @@ function ClientDetail({
             <CardTitle>Private notes</CardTitle>
           </CardHeader>
           <CardBody className="space-y-3">
-            <p className="text-xs text-muted">Clients never see this field.</p>
+            <p className="text-xs text-muted">Clients never see this. The saved note stays on this dog.</p>
+            {savedNote.trim() ? (
+              <div className="rounded-lg px-3 py-3 hairline">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Saved</p>
+                <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-ink">{savedNote}</p>
+              </div>
+            ) : (
+              <p className="text-sm text-muted">Nothing saved for this dog yet.</p>
+            )}
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
             <Button
               size="sm"
               onClick={() => {
-                void saveTrainerNotes({ data: { dogId: dog.id, notes } })
-                  .then(() => toast.success("Notes saved."))
+                const next = notes;
+                void saveTrainerNotes({ data: { dogId: dog.id, notes: next } })
+                  .then(() => {
+                    setSavedNote(next);
+                    toast.success("Notes saved.");
+                    onRefresh();
+                  })
                   .catch((err: unknown) =>
                     toast.error(err instanceof Error ? err.message : "Could not save."),
                   );
