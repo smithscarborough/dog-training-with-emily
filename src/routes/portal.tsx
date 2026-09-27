@@ -189,7 +189,7 @@ function HomeTab({ dog }: { dog: DogRow }) {
 
   return (
     <div className="grid w-full gap-4 lg:grid-cols-2">
-      <CheckinCard dog={dog} />
+      <CheckinCard dog={dog} lastDone={lastDone ?? null} />
       <Card>
         <CardHeader>
           <CardTitle>Next on the calendar</CardTitle>
@@ -221,24 +221,6 @@ function HomeTab({ dog }: { dog: DogRow }) {
       </Card>
       <Card className="lg:col-span-2">
         <CardHeader>
-          <CardTitle>Latest homework</CardTitle>
-        </CardHeader>
-        <CardBody>
-          {lastDone?.homework ? (
-            <div className="space-y-2">
-              <p className="text-xs text-muted">{formatWhen(lastDone.scheduled_at)}</p>
-              <p className="whitespace-pre-wrap text-sm leading-relaxed">{lastDone.homework}</p>
-              {lastDone.recap ? (
-                <p className="whitespace-pre-wrap border-t border-line pt-3 text-sm text-muted">{lastDone.recap}</p>
-              ) : null}
-            </div>
-          ) : (
-            <p className="text-sm text-muted">Homework appears here after a session is wrapped.</p>
-          )}
-        </CardBody>
-      </Card>
-      <Card className="lg:col-span-2">
-        <CardHeader>
           <CardTitle>Goals on file</CardTitle>
         </CardHeader>
         <CardBody>
@@ -252,7 +234,7 @@ function HomeTab({ dog }: { dog: DogRow }) {
   );
 }
 
-function CheckinCard({ dog }: { dog: DogRow }) {
+function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | null }) {
   const [status, setStatus] = useState<(typeof CHECKINS)[number]["id"] | "">("");
   const [note, setNote] = useState("");
   const [latest, setLatest] = useState<CheckinRow | null>(null);
@@ -277,9 +259,27 @@ function CheckinCard({ dog }: { dog: DogRow }) {
   return (
     <Card className="lg:col-span-2">
       <CardHeader>
-        <CardTitle>How did homework go?</CardTitle>
+        <CardTitle>Homework</CardTitle>
       </CardHeader>
-      <CardBody className="space-y-4">
+      <CardBody className="space-y-5">
+        <div className="rounded-lg bg-pearl px-3.5 py-3.5">
+          {lastDone?.homework ? (
+            <>
+              <p className="text-xs font-bold uppercase tracking-wide text-accent-deep">Latest homework</p>
+              <p className="mt-1 text-xs text-muted">{formatWhen(lastDone.scheduled_at)}</p>
+              <p className="mt-2 whitespace-pre-wrap text-base leading-relaxed text-ink">{lastDone.homework}</p>
+              {lastDone.recap ? (
+                <p className="mt-3 whitespace-pre-wrap border-t border-line pt-3 text-sm leading-relaxed text-muted">
+                  {lastDone.recap}
+                </p>
+              ) : null}
+            </>
+          ) : (
+            <p className="text-sm leading-relaxed text-muted">Homework appears here after a session is wrapped.</p>
+          )}
+        </div>
+        <div className="space-y-4 border-t border-line pt-5">
+        <p className="font-display text-xl tracking-tight text-ink">How did homework go?</p>
         <p className="text-sm leading-relaxed text-muted">
           Complete this section after you and {dog.name} have completed the recommended homework.
         </p>
@@ -335,6 +335,7 @@ function CheckinCard({ dog }: { dog: DogRow }) {
               <span className="ml-2">{formatWhen(latest.updated_at || latest.created_at)}</span>
             </span>
           ) : null}
+        </div>
         </div>
       </CardBody>
     </Card>
