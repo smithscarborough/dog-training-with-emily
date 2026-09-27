@@ -554,7 +554,7 @@ function SkillGrid({
         </div>
         {history.length ? (
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-accent-deep">Recent scores</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-accent-deep">When Emily scored this</p>
             <ul className="mt-1.5 space-y-1.5">
               {history.map((h) => (
                 <li key={h.id} className="text-sm leading-relaxed text-muted">
