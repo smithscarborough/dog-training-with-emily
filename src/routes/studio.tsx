@@ -1299,15 +1299,35 @@ function monthCells(year: number, month: number) {
 
 function Inbox() {
   const [rows, setRows] = useState<InquiryRow[]>([]);
+  const [q, setQ] = useState("");
   useEffect(() => {
     void listInquiries()
       .then(setRows)
       .catch(() => setRows([]));
   }, []);
-  if (!rows.length) return <p className="text-sm text-muted">No inquiries yet.</p>;
+  const filtered = useMemo(() => {
+    const query = q.trim().toLowerCase();
+    const digits = phoneDigits(q);
+    if (!query) return rows;
+    return rows.filter((row) => {
+      const text = [row.name, row.dog_name, row.email, row.message].join(" ").toLowerCase();
+      if (text.includes(query)) return true;
+      return digits.length >= 3 && phoneDigits(row.phone).includes(digits);
+    });
+  }, [rows, q]);
   return (
     <div className="space-y-3">
-      {rows.map((r) => (
+      <Input
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="Search name, dog, phone, or email"
+      />
+      {!rows.length ? (
+        <p className="text-sm text-muted">No inquiries yet.</p>
+      ) : !filtered.length ? (
+        <p className="text-sm text-muted">Nothing matches that search.</p>
+      ) : (
+        filtered.map((r) => (
         <Card key={r.id}>
           <CardBody>
             <p>
@@ -1333,7 +1353,8 @@ function Inbox() {
             ) : null}
           </CardBody>
         </Card>
-      ))}
+        ))
+      )}
     </div>
   );
 }
