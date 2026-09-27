@@ -665,7 +665,7 @@ function ClientDetail({
         </Card>
       </div>
 
-      <Card>
+      <Card className="max-w-2xl">
         <CardHeader>
           <CardTitle>Between sessions</CardTitle>
         </CardHeader>
@@ -676,9 +676,9 @@ function ClientDetail({
             checkins.map((c) => (
               <div
                 key={c.id}
-                className="flex items-center justify-between gap-3 rounded-lg px-3 py-3 hairline"
+                className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg px-3 py-3 hairline"
               >
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs text-muted">{formatWhen(c.updated_at || c.created_at)}</p>
                   {c.note ? (
                     <p className="mt-1 text-sm leading-relaxed">{c.note}</p>
