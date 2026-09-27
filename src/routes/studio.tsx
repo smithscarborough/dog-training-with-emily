@@ -14,7 +14,7 @@ import { WhenPicker } from "@/components/portal/when-picker";
 import { Input, Textarea } from "@/components/ui/input";
 import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
-import { PHASES, SESSION_TYPES, SKILLS, TRICKS, checkinById, dollars, sessionTypeById } from "@/lib/catalog";
+import { PHASES, SESSION_TYPES, SKILLS, TRICKS, GOALS, checkinById, dollars, sessionTypeById } from "@/lib/catalog";
 import { formatWhen, statusTone, checkinTone } from "@/lib/format";
 import { formatUsPhone, phoneDigits } from "@/lib/phone";
 import {
@@ -198,6 +198,35 @@ function StudioApp({
   );
 }
 
+function pendingSnapshot(dog: DogRow) {
+  let ids: string[] = [];
+  try {
+    const parsed = JSON.parse(dog.goals_json || "[]");
+    if (Array.isArray(parsed)) {
+      ids = parsed.filter((id): id is string => typeof id === "string" && id.trim().length > 0);
+    }
+  } catch {
+    ids = [];
+  }
+  const labels = ids.map((id) => {
+    const known = GOALS.find((goal) => goal.id === id);
+    if (known) return known.label;
+    return id
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  });
+  const facts = [dog.breed, dog.sex, dog.spayed_neutered, dog.age_text, dog.weight_text]
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .join(" · ");
+  return {
+    facts,
+    primary: labels[0] ?? "",
+    rest: labels.slice(1).join(", "),
+    note: dog.goals_other.trim(),
+  };
+}
+
 function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void }) {
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [checkins, setCheckins] = useState<CheckinRow[]>([]);
@@ -238,20 +267,40 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
           {pending.length === 0 ? (
             <p className="text-sm text-muted">No pending clients.</p>
           ) : (
-            pending.map((d) => (
+            pending.map((d) => {
+              const snap = pendingSnapshot(d);
+              return (
               <button
                 key={d.id}
                 type="button"
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left hairline transition-colors hover:bg-bg"
+                className="flex w-full items-start gap-3 rounded-lg px-3 py-3 text-left hairline transition-colors hover:bg-bg"
                 onClick={() => onOpen(d.id)}
               >
                 <DogAvatar dog={d} size="sm" />
-                <span>
+                <span className="min-w-0 flex-1">
                   <span className="block font-medium">{d.name}</span>
-                  <span className="text-xs text-muted">{d.owner_name}</span>
+                  <span className="block text-xs text-muted">{d.owner_name}</span>
+                  {snap.facts ? (
+                    <span className="mt-1 block text-sm text-ink">{snap.facts}</span>
+                  ) : null}
+                  <span className="mt-3 block border-t border-line pt-2.5">
+                    <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+                      Main goal
+                    </span>
+                    <span className={cn("mt-1 block text-sm", snap.primary ? "font-medium text-ink" : "text-muted")}>
+                      {snap.primary || "No goal on file"}
+                    </span>
+                    {snap.rest ? (
+                      <span className="mt-1 block text-sm text-muted">Also {snap.rest}</span>
+                    ) : null}
+                    {snap.note ? (
+                      <span className="mt-1 block text-sm leading-relaxed text-muted">{snap.note}</span>
+                    ) : null}
+                  </span>
                 </span>
               </button>
-            ))
+              );
+            })
           )}
         </CardBody>
       </Card>
