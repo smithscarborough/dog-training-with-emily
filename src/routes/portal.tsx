@@ -543,7 +543,12 @@ function SkillGrid({
     const history = log.filter((l) => l.skill_key === item.key).slice(0, 3);
     return (
       <div className="mt-4 space-y-4 border-t border-line pt-4">
-        {showSummary ? <p className="text-sm leading-relaxed text-muted">{item.summary}</p> : null}
+        {showSummary ? (
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-accent-deep">About this</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted">{item.summary}</p>
+          </div>
+        ) : null}
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-accent-deep">Emily's note</p>
           {row?.comment?.trim() ? (
@@ -602,26 +607,31 @@ function SkillGrid({
       {items.length === 0 ? (
         <p className="mt-3 text-sm text-muted">Nothing in this view.</p>
       ) : mobile ? (
-        <ul className="mt-4 divide-y divide-line overflow-hidden rounded-xl bg-pearl hairline">
+        <ul className="mt-4 flex flex-col gap-2.5">
           {items.map((item) => {
             const row = byKey[item.key];
             const rating = row?.rating ?? 0;
             const isOpen = open === item.key;
             const quiet = quietIdle && rating === 0 && !isOpen;
             return (
-              <li key={item.key} className={cn(quiet && "skill-card-idle")}>
+              <li key={item.key}>
                 <button
                   type="button"
                   onClick={() => setOpen(isOpen ? null : item.key)}
-                  className="w-full px-4 py-3 text-left"
+                  className={cn(
+                    "w-full rounded-xl bg-pearl px-4 py-3.5 text-left hairline transition-[box-shadow,opacity,transform] duration-150",
+                    quiet && "skill-card-idle",
+                    isOpen
+                      ? "ring-2 ring-accent shadow-[0_12px_28px_-16px_rgba(44,24,16,0.5)]"
+                      : open
+                        ? "opacity-55"
+                        : null,
+                  )}
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="font-display text-base font-semibold text-ink">{item.name}</span>
-                    <span className="shrink-0 text-xs tabular-nums text-muted">
-                      {rating > 0 ? `${rating}/7` : "—"}
-                    </span>
+                  <p className="font-display text-lg font-semibold tracking-tight text-ink">{item.name}</p>
+                  <div className="mt-2.5">
+                    <PhaseMeter rating={rating} compact />
                   </div>
-                  <p className="mt-0.5 text-xs text-muted">{phaseFor(rating).label}</p>
                   {isOpen ? details(item, true) : null}
                 </button>
               </li>
