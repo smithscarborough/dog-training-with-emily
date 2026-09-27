@@ -254,6 +254,7 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
   const [note, setNote] = useState("");
   const [latest, setLatest] = useState<CheckinRow | null>(null);
   const [busy, setBusy] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
 
   useEffect(() => {
     void listCheckins({ data: { dogId: dog.id, limit: 1 } })
@@ -310,7 +311,10 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
             <button
               key={c.id}
               type="button"
-              onClick={() => setStatus(c.id)}
+              onClick={() => {
+                setStatus(c.id);
+                setConfirmClear(false);
+              }}
               className={cn("chip-3d rounded-full px-3 py-2 text-sm", status === c.id && "is-on")}
             >
               {c.label}
@@ -323,7 +327,10 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
         <Field label="Note for Emily (optional)">
           <Textarea
             value={note}
-            onChange={(e) => setNote(e.target.value)}
+            onChange={(e) => {
+              setNote(e.target.value);
+              setConfirmClear(false);
+            }}
             placeholder="What you tried, what went well, or where it fell apart…"
           />
         </Field>
@@ -336,6 +343,7 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
               void submitCheckin({ data: { dogId: dog.id, status, note } })
                 .then((row) => {
                   setLatest(row);
+                  setConfirmClear(false);
                   toast.success("Sent. Emily will see this before the next session.");
                 })
                 .catch((err: unknown) =>
@@ -346,29 +354,6 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
           >
             {busy ? "Sending…" : canEdit ? "Update check-in" : "Send to Emily"}
           </Button>
-          {canEdit ? (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => {
-                setBusy(true);
-                void clearCheckin({ data: { dogId: dog.id } })
-                  .then((row) => {
-                    setLatest(row);
-                    setStatus("");
-                    setNote("");
-                    toast.success("Cleared. Emily will not see that update.");
-                  })
-                  .catch((err: unknown) =>
-                    toast.error(err instanceof Error ? err.message : "Could not clear."),
-                  )
-                  .finally(() => setBusy(false));
-              }}
-              className="text-sm font-semibold text-muted underline-offset-4 hover:text-ink hover:underline disabled:opacity-40"
-            >
-              Clear
-            </button>
-          ) : null}
           {latest ? (
             <span className="text-sm text-muted">
               Last:{" "}
@@ -377,6 +362,52 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
             </span>
           ) : null}
         </div>
+        {canEdit ? (
+          confirmClear ? (
+            <p className="text-xs text-muted">
+              Clear this update?{" "}
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  setBusy(true);
+                  void clearCheckin({ data: { dogId: dog.id } })
+                    .then((row) => {
+                      setLatest(row);
+                      setStatus("");
+                      setNote("");
+                      setConfirmClear(false);
+                      toast.success("Cleared. Emily will not see that update.");
+                    })
+                    .catch((err: unknown) =>
+                      toast.error(err instanceof Error ? err.message : "Could not clear."),
+                    )
+                    .finally(() => setBusy(false));
+                }}
+                className="font-semibold text-ink underline decoration-ink/40 underline-offset-2 hover:decoration-ink disabled:opacity-40"
+              >
+                Yes, clear it
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setConfirmClear(false)}
+                className="ml-3 text-faint hover:text-ink disabled:opacity-40"
+              >
+                Keep it
+              </button>
+            </p>
+          ) : (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => setConfirmClear(true)}
+              className="text-xs font-medium text-faint underline-offset-4 hover:text-muted hover:underline disabled:opacity-40"
+            >
+              Clear update
+            </button>
+          )
+        ) : null}
         </div>
       </CardBody>
     </Card>
