@@ -108,7 +108,7 @@ function PortalApp({ dogs, onRefresh }: { dogs: DogRow[]; onRefresh: () => void 
       <EspressoBanner kicker="Portal">
         Homework, a between-session check-in, and the 1–7 progress for your dog.
       </EspressoBanner>
-      <main className="portal-type mx-auto max-w-5xl px-5 py-8 sm:px-6">
+      <main className="portal-type mx-auto w-full max-w-5xl px-5 py-8 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <DogAvatar dog={dog} />
@@ -134,15 +134,15 @@ function PortalApp({ dogs, onRefresh }: { dogs: DogRow[]; onRefresh: () => void 
           ) : null}
         </div>
 
-        <div className="mt-6 overflow-x-auto">
-          <div className="portal-tabs inline-flex min-w-full gap-1 rounded-full bg-ink p-1.5">
+        <div className="mt-6 w-full">
+          <div className="portal-tabs flex w-full gap-1 rounded-full bg-ink p-1.5">
           {tabs.map((t) => (
             <button
               key={t.id}
               type="button"
               onClick={() => setTab(t.id)}
               className={cn(
-                "h-11 flex-1 shrink-0 rounded-full px-5 text-base font-medium transition-colors duration-150",
+                "h-11 min-w-0 flex-1 rounded-full px-5 text-base font-medium transition-colors duration-150",
                 tab === t.id ? "bg-white text-ink" : "text-bg/80 hover:text-bg",
               )}
             >
@@ -188,7 +188,7 @@ function HomeTab({ dog }: { dog: DogRow }) {
   })();
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className="grid w-full gap-4 lg:grid-cols-2">
       <CheckinCard dog={dog} />
       <Card>
         <CardHeader>
@@ -703,7 +703,7 @@ function SessionsTab({ dog, active }: { dog: DogRow; active: boolean }) {
 
 function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }) {
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className="grid w-full gap-4 lg:grid-cols-2">
       <Card>
         <CardHeader>
           <CardTitle>Household</CardTitle>
