@@ -424,7 +424,7 @@ function Clients({
 
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-      <div>
+      <Card className="p-3">
         <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search dogs or owners" />
         <Button variant="outline" className="mt-3 w-full" onClick={() => setShowNew((v) => !v)}>
           {showNew ? "Close form" : "Onboard a client"}
@@ -437,7 +437,7 @@ function Clients({
                 onClick={() => setSelected(d.id)}
                 className={cn(
                   "flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left",
-                  selected === d.id ? "bg-surface hairline" : "hover:bg-surface-2",
+                  selected === d.id ? "bg-bg hairline" : "hover:bg-bg/70",
                 )}
               >
                 <DogAvatar dog={d} size="sm" />
@@ -449,7 +449,7 @@ function Clients({
             </li>
           ))}
         </ul>
-      </div>
+      </Card>
       {dog ? (
         <ClientDetail dog={dog} onRefresh={onRefresh} leading={onboardForm} />
       ) : (
