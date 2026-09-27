@@ -177,6 +177,10 @@ export const updateDogPhoto = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const dog = await assertDogAccess(context.userId, data.dogId);
     const sql = await getSql();
-    await sql`update dogs set photo_url = ${data.photo_url}, updated_at = now() where id = ${dog.id}`;
+    const photo = data.photo_url?.trim() ? data.photo_url.trim() : null;
+    if (photo && (!photo.startsWith("data:image/jpeg;base64,") || photo.length > 1_500_000)) {
+      throw new Error("That photo couldn’t be saved. Try a JPG or PNG.");
+    }
+    await sql`update dogs set photo_url = ${photo}, updated_at = now() where id = ${dog.id}`;
     return { ok: true };
   });

@@ -17,6 +17,7 @@ import { formatWhen, statusTone, checkinTone } from "@/lib/format";
 import { cancelOwnSession, listSessions, requestSession } from "@/lib/server/sessions";
 import { getProgress } from "@/lib/server/progress";
 import { updateDogPhoto } from "@/lib/server/dogs";
+import { fileToJpegDataUrl } from "@/lib/photo";
 import { listCheckins, submitCheckin } from "@/lib/server/checkins";
 import type { CheckinRow, DogRow, ProgressLogRow, ProgressRow, SessionRow } from "@/lib/types";
 import { WhenPicker } from "@/components/portal/when-picker";
@@ -750,19 +751,15 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }) 
                   const file = e.target.files?.[0];
                   e.target.value = "";
                   if (!file) return;
-                  const reader = new FileReader();
-                  reader.onload = () => {
-                    const result = typeof reader.result === "string" ? reader.result : null;
-                    void updateDogPhoto({ data: { dogId: dog.id, photo_url: result } })
-                      .then(() => {
-                        toast.success("Photo saved.");
-                        onRefresh();
-                      })
-                      .catch((err: unknown) =>
-                        toast.error(err instanceof Error ? err.message : "Could not save photo."),
-                      );
-                  };
-                  reader.readAsDataURL(file);
+                  void fileToJpegDataUrl(file)
+                    .then((photo_url) => updateDogPhoto({ data: { dogId: dog.id, photo_url } }))
+                    .then(() => {
+                      toast.success("Photo saved.");
+                      onRefresh();
+                    })
+                    .catch((err: unknown) =>
+                      toast.error(err instanceof Error ? err.message : "Could not save photo."),
+                    );
                 }}
               />
             </label>
