@@ -115,6 +115,47 @@
   box-shadow: var(--shadow-border);
 }
 
+.logo-shine {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  line-height: 0;
+  overflow: hidden;
+  vertical-align: middle;
+}
+.logo-shine::after {
+  content: "";
+  position: absolute;
+  top: -15%;
+  bottom: -15%;
+  left: 0;
+  width: 38%;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0) 28%,
+    rgba(255, 255, 255, 0.22) 44%,
+    rgba(255, 255, 255, 0.78) 50%,
+    rgba(255, 255, 255, 0.2) 56%,
+    transparent 74%
+  );
+  transform: translate3d(-220%, 0, 0) skewX(-16deg);
+  mix-blend-mode: soft-light;
+  animation: logo-gleam 1.05s cubic-bezier(0.4, 0, 0.15, 1) 0.45s 1 both;
+}
+@keyframes logo-gleam {
+  to {
+    transform: translate3d(380%, 0, 0) skewX(-16deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-shine::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
 .portal-tabs {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.14),

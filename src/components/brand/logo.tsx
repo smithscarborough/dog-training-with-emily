@@ -4,13 +4,15 @@ export function Wordmark({
   className,
   invert = false,
   signedIn = false,
+  gleam = false,
 }: {
   className?: string;
   compact?: boolean;
   invert?: boolean;
   signedIn?: boolean;
+  gleam?: boolean;
 }) {
-  return (
+  const img = (
     <img
       src={invert ? "/images/logo-on-dark.jpg?v=12" : "/images/logo.png?v=12"}
       alt="Dog Training with Emily — Houston, Texas"
@@ -24,4 +26,6 @@ export function Wordmark({
       )}
     />
   );
+  if (!gleam) return img;
+  return <span className="logo-shine">{img}</span>;
 }

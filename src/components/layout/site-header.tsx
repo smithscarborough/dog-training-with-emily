@@ -58,7 +58,7 @@ export function SiteHeader(_props?: { solid?: boolean }) {
             scrollHome();
           }}
         >
-          <Wordmark signedIn={Boolean(user)} />
+          <Wordmark signedIn={Boolean(user)} gleam />
         </Link>
         <BlobNav links={LINKS} />
         <div className="relative z-20 flex items-center gap-2">
