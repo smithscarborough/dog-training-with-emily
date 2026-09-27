@@ -242,7 +242,7 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
               <button
                 key={d.id}
                 type="button"
-                className="flex w-full items-center gap-3 text-left"
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left hairline transition-colors hover:bg-bg"
                 onClick={() => onOpen(d.id)}
               >
                 <DogAvatar dog={d} size="sm" />
