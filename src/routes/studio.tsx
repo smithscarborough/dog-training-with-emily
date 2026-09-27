@@ -150,8 +150,8 @@ function StudioApp({
           </div>
         </div>
 
-        <div className="mt-6 overflow-x-auto">
-          <div className="inline-flex min-w-full gap-1 rounded-full bg-ink p-1.5">
+        <div className="mt-6">
+          <div className="flex w-full gap-0.5 rounded-full bg-ink p-1 sm:gap-1 sm:p-1.5">
           {(
             [
               ["board", "Board"],
@@ -166,7 +166,7 @@ function StudioApp({
               type="button"
               onClick={() => setTab(id)}
               className={cn(
-                "h-10 shrink-0 rounded-full px-5 text-sm font-medium transition-colors duration-150",
+                "h-10 min-w-0 flex-1 rounded-full px-1 text-[11px] font-medium whitespace-nowrap transition-colors duration-150 sm:flex-none sm:shrink-0 sm:px-5 sm:text-sm",
                 tab === id ? "bg-white text-ink" : "text-bg/80 hover:text-bg",
               )}
             >
