@@ -1321,6 +1321,7 @@ function Inbox() {
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="Search name, dog, phone, or email"
+        className="max-w-md"
       />
       {!rows.length ? (
         <p className="text-sm text-muted">No inquiries yet.</p>
