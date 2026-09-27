@@ -9,8 +9,8 @@
   --color-header: #f8f5ee;
   --color-ink: #24140e;
   --color-ink-soft: #2c1810;
-  --color-muted: #2c1810;
-  --color-faint: #4a3428;
+  --color-muted: #5a453c;
+  --color-faint: #6e574c;
   --color-line: color-mix(in oklab, #24140e 16%, transparent);
   --color-line-strong: color-mix(in oklab, #24140e 28%, transparent);
   --color-accent: #43c5b9;
