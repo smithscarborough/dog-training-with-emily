@@ -739,14 +739,14 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }) 
           <DogAvatar dog={dog} size="lg" />
           <div className="min-w-0">
             <p className="text-sm text-muted">Optional. A clear face shot works best.</p>
-            <label className="mt-3 inline-flex cursor-pointer">
+            <label className="relative mt-3 inline-flex cursor-pointer overflow-hidden">
               <span className="book-cta inline-flex h-11 items-center justify-center rounded-md px-5 text-sm font-medium">
                 {dog.photo_url ? "Replace photo" : "Upload a photo"}
               </span>
               <input
                 type="file"
-                accept="image/*"
-                className="sr-only"
+                accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"
+                className="absolute inset-0 size-full cursor-pointer opacity-0"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   e.target.value = "";
