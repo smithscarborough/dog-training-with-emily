@@ -280,10 +280,10 @@ function CheckinCard({ dog }: { dog: DogRow }) {
       </CardHeader>
       <CardBody className="space-y-4">
         <p className="text-sm leading-relaxed text-muted">
-          Complete this section after you have performed the recommended homework for {dog.name}.
+          Complete this section after you and {dog.name} have completed the recommended homework.
         </p>
         <p className="text-sm leading-relaxed text-muted">
-          Emily will review this information prior to the next session to craft next steps appropriately.
+          Emily will review prior to the next session to adapt training as needed.
         </p>
         <p className="text-sm font-bold text-ink">Choose one</p>
         <div className="flex flex-wrap gap-2">
