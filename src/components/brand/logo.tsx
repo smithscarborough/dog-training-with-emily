@@ -3,10 +3,12 @@ import { cn } from "@/lib/utils";
 export function Wordmark({
   className,
   invert = false,
+  signedIn = false,
 }: {
   className?: string;
   compact?: boolean;
   invert?: boolean;
+  signedIn?: boolean;
 }) {
   return (
     <img
@@ -15,7 +17,9 @@ export function Wordmark({
       className={cn(
         invert
           ? "frame-none h-20 w-auto max-w-none rounded-md object-contain sm:h-24 lg:h-28"
-          : "frame-none h-[7.5rem] w-auto max-w-[calc(100vw-10.75rem)] object-contain sm:h-24 sm:max-w-[26rem] lg:h-36 lg:max-w-none",
+          : signedIn
+            ? "frame-none h-[7.5rem] w-auto max-w-[calc(100vw-7.5rem)] object-contain sm:h-24 sm:max-w-[26rem] lg:h-36 lg:max-w-none"
+            : "frame-none h-[7.5rem] w-auto max-w-[calc(100vw-10.75rem)] object-contain sm:h-24 sm:max-w-[26rem] lg:h-36 lg:max-w-none",
         className,
       )}
     />

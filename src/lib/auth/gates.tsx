@@ -88,7 +88,15 @@ export function SignInButtons() {
  * gate-materialized — behind the gate the next request signs the viewer
  * straight back in, so a sign-out control there is a broken loop.
  */
-export function UserButton({ nameTo }: { nameTo?: "/portal" | "/studio" }) {
+export function UserButton({
+  nameTo,
+  variant = "bar",
+  onNavigate,
+}: {
+  nameTo?: "/portal" | "/studio";
+  variant?: "bar" | "menu";
+  onNavigate?: () => void;
+}) {
   const user = useCurrentUser();
   const navigate = useNavigate();
   // Sign-out can take a moment (and can fail when deployed), so the control
@@ -101,16 +109,50 @@ export function UserButton({ nameTo }: { nameTo?: "/portal" | "/studio" }) {
   );
   if (!user) return null;
   const label = user.displayName ?? user.primaryEmail ?? "Account";
+  const openAccount = (e: { preventDefault: () => void }) => {
+    if (!nameTo) return;
+    e.preventDefault();
+    onNavigate?.();
+    pauseHomePin();
+    void navigate({ to: nameTo });
+  };
+  if (variant === "menu") {
+    return (
+      <div className="flex flex-col text-center">
+        {nameTo ? (
+          <Link
+            to={nameTo}
+            onClick={openAccount}
+            className="rounded-md px-3 py-3.5 text-base font-bold text-accent hover:bg-surface-2"
+          >
+            {label}
+          </Link>
+        ) : (
+          <span className="px-3 py-3.5 text-base font-bold text-accent">{label}</span>
+        )}
+        {authEnabled && !gateSession && (
+          <button
+            type="button"
+            disabled={signingOut}
+            onClick={() => {
+              setSigningOut(true);
+              onNavigate?.();
+              void signOut().catch(() => setSigningOut(false));
+            }}
+            className="rounded-md px-3 py-3.5 text-base text-ink hover:bg-surface-2 disabled:cursor-wait"
+          >
+            {signingOut ? "Signing out…" : "Sign out"}
+          </button>
+        )}
+      </div>
+    );
+  }
   return (
     <div className="flex items-center gap-2">
       {nameTo ? (
         <Link
           to={nameTo}
-          onClick={(e) => {
-            e.preventDefault();
-            pauseHomePin();
-            void navigate({ to: nameTo });
-          }}
+          onClick={openAccount}
           className="text-base font-bold text-accent hover:text-accent-deep"
         >
           {label}

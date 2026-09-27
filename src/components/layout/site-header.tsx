@@ -17,7 +17,7 @@ const LINKS = [
 export function SiteHeader(_props?: { solid?: boolean }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { me } = useMe();
+  const { me, user } = useMe();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -58,7 +58,7 @@ export function SiteHeader(_props?: { solid?: boolean }) {
             scrollHome();
           }}
         >
-          <Wordmark />
+          <Wordmark signedIn={Boolean(user)} />
         </Link>
         <BlobNav links={LINKS} />
         <div className="relative z-20 flex items-center gap-2">
@@ -74,7 +74,9 @@ export function SiteHeader(_props?: { solid?: boolean }) {
             </Button>
           </SignedOut>
           <SignedIn>
-            <UserButton nameTo={me?.isTrainer ? "/studio" : "/portal"} />
+            <div className="hidden md:block">
+              <UserButton nameTo={me?.isTrainer ? "/studio" : "/portal"} />
+            </div>
           </SignedIn>
           <button
             type="button"
@@ -93,6 +95,15 @@ export function SiteHeader(_props?: { solid?: boolean }) {
       </div>
       <div className={open ? "menu-panel is-open md:hidden" : "menu-panel md:hidden"}>
         <div>
+          <SignedIn>
+            <div className="border-t border-ink/15 bg-bg px-4 pt-2">
+              <UserButton
+                variant="menu"
+                nameTo={me?.isTrainer ? "/studio" : "/portal"}
+                onNavigate={() => setOpen(false)}
+              />
+            </div>
+          </SignedIn>
           <nav className="flex flex-col border-t border-ink/15 bg-bg px-4 py-4 text-center">
             {LINKS.map((l) => (
               <a
@@ -117,13 +128,15 @@ export function SiteHeader(_props?: { solid?: boolean }) {
             >
               Book a consult
             </Link>
-            <Link
-              to="/login"
-              className="rounded-md px-3 py-3.5 text-base text-ink hover:bg-surface-2"
-              onClick={() => setOpen(false)}
-            >
-              Log in
-            </Link>
+            <SignedOut>
+              <Link
+                to="/login"
+                className="rounded-md px-3 py-3.5 text-base text-ink hover:bg-surface-2"
+                onClick={() => setOpen(false)}
+              >
+                Log in
+              </Link>
+            </SignedOut>
           </nav>
         </div>
       </div>
