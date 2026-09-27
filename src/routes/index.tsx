@@ -148,7 +148,7 @@ function About() {
   return (
     <section id="about" className="band bg-bg">
       <div className="mx-auto max-w-3xl px-6 pt-12 pb-20 text-center sm:pt-24 sm:pb-28">
-        <p data-section-title className="text-xl font-bold uppercase tracking-wide text-accent-deep sm:text-2xl">About</p>
+        <p data-section-title className="text-xl font-extrabold uppercase tracking-wide text-accent-deep sm:text-2xl">About</p>
         <h2 className="mt-8 font-display text-3xl tracking-tight sm:mt-10">
           I grew up here. Teddy made the rest obvious.
         </h2>
@@ -188,7 +188,7 @@ function Services() {
   return (
     <section id="services" className="band bg-bg-warm">
       <div className="mx-auto max-w-6xl px-6 pt-12 pb-20 text-center sm:pt-24 sm:pb-28 lg:pb-40">
-        <p data-section-title className="text-xl font-bold uppercase tracking-wide text-accent-deep sm:text-2xl">Sessions</p>
+        <p data-section-title className="text-xl font-extrabold uppercase tracking-wide text-accent-deep sm:text-2xl">Sessions</p>
         <h2 className="mx-auto mt-8 max-w-xl font-display text-3xl tracking-tight sm:mt-10">
           We start with ten minutes on how the week went. We end with homework.
         </h2>
@@ -310,7 +310,7 @@ function HowItWorks() {
   return (
     <section className="band bg-bg">
       <div className="mx-auto max-w-6xl px-6 pt-12 pb-20 text-center sm:px-6 sm:pt-24 sm:pb-28 lg:pb-40">
-        <h2 className="font-display text-3xl font-bold uppercase tracking-wide">How it works</h2>
+        <h2 className="font-display text-3xl font-extrabold uppercase tracking-wide">How it works</h2>
         <ol className="mt-16 grid gap-10 sm:mt-20 lg:mt-24 md:grid-cols-3">
           {steps.map((s, i) => (
             <li key={s.title} className="mx-auto max-w-xs text-center">
@@ -386,7 +386,7 @@ function Faq() {
       <div className="mx-auto max-w-6xl px-6 pt-12 pb-20 sm:pt-24 sm:pb-28">
         <div className="lg:grid lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:items-center lg:gap-20">
           <div className="text-center lg:text-left">
-            <h2 className="font-display text-4xl tracking-tight">Questions</h2>
+            <h2 className="font-display text-4xl font-extrabold tracking-tight">Questions</h2>
           </div>
           <dl className="mt-10 divide-y divide-ink/20 text-center sm:mt-12 lg:mt-0 lg:text-left">
             {items.map((item) => (
@@ -439,7 +439,7 @@ function Contact() {
   return (
     <section id="contact" className="band bg-accent-soft">
       <div className="mx-auto max-w-lg px-6 pt-12 pb-20 text-center sm:pt-24 sm:pb-28">
-        <p data-section-title className="text-xl font-bold uppercase tracking-wide text-ink sm:text-2xl">Contact</p>
+        <p data-section-title className="text-xl font-extrabold uppercase tracking-wide text-ink sm:text-2xl">Contact</p>
         <h2 className="mt-8 font-display text-3xl tracking-tight text-ink sm:mt-10">
           How can I help?
         </h2>
