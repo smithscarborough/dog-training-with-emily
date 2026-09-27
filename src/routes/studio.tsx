@@ -542,7 +542,7 @@ function ClientDetail({
             <p className="text-xs text-faint">{dog.address}</p>
           </div>
         </div>
-        <div className="flex flex-col items-center gap-1.5">
+        <div className="flex flex-col items-center gap-2 rounded-xl bg-pearl px-4 py-3 hairline">
           <p id="client-status-label" className="text-center text-xs font-semibold uppercase tracking-wide text-faint">
             Client status
           </p>
