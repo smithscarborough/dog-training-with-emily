@@ -435,7 +435,7 @@ function ProgressTab({ dog }: { dog: DogRow }) {
     () => Object.fromEntries(current.map((p) => [p.skill_key, p])),
     [current],
   );
-  const [filter, setFilter] = useState<"all" | "active" | "idle">("all");
+  const [filter, setFilter] = useState<"all" | "active" | "idle">("active");
 
   function filtered<T extends { key: string }>(items: T[]) {
     if (filter === "active") return items.filter((i) => (byKey[i.key]?.rating ?? 0) > 0);
@@ -465,8 +465,8 @@ function ProgressTab({ dog }: { dog: DogRow }) {
       <div className="flex flex-wrap gap-2">
         {(
           [
-            ["all", "All"],
             ["active", `In progress (${activeCount})`],
+            ["all", "All"],
             ["idle", "Not started"],
           ] as const
         ).map(([id, label]) => (
