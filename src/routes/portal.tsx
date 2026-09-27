@@ -269,9 +269,10 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
               <p className="mt-1 text-xs text-muted">{formatWhen(lastDone.scheduled_at)}</p>
               <p className="mt-2 whitespace-pre-wrap text-base leading-relaxed text-ink">{lastDone.homework}</p>
               {lastDone.recap ? (
-                <p className="mt-3 whitespace-pre-wrap border-t border-line pt-3 text-sm leading-relaxed text-muted">
-                  {lastDone.recap}
-                </p>
+                <div className="mt-3 border-t border-line pt-3">
+                  <p className="text-xs font-bold uppercase tracking-wide text-accent-deep">From the session</p>
+                  <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-muted">{lastDone.recap}</p>
+                </div>
               ) : null}
             </>
           ) : (
@@ -279,7 +280,7 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
           )}
         </div>
         <div className="space-y-4 border-t border-line pt-5">
-        <p className="font-display text-xl tracking-tight text-ink">How did homework go?</p>
+        <p className="font-display text-xl font-bold tracking-tight text-ink">How did homework go?</p>
         <p className="text-sm leading-relaxed text-muted">
           Complete this section after you and {dog.name} have completed the recommended homework.
         </p>
