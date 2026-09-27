@@ -658,7 +658,7 @@ function ClientDetail({
             checkins.map((c) => (
               <div
                 key={c.id}
-                className="flex items-start justify-between gap-3 border-b border-line pb-3 last:border-0"
+                className="flex items-start justify-between gap-3 rounded-lg px-3 py-3 hairline"
               >
                 <div>
                   <p className="text-xs text-muted">{formatWhen(c.updated_at || c.created_at)}</p>
@@ -668,7 +668,7 @@ function ClientDetail({
                     <p className="mt-1 text-sm text-muted">No note.</p>
                   )}
                 </div>
-                <Badge tone={checkinTone(c.status)}>{checkinById(c.status).label}</Badge>
+                <Badge tone={checkinTone(c.status)} className="shrink-0">{checkinById(c.status).label}</Badge>
               </div>
             ))
           )}
