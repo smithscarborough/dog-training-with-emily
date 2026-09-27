@@ -247,7 +247,7 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <Card>
-        <CardHeader className="items-center text-center">
+        <CardHeader>
           <CardTitle>Pending Sessions</CardTitle>
         </CardHeader>
         <CardBody className="space-y-3">
