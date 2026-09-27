@@ -20,7 +20,7 @@ export function Badge({
         tone === "muted" && "bg-ink/16 font-semibold text-ink ring-1 ring-ink/30",
         tone === "stuck" && "badge-stuck px-3 py-1 font-bold text-ink",
         tone === "practiced" && "badge-practiced px-3 py-1 font-bold text-ink",
-        tone === "skipped" && "badge-skipped px-3 py-1 font-bold text-ink",
+        tone === "skipped" && "badge-skipped px-3 py-1 font-bold text-bg",
         className,
       )}
       {...props}

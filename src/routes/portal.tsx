@@ -172,16 +172,22 @@ function PortalApp({ dogs, onRefresh }: { dogs: DogRow[]; onRefresh: () => void 
   );
 }
 
-const GOAL_PILL = [
-  "bg-[#43C5B9]",
-  "bg-[#E4B15A]",
-  "bg-[#8FB56B]",
-  "bg-[#E39A86]",
-  "bg-[#A9B8E4]",
-  "bg-[#D9899A]",
-  "bg-[#C4A26A]",
-  "bg-[#7EB8C9]",
-] as const;
+const GOAL_COLOR: Record<string, string> = {
+  obedience: "bg-[#C4B0E4]",
+  "puppy-basics": "bg-[#E7A8C0]",
+  "breed-fulfillment": "bg-[#C4A26A]",
+  proofing: "bg-[#D9899A]",
+  leash: "bg-[#E4B15A]",
+  reactivity: "bg-[#A9B8E4]",
+  "house-manners": "bg-[#E39A86]",
+  "doorway-manners": "bg-[#D4A5D8]",
+  enrichment: "bg-[#E6C9A8]",
+  other: "bg-[#D7B8C4]",
+};
+
+function goalPill(id: string) {
+  return GOAL_COLOR[id] ?? "bg-[#D7B8C4]";
+}
 
 function HomeTab({ dog }: { dog: DogRow }) {
   const [sessions, setSessions] = useState<SessionRow[]>([]);
@@ -236,8 +242,8 @@ function HomeTab({ dog }: { dog: DogRow }) {
         </CardHeader>
         <CardBody>
           <div className="flex flex-wrap gap-2">
-            {goals.length ? goals.map((g, i) => (
-              <Badge key={g} className={cn("px-3 py-1 font-bold text-ink", GOAL_PILL[i % GOAL_PILL.length])}>
+            {goals.length ? goals.map((g) => (
+              <Badge key={g} className={cn("px-3 py-1 font-bold text-ink", goalPill(g))}>
                 {g.replace(/-/g, " ")}
               </Badge>
             )) : <span className="text-sm text-muted">None listed yet.</span>}
