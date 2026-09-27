@@ -393,9 +393,11 @@ function Clients({
 }) {
   const [q, setQ] = useState("");
   const [showNew, setShowNew] = useState(false);
+  const query = q.trim().toLowerCase();
   const filtered = dogs.filter((d) => {
+    if (!query) return true;
     const hay = `${d.name} ${d.owner_name} ${d.breed} ${d.owner_email}`.toLowerCase();
-    return hay.includes(q.toLowerCase());
+    return hay.includes(query);
   });
   const dog = dogs.find((d) => d.id === selected) ?? null;
   const onboardForm = showNew ? (
@@ -426,11 +428,37 @@ function Clients({
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
       <Card className="p-3">
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search dogs or owners" />
+        <Input
+          type="search"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search dogs or owners"
+          autoComplete="off"
+          enterKeyHint="search"
+        />
         <Button variant="outline" className="mt-3 w-full" onClick={() => setShowNew((v) => !v)}>
           {showNew ? "Close form" : "Onboard a client"}
         </Button>
-        <ul className="mt-3 space-y-1">
+        {dogs.length === 0 ? (
+          <p className="mt-3 text-sm text-muted">No clients yet.</p>
+        ) : !query ? (
+          <p className="mt-3 text-xs leading-relaxed text-muted lg:hidden">
+            Search by dog or owner. Matches show as you type.
+          </p>
+        ) : filtered.length === 0 ? (
+          <p className="mt-3 text-sm text-muted">No clients match that.</p>
+        ) : (
+          <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.14em] text-faint lg:hidden">
+            {filtered.length} {filtered.length === 1 ? "match" : "matches"}
+          </p>
+        )}
+        <ul
+          className={cn(
+            "space-y-1",
+            query && filtered.length > 0 ? "mt-2 border-t border-line pt-2 lg:mt-3 lg:border-0 lg:pt-0" : "mt-3",
+            !query && "hidden lg:block",
+          )}
+        >
           {filtered.map((d) => (
             <li key={d.id}>
               <button
