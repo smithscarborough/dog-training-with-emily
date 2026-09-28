@@ -1416,15 +1416,18 @@ function HoursCard({ hoursJson, onRefresh }: { hoursJson: string; onRefresh: () 
                       aria-checked={row.open}
                       aria-label={`${DAY_NAMES[day]} ${row.open ? "open" : "closed"}`}
                       className={cn(
-                        "relative h-6 w-10 shrink-0 rounded-full transition-colors duration-150",
-                        row.open ? "bg-ink" : "bg-ink/15",
+                        "relative inline-flex h-[26px] w-[46px] shrink-0 items-center rounded-full p-0.5 transition-colors duration-200",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2",
+                        row.open
+                          ? "bg-ink"
+                          : "bg-[#ddd6cb] shadow-[inset_0_0_0_1px_rgba(44,24,16,0.14)]",
                       )}
                       onClick={() => patch(day, { open: !row.open })}
                     >
                       <span
                         className={cn(
-                          "absolute top-0.5 size-5 rounded-full bg-white shadow transition-transform duration-150",
-                          row.open ? "translate-x-4" : "translate-x-0.5",
+                          "pointer-events-none block size-5 rounded-full bg-white shadow-[0_1px_2px_rgba(44,24,16,0.28)] transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                          row.open ? "translate-x-[22px]" : "translate-x-0",
                         )}
                       />
                     </button>
