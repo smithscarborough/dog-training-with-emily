@@ -56,6 +56,43 @@ function referralChoice(value: string) {
 const heading =
   "font-display text-2xl text-ink after:mt-2 after:block after:h-0.5 after:w-8 after:bg-accent after:content-['']";
 
+function ChoiceGroup({
+  label,
+  value,
+  options,
+  onChange,
+  className,
+}: {
+  label: string;
+  value: string;
+  options: readonly string[];
+  onChange: (next: string) => void;
+  className?: string;
+}) {
+  return (
+    <fieldset className={className}>
+      <legend className="text-base font-bold text-[#1a0e0a]">{label}</legend>
+      <div role="radiogroup" aria-label={label} className="mt-2 flex flex-wrap gap-2">
+        {options.map((option) => {
+          const on = value === option;
+          return (
+            <button
+              key={option}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              onClick={() => onChange(on ? "" : option)}
+              className={cn("chip-3d rounded-full px-3 py-2 text-sm", on && "is-on")}
+            >
+              {option}
+            </button>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
+
 function localToday() {
   const d = new Date();
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -114,21 +151,31 @@ export function IntakeForm({
 
   return (
     <form
-      className="intake-form space-y-10 [&_label>span:first-child]:text-base [&_input]:h-12 [&_input]:text-base [&_textarea]:min-h-32 [&_textarea]:text-base"
+      className="intake-form space-y-10 [&_label>span:first-child]:text-base [&_input]:h-12 [&_input]:text-base [&_textarea]:min-h-20 [&_textarea]:text-base"
       onSubmit={(e) => void handle(e)}
     >
       <p className="text-sm text-muted">
-        Fields marked with <span className="font-semibold text-accent-deep">*</span> are
-        required.
+        Only the starred fields are required. Everything else can wait.
       </p>
       <section className="space-y-5">
         <h2 className={heading}>You</h2>
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Owner name" required>
-            <Input value={form.owner_name} onChange={(e) => set("owner_name", e.target.value)} required />
+            <Input
+              autoComplete="name"
+              value={form.owner_name}
+              onChange={(e) => set("owner_name", e.target.value)}
+              required
+            />
           </Field>
           <Field label="Email" required>
-            <Input type="email" value={form.owner_email} onChange={(e) => set("owner_email", e.target.value)} required />
+            <Input
+              type="email"
+              autoComplete="email"
+              value={form.owner_email}
+              onChange={(e) => set("owner_email", e.target.value)}
+              required
+            />
           </Field>
           <Field label="Phone" required className="sm:col-span-2">
             <Input
@@ -143,94 +190,13 @@ export function IntakeForm({
           </Field>
           <Field label="Home address" required className="sm:col-span-2">
             <Input
+              autoComplete="street-address"
               value={form.address}
               onChange={(e) => set("address", e.target.value)}
               placeholder="1234 Westheimer Rd, Houston, TX 77006"
               required
             />
           </Field>
-          <Field label="Preferred days / times" className="sm:col-span-2">
-            <Input
-              value={form.preferred_days}
-              onChange={(e) => set("preferred_days", e.target.value)}
-              placeholder="Tue / Thu after 4, weekend morning"
-            />
-          </Field>
-          {hours ? (
-            <Field label="Preferred time" hint="Optional. Only open hours are listed." className="sm:col-span-2">
-              <WhenPicker
-                value={form.preferred_at}
-                onChange={(value) => set("preferred_at", value)}
-                hours={hours}
-                durationMin={30}
-              />
-              {form.preferred_at ? (
-                <button
-                  type="button"
-                  className="self-start text-xs text-muted underline underline-offset-4"
-                  onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  set("preferred_at", "");
-                }}
-                >
-                  Clear time
-                </button>
-              ) : null}
-            </Field>
-          ) : null}
-          <fieldset className="sm:col-span-2">
-            <legend className="text-base font-bold text-[#1a0e0a]">
-              How did you hear about Dog Training with Emily?
-            </legend>
-            <div
-              role="radiogroup"
-              aria-label="How did you hear about Dog Training with Emily?"
-              className="mt-3 grid gap-2 sm:grid-cols-2"
-            >
-              {[...REFERRALS, "Other"].map((option) => {
-                const on = heard === option;
-                return (
-                  <button
-                    key={option}
-                    type="button"
-                    role="radio"
-                    aria-checked={on}
-                    onClick={() => pickReferral(option)}
-                    className={cn(
-                      "flex h-12 items-center gap-3 rounded-xl border bg-surface px-3 text-left text-base text-ink transition-colors",
-                      on
-                        ? "border-ink shadow-[inset_0_0_0_1px_rgba(47,28,18,0.45)]"
-                        : "border-line hover:border-ink/30",
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "grid size-4 shrink-0 place-items-center rounded-full border bg-white",
-                        on ? "border-ink" : "border-ink/30",
-                      )}
-                      aria-hidden="true"
-                    >
-                      <span className={cn("size-2 rounded-full bg-ink transition-transform duration-150", on ? "scale-100" : "scale-0")} />
-                    </span>
-                    {option}
-                  </button>
-                );
-              })}
-            </div>
-            {heard === "Other" ? (
-              <Input
-                className="mt-3"
-                value={heardOther}
-                onChange={(e) => {
-                  setHeardOther(e.target.value);
-                  set("referral_source", e.target.value);
-                }}
-                placeholder="Where did you hear about us?"
-                aria-label="Other way you heard about us"
-              />
-            ) : null}
-          </fieldset>
         </div>
       </section>
 
@@ -247,11 +213,30 @@ export function IntakeForm({
               placeholder="Lab mix"
             />
           </Field>
+          <ChoiceGroup
+            label="Sex"
+            value={form.sex}
+            options={["Female", "Male"]}
+            onChange={(value) => set("sex", value)}
+          />
+          <ChoiceGroup
+            label="Spayed or neutered"
+            value={form.spayed_neutered}
+            options={["Yes", "No", "Not yet"]}
+            onChange={(value) => set("spayed_neutered", value)}
+          />
           <Field label="Age">
             <Input
               value={form.age_text}
               onChange={(e) => set("age_text", e.target.value)}
               placeholder="14 weeks, 3 years…"
+            />
+          </Field>
+          <Field label="Weight">
+            <Input
+              value={form.weight_text}
+              onChange={(e) => set("weight_text", e.target.value)}
+              placeholder="42 lbs"
             />
           </Field>
           <Field label="Birthday" hint="Optional. I’ll reach out on the day.">
@@ -262,28 +247,7 @@ export function IntakeForm({
               onChange={(e) => set("birthday", e.target.value)}
             />
           </Field>
-          <Field label="Weight">
-            <Input
-              value={form.weight_text}
-              onChange={(e) => set("weight_text", e.target.value)}
-              placeholder="42 lbs"
-            />
-          </Field>
-          <Field label="Sex">
-            <Input
-              value={form.sex}
-              onChange={(e) => set("sex", e.target.value)}
-              placeholder="Male / Female"
-            />
-          </Field>
-          <Field label="Spayed or neutered">
-            <Input
-              value={form.spayed_neutered}
-              onChange={(e) => set("spayed_neutered", e.target.value)}
-              placeholder="Yes, no, or not yet"
-            />
-          </Field>
-          <Field label="Allergies or dietary restrictions" className="sm:col-span-2">
+          <Field label="Allergies or dietary restrictions">
             <Input
               value={form.allergies}
               onChange={(e) => set("allergies", e.target.value)}
@@ -295,6 +259,7 @@ export function IntakeForm({
 
       <section className="space-y-5">
         <h2 className={heading}>What should change</h2>
+        <p className="text-sm text-muted">Tap everything that fits.</p>
         <div className="flex flex-wrap gap-2">
           {GOALS.map((g) => {
             const on = form.goals.includes(g.id);
@@ -302,6 +267,7 @@ export function IntakeForm({
               <button
                 key={g.id}
                 type="button"
+                aria-pressed={on}
                 onClick={() =>
                   set("goals", on ? form.goals.filter((id) => id !== g.id) : [...form.goals, g.id])
                 }
@@ -322,38 +288,54 @@ export function IntakeForm({
       </section>
 
       <section className="space-y-5">
-        <h2 className={heading}>What I need before I walk in</h2>
-        <Field label="Things this dog does not like">
-          <Textarea
-            value={form.dislikes}
-            onChange={(e) => set("dislikes", e.target.value)}
-            placeholder="Hats, nail clippers, men with beards, skateboards…"
-          />
-        </Field>
-        <Field label="Past bad experiences">
-          <Textarea
-            value={form.past_experiences}
-            onChange={(e) => set("past_experiences", e.target.value)}
-            placeholder="A scare at the vet, a dog fight, a boarding stay that went poorly…"
-          />
-        </Field>
-        <Field label="Physical limitations">
-          <Textarea
-            value={form.physical_limitations}
-            onChange={(e) => set("physical_limitations", e.target.value)}
-            placeholder="Hip dysplasia, recovering from TPLO, blindness in one eye…"
-          />
-        </Field>
+        <h2 className={heading}>When I should come</h2>
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="Household (who lives here)">
-            <Textarea
+          {hours ? (
+            <Field label="A time for the consult" hint="Optional. Only open hours are listed." className="sm:col-span-2">
+              <WhenPicker
+                value={form.preferred_at}
+                onChange={(value) => set("preferred_at", value)}
+                hours={hours}
+                durationMin={30}
+              />
+              {form.preferred_at ? (
+                <button
+                  type="button"
+                  className="self-start text-xs text-muted underline underline-offset-4"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    set("preferred_at", "");
+                  }}
+                >
+                  Clear time
+                </button>
+              ) : null}
+            </Field>
+          ) : null}
+          <Field label="Days that usually work" hint="Optional. For visits after the consult." className="sm:col-span-2">
+            <Input
+              value={form.preferred_days}
+              onChange={(e) => set("preferred_days", e.target.value)}
+              placeholder="Tue / Thu after 4, weekend morning"
+            />
+          </Field>
+        </div>
+      </section>
+
+      <section className="space-y-5">
+        <h2 className={heading}>What I need before I walk in</h2>
+        <p className="text-sm text-muted">Optional. Skip anything that doesn’t apply.</p>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Household">
+            <Input
               value={form.household}
               onChange={(e) => set("household", e.target.value)}
               placeholder="Two adults"
             />
           </Field>
           <Field label="Other pets">
-            <Textarea
+            <Input
               value={form.other_pets}
               onChange={(e) => set("other_pets", e.target.value)}
               placeholder="One cat"
@@ -366,7 +348,7 @@ export function IntakeForm({
               placeholder="None, or ages 4 and 7"
             />
           </Field>
-          <Field label="Veterinarian / emergency clinic">
+          <Field label="Veterinarian">
             <Input
               value={form.vet_info}
               onChange={(e) => set("vet_info", e.target.value)}
@@ -374,6 +356,63 @@ export function IntakeForm({
             />
           </Field>
         </div>
+        <Field label="Things this dog does not like">
+          <Textarea
+            value={form.dislikes}
+            onChange={(e) => set("dislikes", e.target.value)}
+            placeholder="Hats, nail clippers, skateboards…"
+          />
+        </Field>
+        <Field label="Past bad experiences">
+          <Textarea
+            value={form.past_experiences}
+            onChange={(e) => set("past_experiences", e.target.value)}
+            placeholder="A scare at the vet, a dog fight…"
+          />
+        </Field>
+        <Field label="Physical limitations">
+          <Textarea
+            value={form.physical_limitations}
+            onChange={(e) => set("physical_limitations", e.target.value)}
+            placeholder="Hip dysplasia, recovering from surgery…"
+          />
+        </Field>
+      </section>
+
+      <section className="space-y-5">
+        <h2 className={heading}>How you found me</h2>
+        <fieldset>
+          <legend className="sr-only">How did you hear about Dog Training with Emily?</legend>
+          <div role="radiogroup" aria-label="How did you hear about Dog Training with Emily?" className="flex flex-wrap gap-2">
+            {[...REFERRALS, "Other"].map((option) => {
+              const on = heard === option;
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  onClick={() => pickReferral(option)}
+                  className={cn("chip-3d rounded-full px-3 py-2 text-sm", on && "is-on")}
+                >
+                  {option}
+                </button>
+              );
+            })}
+          </div>
+          {heard === "Other" ? (
+            <Input
+              className="mt-3"
+              value={heardOther}
+              onChange={(e) => {
+                setHeardOther(e.target.value);
+                set("referral_source", e.target.value);
+              }}
+              placeholder="Where did you hear about us?"
+              aria-label="Other way you heard about us"
+            />
+          ) : null}
+        </fieldset>
       </section>
 
       <div className="relative flex justify-center">
