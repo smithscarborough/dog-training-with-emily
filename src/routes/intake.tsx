@@ -6,6 +6,8 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { Button } from "@/components/ui/button";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { submitPublicIntake } from "@/lib/server/dogs";
+import { getPublicStudio } from "@/lib/server/public";
+import { defaultHours, parseHours, type HoursDay } from "@/lib/hours";
 import { cancelScrollAnim, scrollAppTo } from "@/lib/scroll-to-section";
 import { useMe } from "@/lib/use-me";
 
@@ -15,12 +17,16 @@ function IntakePage() {
   const { user } = useCurrentUserState();
   const { me } = useMe();
   const [done, setDone] = useState(false);
+  const [hours, setHours] = useState<HoursDay[]>(defaultHours);
 
   useLayoutEffect(() => {
     cancelScrollAnim();
     const scroller = document.getElementById("app-scroll");
     if (scroller) scroller.scrollTop = 0;
     window.scrollTo(0, 0);
+    void getPublicStudio()
+      .then((studio) => setHours(parseHours(studio.hours_json)))
+      .catch(() => setHours(defaultHours()));
   }, []);
 
   return (
@@ -75,10 +81,16 @@ function IntakePage() {
                   owner_name: user?.displayName ?? "",
                   owner_email: user?.primaryEmail ?? "",
                 }}
+                hours={hours}
                 submitLabel="Submit"
                 onSubmit={async (data) => {
                   try {
-                    await submitPublicIntake({ data });
+                    await submitPublicIntake({
+                      data: {
+                        ...data,
+                        preferred_at: data.preferred_at ? new Date(data.preferred_at).toISOString() : "",
+                      },
+                    });
                     toast.success("Intake received. I’ll write you shortly.");
                     setDone(true);
                     scrollAppTo(0, "smooth");

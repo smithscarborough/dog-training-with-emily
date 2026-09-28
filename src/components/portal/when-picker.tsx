@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { DayPicker } from "react-day-picker";
 import { cn } from "@/lib/utils";
+import { dayIsOpen, formatClock, nextOpenSlot, slotsForDate, type HoursDay } from "@/lib/hours";
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
@@ -44,10 +45,14 @@ export function WhenPicker({
   value,
   onChange,
   enabled = true,
+  hours,
+  durationMin = 60,
 }: {
   value: string;
   onChange: (v: string) => void;
   enabled?: boolean;
+  hours?: HoursDay[];
+  durationMin?: number;
 }) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -58,17 +63,31 @@ export function WhenPicker({
   const minute = selected?.getMinutes() ?? 0;
   const isPm = hour24 >= 12;
   const hour12 = hour24 % 12 || 12;
+  const limited = Boolean(hours);
+  const slots = selected && hours ? slotsForDate(selected, hours, durationMin) : [];
+  const slotValue = `${pad(hour24)}:${pad(minute)}`;
 
   function commit(next: Date) {
     onChange(toLocalInput(next));
   }
 
   function ensureDate(): Date {
-    return selected ?? parseLocal(nextSessionSlot())!;
+    if (selected) return selected;
+    if (hours) return nextOpenSlot(hours, durationMin) ?? parseLocal(nextSessionSlot())!;
+    return parseLocal(nextSessionSlot())!;
   }
 
   function onDay(day: Date | undefined) {
     if (!day) return;
+    if (hours) {
+      const slot = slotsForDate(day, hours, durationMin)[0];
+      if (!slot) return;
+      const [h, m] = slot.split(":").map(Number);
+      const next = new Date(day);
+      next.setHours(h!, m, 0, 0);
+      commit(next);
+      return;
+    }
     const next = ensureDate();
     next.setFullYear(day.getFullYear(), day.getMonth(), day.getDate());
     commit(next);
@@ -87,13 +106,27 @@ export function WhenPicker({
     commit(next);
   }
 
+  function onSlot(hhmm: string) {
+    const base = selected ?? new Date();
+    const [h, m] = hhmm.split(":").map(Number);
+    const next = new Date(base);
+    next.setHours(h!, m, 0, 0);
+    commit(next);
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   return (
     <div className="relative">
       <button
         type="button"
         className="flex h-11 w-full items-center rounded-md border border-line bg-surface px-3 text-left text-base text-ink sm:text-sm"
         onClick={() => {
-          if (!value) onChange(nextSessionSlot());
+          if (!value) {
+            const next = hours ? nextOpenSlot(hours, durationMin) : parseLocal(nextSessionSlot());
+            if (next) onChange(toLocalInput(next));
+          }
           setOpen((o) => !o);
         }}
       >
@@ -112,7 +145,11 @@ export function WhenPicker({
             mode="single"
             selected={selected ?? undefined}
             onSelect={onDay}
-            disabled={{ before: new Date(new Date().setHours(0, 0, 0, 0)) }}
+            disabled={
+              hours
+                ? [{ before: today }, (date: Date) => !dayIsOpen(date, hours)]
+                : { before: today }
+            }
             classNames={{
               root: "w-full",
               months: "w-full",
@@ -135,6 +172,23 @@ export function WhenPicker({
               outside: "[&_button]:text-faint",
             }}
           />
+          {limited ? (
+            slots.length ? (
+              <select
+                className="mt-3 h-10 w-full rounded-full border border-line bg-bg px-3 text-sm"
+                value={slots.includes(slotValue) ? slotValue : slots[0]}
+                onChange={(e) => onSlot(e.target.value)}
+              >
+                {slots.map((slot) => (
+                  <option key={slot} value={slot}>
+                    {formatClock(slot)}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <p className="mt-3 text-sm text-muted">No open times that day.</p>
+            )
+          ) : (
           <div className="mt-3 flex gap-2">
             <select
               className="h-10 flex-1 rounded-full border border-line bg-bg px-3 text-sm"
@@ -167,6 +221,7 @@ export function WhenPicker({
               <option value="pm">PM</option>
             </select>
           </div>
+          )}
           </div>
         </>
       ) : null}

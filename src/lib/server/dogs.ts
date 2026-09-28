@@ -3,9 +3,10 @@ import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
 import { CATALOG } from "@/lib/catalog";
 import type { DogRow } from "@/lib/types";
-import { assertDogAccess, requireTrainer, stripPrivate } from "./helpers";
+import { assertDogAccess, loadStudio, requireTrainer, stripPrivate } from "./helpers";
 import { seedProgressForDog } from "./progress-seed";
 import { normalizeUsPhone } from "@/lib/phone";
+import { isWithinHours, parseHours } from "@/lib/hours";
 
 export type IntakeInput = {
   owner_name: string;
@@ -31,6 +32,7 @@ export type IntakeInput = {
   vet_info: string;
   preferred_days: string;
   referral_source: string;
+  preferred_at: string;
   photo_url: string | null;
 };
 
@@ -84,14 +86,28 @@ function cleanIntake(data: IntakeInput): IntakeInput {
     vet_info: trim(data.vet_info),
     preferred_days: trim(data.preferred_days),
     referral_source: trim(data.referral_source),
+    preferred_at: data.preferred_at?.trim() ?? "",
     photo_url: data.photo_url?.trim() ? data.photo_url.trim() : null,
   };
+}
+
+async function assertPreferred(preferredAt: string) {
+  if (!preferredAt) return;
+  const when = new Date(preferredAt);
+  if (Number.isNaN(when.getTime()) || when.getTime() < Date.now() - 60_000) {
+    throw new Error("Pick a time that’s still ahead.");
+  }
+  const studio = await loadStudio();
+  if (!isWithinHours(when, parseHours(studio.hours_json), 30)) {
+    throw new Error("That time isn’t open. Pick another.");
+  }
 }
 
 export const submitPublicIntake = createServerFn({ method: "POST" })
   .validator((data: IntakeInput) => cleanIntake(data))
   .handler(async ({ data }) => {
     const sql = await getSql();
+    await assertPreferred(data.preferred_at);
     let ownerId: string | null = null;
     try {
       const { getSessionUser } = await import("@/lib/auth/verify.server");
@@ -106,7 +122,7 @@ export const submitPublicIntake = createServerFn({ method: "POST" })
         name, breed, age_text, birthday, weight_text, allergies, sex, spayed_neutered,
         goals_json, goals_other, dislikes, past_experiences, physical_limitations,
         household, other_pets, kids_in_home, vet_info, preferred_days, referral_source,
-        photo_url, status
+        preferred_at, photo_url, status
       ) values (
         ${ownerId}, ${data.owner_name}, ${data.owner_email}, ${data.owner_phone}, ${data.address},
         ${data.name}, ${data.breed}, ${data.age_text}, ${data.birthday}, ${data.weight_text}, ${data.allergies},
@@ -114,7 +130,7 @@ export const submitPublicIntake = createServerFn({ method: "POST" })
         ${JSON.stringify(data.goals)}, ${data.goals_other}, ${data.dislikes}, ${data.past_experiences},
         ${data.physical_limitations}, ${data.household}, ${data.other_pets}, ${data.kids_in_home},
         ${data.vet_info}, ${data.preferred_days}, ${data.referral_source},
-        ${data.photo_url}, 'pending'
+        ${data.preferred_at}, ${data.photo_url}, 'pending'
       ) returning id
     `;
     const id = inserted[0]?.id;
@@ -128,6 +144,7 @@ export const trainerCreateClient = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .handler(async ({ context, data }) => {
     await requireTrainer(context.userId);
+    await assertPreferred(data.preferred_at);
     const sql = await getSql();
     const inserted = await sql<{ id: number }>`
       insert into dogs (
@@ -135,7 +152,7 @@ export const trainerCreateClient = createServerFn({ method: "POST" })
         name, breed, age_text, birthday, weight_text, allergies, sex, spayed_neutered,
         goals_json, goals_other, dislikes, past_experiences, physical_limitations,
         household, other_pets, kids_in_home, vet_info, preferred_days, referral_source,
-        photo_url, status
+        preferred_at, photo_url, status
       ) values (
         null, ${data.owner_name}, ${data.owner_email}, ${data.owner_phone}, ${data.address},
         ${data.name}, ${data.breed}, ${data.age_text}, ${data.birthday}, ${data.weight_text}, ${data.allergies},
@@ -143,7 +160,7 @@ export const trainerCreateClient = createServerFn({ method: "POST" })
         ${JSON.stringify(data.goals)}, ${data.goals_other}, ${data.dislikes}, ${data.past_experiences},
         ${data.physical_limitations}, ${data.household}, ${data.other_pets}, ${data.kids_in_home},
         ${data.vet_info}, ${data.preferred_days}, ${data.referral_source},
-        ${data.photo_url}, 'active'
+        ${data.preferred_at}, ${data.photo_url}, 'active'
       ) returning id
     `;
     const id = inserted[0]?.id;

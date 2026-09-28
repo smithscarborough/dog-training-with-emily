@@ -6,6 +6,8 @@ import { GOALS } from "@/lib/catalog";
 import type { IntakeInput } from "@/lib/server/dogs";
 import { formatUsPhone } from "@/lib/phone";
 import { cn } from "@/lib/utils";
+import { WhenPicker } from "@/components/portal/when-picker";
+import type { HoursDay } from "@/lib/hours";
 
 const empty: IntakeInput = {
   owner_name: "",
@@ -31,6 +33,7 @@ const empty: IntakeInput = {
   vet_info: "",
   preferred_days: "",
   referral_source: "",
+  preferred_at: "",
   photo_url: null,
 };
 
@@ -59,10 +62,12 @@ export function IntakeForm({
   initial,
   submitLabel,
   onSubmit,
+  hours,
 }: {
   initial?: Partial<IntakeInput>;
   submitLabel: string;
   onSubmit: (data: IntakeInput) => Promise<void>;
+  hours?: HoursDay[];
 }) {
   const [form, setForm] = useState<IntakeInput>({ ...empty, ...initial });
   const [busy, setBusy] = useState(false);
@@ -126,6 +131,29 @@ export function IntakeForm({
               placeholder="Tue / Thu after 4, weekend morning"
             />
           </Field>
+          {hours ? (
+            <Field label="Preferred time" hint="Optional. Only open hours are listed." className="sm:col-span-2">
+              <WhenPicker
+                value={form.preferred_at}
+                onChange={(value) => set("preferred_at", value)}
+                hours={hours}
+                durationMin={30}
+              />
+              {form.preferred_at ? (
+                <button
+                  type="button"
+                  className="self-start text-xs text-muted underline underline-offset-4"
+                  onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  set("preferred_at", "");
+                }}
+                >
+                  Clear time
+                </button>
+              ) : null}
+            </Field>
+          ) : null}
           <Field label="How did you hear about Dog Training with Emily?" className="sm:col-span-2">
             <Input
               value={form.referral_source}

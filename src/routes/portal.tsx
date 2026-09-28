@@ -21,6 +21,7 @@ import { fileToJpegDataUrl } from "@/lib/photo";
 import { listCheckins, submitCheckin, clearCheckin } from "@/lib/server/checkins";
 import type { CheckinRow, DogRow, ProgressLogRow, ProgressRow, SessionRow } from "@/lib/types";
 import { WhenPicker } from "@/components/portal/when-picker";
+import { parseHours, isWithinHours, type HoursDay } from "@/lib/hours";
 import { useMe } from "@/lib/use-me";
 import { cn } from "@/lib/utils";
 
@@ -89,10 +90,18 @@ function PortalPage() {
     );
   }
 
-  return <PortalApp dogs={me.dogs} onRefresh={() => void refresh()} />;
+  return <PortalApp dogs={me.dogs} hours={parseHours(me.studio.hours_json)} onRefresh={() => void refresh()} />;
 }
 
-function PortalApp({ dogs, onRefresh }: { dogs: DogRow[]; onRefresh: () => void }) {
+function PortalApp({
+  dogs,
+  hours,
+  onRefresh,
+}: {
+  dogs: DogRow[];
+  hours: HoursDay[];
+  onRefresh: () => void;
+}) {
   const [dogId, setDogId] = useState(dogs[0]!.id);
   const dog = dogs.find((d) => d.id === dogId) ?? dogs[0]!;
   const [tab, setTab] = useState<"home" | "progress" | "sessions" | "profile">("home");
@@ -160,7 +169,7 @@ function PortalApp({ dogs, onRefresh }: { dogs: DogRow[]; onRefresh: () => void 
             <ProgressTab dog={dog} />
           </div>
           <div className={tab === "sessions" ? "" : "hidden"} hidden={tab !== "sessions"}>
-            <SessionsTab dog={dog} active={tab === "sessions"} />
+            <SessionsTab dog={dog} hours={hours} active={tab === "sessions"} />
           </div>
           <div className={tab === "profile" ? "" : "hidden"} hidden={tab !== "profile"}>
             <ProfileTab dog={dog} onRefresh={onRefresh} />
@@ -668,7 +677,7 @@ function SkillGrid({
   );
 }
 
-function SessionsTab({ dog, active }: { dog: DogRow; active: boolean }) {
+function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; active: boolean }) {
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [sessionType, setSessionType] = useState(SESSION_TYPES[0]!.id);
   const [when, setWhen] = useState("");
@@ -683,6 +692,12 @@ function SessionsTab({ dog, active }: { dog: DogRow; active: boolean }) {
   useEffect(() => {
     void load().catch(() => setSessions([]));
   }, [dog.id]);
+
+  useEffect(() => {
+    if (!when) return;
+    const picked = new Date(when);
+    if (!isWithinHours(picked, hours, sessionTypeById(sessionType).minutes)) setWhen("");
+  }, [sessionType, hours, when]);
 
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[0.9fr_1.1fr]">
@@ -704,8 +719,14 @@ function SessionsTab({ dog, active }: { dog: DogRow; active: boolean }) {
               ))}
             </select>
           </Field>
-          <Field label="Preferred date & time (Houston)">
-            <WhenPicker value={when} onChange={setWhen} enabled={active} />
+          <Field label="Preferred date & time (Houston)" hint="Only open hours are listed.">
+            <WhenPicker
+              value={when}
+              onChange={setWhen}
+              enabled={active}
+              hours={hours}
+              durationMin={sessionTypeById(sessionType).minutes}
+            />
           </Field>
           <Field label="What should we work on?">
             <Textarea

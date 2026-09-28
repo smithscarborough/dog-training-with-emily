@@ -4,7 +4,7 @@ import { getSql } from "@/lib/db";
 import type { DogRow, MePayload } from "@/lib/types";
 import { linkDogsByEmail, loadStudio, stripPrivate, userEmail } from "./helpers";
 import { ensureDemoSeed } from "./seed-demo";
-import { normalizeUsPhone } from "@/lib/phone";
+import { normalizeHours, serializeHours } from "@/lib/hours";
 
 export const getMe = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
@@ -105,4 +105,16 @@ export const updateStudioBanner = createServerFn({ method: "POST" })
     const sql = await getSql();
     await sql`update studio set banner_text = ${text}, updated_at = now() where id = 1`;
     return { ok: true, banner_text: text };
+  });
+
+export const updateStudioHours = createServerFn({ method: "POST" })
+  .validator((data: { hours: unknown }) => ({ hours: normalizeHours(data.hours) }))
+  .middleware([authMiddleware])
+  .handler(async ({ context, data }) => {
+    const { requireTrainer } = await import("./helpers");
+    await requireTrainer(context.userId);
+    const hours_json = serializeHours(data.hours);
+    const sql = await getSql();
+    await sql`update studio set hours_json = ${hours_json}, updated_at = now() where id = 1`;
+    return { ok: true, hours_json };
   });

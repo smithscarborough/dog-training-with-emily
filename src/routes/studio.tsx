@@ -26,7 +26,7 @@ import {
   trainerCreateClient,
 } from "@/lib/server/dogs";
 import { listInquiries } from "@/lib/server/inquiries";
-import { becomeTrainer, releaseStudio, updateStudioBanner, updateStudioContact, updateTrainerPin } from "@/lib/server/me";
+import { becomeTrainer, releaseStudio, updateStudioBanner, updateStudioContact, updateStudioHours, updateTrainerPin } from "@/lib/server/me";
 import { getProgress, updateSkillProgress } from "@/lib/server/progress";
 import {
   listSessions,
@@ -38,6 +38,18 @@ import { listCheckins } from "@/lib/server/checkins";
 import type { CheckinRow, DogRow, InquiryRow, ProgressRow, SessionRow } from "@/lib/types";
 import { useMe } from "@/lib/use-me";
 import { cn } from "@/lib/utils";
+import {
+  DAY_NAMES,
+  DAY_SHORT,
+  HOURS_ORDER,
+  clockOptions,
+  formatClock,
+  hoursSummary,
+  normalizeHours,
+  parseHours,
+  serializeHours,
+  type HoursDay,
+} from "@/lib/hours";
 
 export const Route = createFileRoute("/studio")({ component: StudioPage });
 
@@ -126,7 +138,7 @@ function StudioApp({
   onRefresh,
 }: {
   dogs: DogRow[];
-  studio: { email: string; phone: string; instagram: string; facebook: string; x_url: string; banner_text?: string };
+  studio: { email: string; phone: string; instagram: string; facebook: string; x_url: string; banner_text?: string; hours_json?: string };
   onRefresh: () => void;
 }) {
   const [tab, setTab] = useState<"board" | "clients" | "calendar" | "inbox" | "settings">("board");
@@ -190,7 +202,9 @@ function StudioApp({
               onRefresh={onRefresh}
             />
           ) : null}
-          {tab === "calendar" ? <Calendar dogs={dogs} /> : null}
+          {tab === "calendar" ? (
+            <Calendar dogs={dogs} hoursJson={studio.hours_json ?? ""} onRefresh={onRefresh} />
+          ) : null}
           {tab === "inbox" ? <Inbox /> : null}
           {tab === "settings" ? <Settings studio={studio} onRefresh={onRefresh} /> : null}
         </div>
@@ -319,6 +333,11 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
                 <span className="min-w-0 flex-1">
                   <span className="block font-semibold text-ink">{d.name}</span>
                   <span className="block text-xs text-muted">{d.owner_name}</span>
+                  {d.preferred_at ? (
+                    <span className="mt-1 block text-sm font-medium text-ink">
+                      Asked for {formatWhen(d.preferred_at)}
+                    </span>
+                  ) : null}
                   {snap.facts.length ? (
                     <span className="mt-1.5 block text-sm leading-relaxed text-ink">
                       {snap.facts.map((fact, index) => (
@@ -1338,7 +1357,156 @@ function SessionEditor({ session, onChange }: { session: SessionRow; onChange: (
   );
 }
 
-function Calendar({ dogs }: { dogs: DogRow[] }) {
+function HoursCard({ hoursJson, onRefresh }: { hoursJson: string; onRefresh: () => void }) {
+  const saved = parseHours(hoursJson);
+  const [hours, setHours] = useState<HoursDay[]>(saved);
+  const [editing, setEditing] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const options = clockOptions();
+
+  useEffect(() => {
+    setHours(parseHours(hoursJson));
+  }, [hoursJson]);
+
+  function patch(day: number, next: Partial<HoursDay>) {
+    setHours((rows) => rows.map((row) => (row.day === day ? { ...row, ...next } : row)));
+  }
+
+  const dirty = (() => {
+    try {
+      return serializeHours(hours) !== serializeHours(parseHours(hoursJson));
+    } catch {
+      return true;
+    }
+  })();
+
+  return (
+    <Card>
+      <CardBody className="space-y-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="font-display text-2xl tracking-tight">Available hours</h3>
+            <p className="mt-1 text-sm text-muted">{hoursSummary(hours)}</p>
+          </div>
+          <button
+            type="button"
+            className="chip-3d rounded-full px-3 py-1.5 text-sm"
+            onClick={() => {
+              if (editing && dirty) setHours(parseHours(hoursJson));
+              setEditing((open) => !open);
+            }}
+          >
+            {editing ? "Close" : "Edit"}
+          </button>
+        </div>
+        {editing ? (
+          <>
+            <p className="text-sm leading-relaxed text-muted">
+              Clients and new consults can only request a time inside these windows. Houston time. You can still book any time from a client’s file.
+            </p>
+            <div className="space-y-2">
+              {HOURS_ORDER.map((day) => {
+                const row = hours.find((item) => item.day === day) ?? saved[day]!;
+                return (
+                  <div key={day} className="flex flex-wrap items-center gap-3 rounded-lg px-2 py-1.5">
+                    <span className="w-16 text-sm font-medium text-ink">{DAY_SHORT[day]}</span>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={row.open}
+                      aria-label={`${DAY_NAMES[day]} ${row.open ? "open" : "closed"}`}
+                      className={cn(
+                        "relative h-6 w-10 shrink-0 rounded-full transition-colors duration-150",
+                        row.open ? "bg-ink" : "bg-ink/15",
+                      )}
+                      onClick={() => patch(day, { open: !row.open })}
+                    >
+                      <span
+                        className={cn(
+                          "absolute top-0.5 size-5 rounded-full bg-white shadow transition-transform duration-150",
+                          row.open ? "translate-x-4" : "translate-x-0.5",
+                        )}
+                      />
+                    </button>
+                    {row.open ? (
+                      <span className="flex min-w-0 flex-1 items-center gap-2">
+                        <select
+                          className="h-10 min-w-0 flex-1 rounded-full border border-line bg-bg px-3 text-sm"
+                          value={row.start}
+                          onChange={(e) => patch(day, { start: e.target.value })}
+                        >
+                          {options.map((time) => (
+                            <option key={time} value={time}>
+                              {formatClock(time)}
+                            </option>
+                          ))}
+                        </select>
+                        <span className="text-xs text-muted">to</span>
+                        <select
+                          className="h-10 min-w-0 flex-1 rounded-full border border-line bg-bg px-3 text-sm"
+                          value={row.end}
+                          onChange={(e) => patch(day, { end: e.target.value })}
+                        >
+                          {options.map((time) => (
+                            <option key={time} value={time} disabled={time <= row.start}>
+                              {formatClock(time)}
+                            </option>
+                          ))}
+                        </select>
+                      </span>
+                    ) : (
+                      <span className="text-sm text-muted">Closed</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <Button
+              size="sm"
+              disabled={busy || !dirty}
+              onClick={() => {
+                let next: HoursDay[];
+                try {
+                  next = normalizeHours(hours);
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : "Check the hours.");
+                  return;
+                }
+                setBusy(true);
+                void updateStudioHours({ data: { hours: next } })
+                  .then(() => {
+                    toast.success("Hours saved.");
+                    setEditing(false);
+                    onRefresh();
+                  })
+                  .catch((err: unknown) =>
+                    toast.error(err instanceof Error ? err.message : "Could not save."),
+                  )
+                  .finally(() => setBusy(false));
+              }}
+            >
+              {busy ? "Saving…" : "Save hours"}
+            </Button>
+          </>
+        ) : (
+          <p className="text-xs leading-relaxed text-muted">
+            These are the times a client or a new consult can choose.
+          </p>
+        )}
+      </CardBody>
+    </Card>
+  );
+}
+
+function Calendar({
+  dogs,
+  hoursJson,
+  onRefresh,
+}: {
+  dogs: DogRow[];
+  hoursJson: string;
+  onRefresh: () => void;
+}) {
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [view, setView] = useState<"month" | "list">("month");
   const [status, setStatus] = useState<"all" | SessionRow["status"]>("all");
@@ -1390,6 +1558,7 @@ function Calendar({ dogs }: { dogs: DogRow[] }) {
 
   return (
     <div className="space-y-4">
+      <HoursCard hoursJson={hoursJson} onRefresh={onRefresh} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
           {(

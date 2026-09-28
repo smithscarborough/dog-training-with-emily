@@ -11,6 +11,7 @@ export type StudioRow = {
   facebook: string;
   x_url: string;
   banner_text: string;
+  hours_json: string;
 };
 
 export type DogRow = {
@@ -40,6 +41,7 @@ export type DogRow = {
   vet_info: string;
   preferred_days: string;
   referral_source: string;
+  preferred_at: string;
   photo_url: string | null;
   status: DogStatus;
   credits: number;

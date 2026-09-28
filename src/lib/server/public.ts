@@ -11,6 +11,7 @@ export const getPublicStudio = createServerFn({ method: "GET" }).handler(async (
     facebook: studio.facebook,
     x_url: studio.x_url,
     banner_text: studio.banner_text ?? "",
+    hours_json: studio.hours_json ?? "",
     claimed: Boolean(studio.owner_user_id),
   };
 });

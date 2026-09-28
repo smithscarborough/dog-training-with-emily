@@ -4,6 +4,7 @@ import { getSql } from "@/lib/db";
 import { sessionTypeById } from "@/lib/catalog";
 import type { SessionRow } from "@/lib/types";
 import { assertDogAccess, loadStudio, requireTrainer, stripPrivate } from "./helpers";
+import { isWithinHours, parseHours } from "@/lib/hours";
 
 export const listSessions = createServerFn({ method: "GET" })
   .validator((data: { dogId?: number } | undefined) => data ?? {})
@@ -52,9 +53,13 @@ export const requestSession = createServerFn({ method: "POST" })
     const type = sessionTypeById(data.sessionType);
     const when = new Date(data.scheduledAt);
     if (Number.isNaN(when.getTime())) throw new Error("Pick a valid date and time.");
+    if (when.getTime() < Date.now() - 60_000) throw new Error("Pick a time that’s still ahead.");
     const sql = await getSql();
     const studio = await loadStudio();
     const isTrainer = studio.owner_user_id === context.userId;
+    if (!isTrainer && !isWithinHours(when, parseHours(studio.hours_json), type.minutes)) {
+      throw new Error("That time isn’t open. Pick another.");
+    }
     const status = isTrainer ? "confirmed" : "requested";
     const inserted = await sql<{ id: number }>`
       insert into sessions (
