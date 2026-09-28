@@ -46,11 +46,22 @@ const REFERRALS = [
   "Nextdoor",
 ] as const;
 
+const FRIEND = "A friend or neighbor";
+
 function referralChoice(value: string) {
   const trimmed = value.trim();
-  if ((REFERRALS as readonly string[]).includes(trimmed)) return { choice: trimmed, other: "" };
-  if (!trimmed) return { choice: "", other: "" };
-  return { choice: "Other", other: trimmed };
+  const friendPrefix = `${FRIEND} — `;
+  if (trimmed.startsWith(friendPrefix)) {
+    return { choice: FRIEND, other: "", friend: trimmed.slice(friendPrefix.length) };
+  }
+  if ((REFERRALS as readonly string[]).includes(trimmed)) return { choice: trimmed, other: "", friend: "" };
+  if (!trimmed) return { choice: "", other: "", friend: "" };
+  return { choice: "Other", other: trimmed, friend: "" };
+}
+
+function friendSource(name: string) {
+  const trimmed = name.trim();
+  return trimmed ? `${FRIEND} — ${trimmed}` : FRIEND;
 }
 
 const heading =
@@ -126,6 +137,7 @@ export function IntakeForm({
   const startingReferral = referralChoice(initial?.referral_source ?? "");
   const [heard, setHeard] = useState(startingReferral.choice);
   const [heardOther, setHeardOther] = useState(startingReferral.other);
+  const [heardFriend, setHeardFriend] = useState(startingReferral.friend);
   const [busy, setBusy] = useState(false);
   const [paws, setPaws] = useState(0);
 
@@ -136,6 +148,7 @@ export function IntakeForm({
   function pickReferral(next: string) {
     setHeard(next);
     if (next === "Other") set("referral_source", heardOther.trim());
+    else if (next === FRIEND) set("referral_source", friendSource(heardFriend));
     else set("referral_source", next);
   }
 
@@ -404,6 +417,21 @@ export function IntakeForm({
               );
             })}
           </div>
+          {heard === FRIEND ? (
+            <label className="mt-3 flex max-w-sm flex-col gap-2">
+              <span className="text-sm font-bold text-[#1a0e0a]">Who should I thank?</span>
+              <Input
+                value={heardFriend}
+                onChange={(e) => {
+                  setHeardFriend(e.target.value);
+                  set("referral_source", friendSource(e.target.value));
+                }}
+                placeholder="Their name"
+                autoComplete="off"
+                aria-label="Name of the friend or neighbor"
+              />
+            </label>
+          ) : null}
           {heard === "Other" ? (
             <Input
               className="mt-3"
