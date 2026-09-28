@@ -78,8 +78,7 @@ function PortalPage() {
         <main className="mx-auto max-w-lg px-4 py-16">
           <h1 className="font-display text-4xl">No dog on file yet.</h1>
           <p className="mt-3 text-muted leading-relaxed">
-            Start with intake so we know the household, the history, and what
-            "better" looks like.
+            Complete the following short form to tell me a little more about your dog and needs, and I will review and promptly follow up as needed.
           </p>
           <Button className="mt-6" asChild>
             <Link to="/intake">Begin intake</Link>
