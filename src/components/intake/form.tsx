@@ -5,6 +5,7 @@ import { Input, Textarea } from "@/components/ui/input";
 import { GOALS } from "@/lib/catalog";
 import type { IntakeInput } from "@/lib/server/dogs";
 import { formatUsPhone } from "@/lib/phone";
+import { formatUsAddress } from "@/lib/address";
 import { cn } from "@/lib/utils";
 import { DateField, WhenPicker } from "@/components/portal/when-picker";
 import { hoursSummary, type HoursDay } from "@/lib/hours";
@@ -154,9 +155,12 @@ export function IntakeForm({
 
   async function handle(e: FormEvent) {
     e.preventDefault();
+    const address = formatUsAddress(form.address);
+    const next = address === form.address ? form : { ...form, address };
+    if (next !== form) setForm(next);
     setBusy(true);
     try {
-      await onSubmit(form);
+      await onSubmit(next);
     } finally {
       setBusy(false);
     }
@@ -206,6 +210,7 @@ export function IntakeForm({
               autoComplete="street-address"
               value={form.address}
               onChange={(e) => set("address", e.target.value)}
+              onBlur={(e) => set("address", formatUsAddress(e.target.value))}
               placeholder="1234 Westheimer Rd, Houston, TX 77006"
               required
             />
