@@ -292,6 +292,7 @@ export function IntakeForm({
                 onChange={(value) => set("preferred_at", value)}
                 hours={hours}
                 durationMin={30}
+                triggerClassName="date-trigger h-12 text-base"
               />
               {form.preferred_at ? (
                 <button

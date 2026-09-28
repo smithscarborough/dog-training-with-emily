@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { DayPicker } from "react-day-picker";
+import { useEffect, useState, type ReactNode } from "react";
+import { DayPicker, type Matcher } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { dayIsOpen, formatClock, nextOpenSlot, slotsForDate, type HoursDay } from "@/lib/hours";
 
@@ -44,12 +44,14 @@ const MINUTES = [0, 15, 30, 45];
 const dayPickerClassNames = {
   root: "w-full",
   months: "w-full",
-  month: "w-full",
-  month_caption: "flex items-center justify-center pb-2 text-sm font-semibold text-ink",
-  nav: "absolute inset-x-0 top-0 flex justify-between px-1",
-  button_previous: "size-8 rounded-full text-ink hover:bg-surface-2",
-  button_next: "size-8 rounded-full text-ink hover:bg-surface-2",
-  weekdays: "flex",
+  month: "relative w-full",
+  month_caption: "flex h-8 items-center justify-center text-sm font-semibold text-ink",
+  nav: "absolute inset-x-0 top-0 flex items-center justify-between",
+  button_previous:
+    "inline-flex size-8 items-center justify-center rounded-full text-ink hover:bg-surface-2 [&_svg]:size-4",
+  button_next:
+    "inline-flex size-8 items-center justify-center rounded-full text-ink hover:bg-surface-2 [&_svg]:size-4",
+  weekdays: "mt-1 flex",
   weekday: "flex-1 py-1 text-center text-[11px] font-medium text-muted",
   week: "flex",
   day: "flex flex-1 items-center justify-center p-0.5",
@@ -60,18 +62,58 @@ const dayPickerClassNames = {
   outside: "[&_button]:text-faint",
 };
 
+function CalendarPopover({
+  selected,
+  onSelect,
+  onClose,
+  disabled,
+  defaultMonth,
+  children,
+}: {
+  selected?: Date;
+  onSelect: (day: Date | undefined) => void;
+  onClose: () => void;
+  disabled?: Matcher | Matcher[];
+  defaultMonth?: Date;
+  children?: ReactNode;
+}) {
+  return (
+    <>
+      <button
+        type="button"
+        aria-label="Close calendar"
+        className="fixed inset-0 z-20 cursor-default bg-transparent"
+        onClick={onClose}
+      />
+      <div className="absolute z-30 mt-2 w-80 max-w-[calc(100vw-2.5rem)] rounded-xl border border-line bg-surface p-3 shadow-[0_12px_28px_-16px_rgba(44,24,16,0.35)]">
+        <DayPicker
+          mode="single"
+          selected={selected}
+          defaultMonth={defaultMonth ?? selected}
+          onSelect={onSelect}
+          disabled={disabled}
+          classNames={dayPickerClassNames}
+        />
+        {children}
+      </div>
+    </>
+  );
+}
+
 export function WhenPicker({
   value,
   onChange,
   enabled = true,
   hours,
   durationMin = 60,
+  triggerClassName,
 }: {
   value: string;
   onChange: (v: string) => void;
   enabled?: boolean;
   hours?: HoursDay[];
   durationMin?: number;
+  triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -140,7 +182,11 @@ export function WhenPicker({
     <div className="relative">
       <button
         type="button"
-        className="flex h-11 w-full items-center rounded-md border border-line bg-surface px-3 text-left text-base text-ink sm:text-sm"
+        className={cn(
+          "flex h-11 w-full items-center rounded-md border border-line bg-surface px-3 text-left text-base sm:text-sm",
+          value ? "text-ink" : "text-[#a39284]",
+          triggerClassName,
+        )}
         onClick={() => {
           if (!value) {
             const next = hours ? nextOpenSlot(hours, durationMin) : parseLocal(nextSessionSlot());
@@ -152,25 +198,16 @@ export function WhenPicker({
         {labelFor(value)}
       </button>
       {open ? (
-        <>
-          <button
-            type="button"
-            aria-label="Close calendar"
-            className="fixed inset-0 z-20 cursor-default bg-transparent"
-            onClick={() => setOpen(false)}
-          />
-          <div className="absolute z-30 mt-2 w-80 max-w-[calc(100vw-2.5rem)] rounded-xl border border-line bg-surface p-3 shadow-[0_12px_28px_-16px_rgba(44,24,16,0.35)]">
-          <DayPicker
-            mode="single"
-            selected={selected ?? undefined}
-            onSelect={onDay}
-            disabled={
-              hours
-                ? [{ before: today }, (date: Date) => !dayIsOpen(date, hours)]
-                : { before: today }
-            }
-            classNames={dayPickerClassNames}
-          />
+        <CalendarPopover
+          selected={selected ?? undefined}
+          onClose={() => setOpen(false)}
+          onSelect={onDay}
+          disabled={
+            hours
+              ? [{ before: today }, (date: Date) => !dayIsOpen(date, hours)]
+              : { before: today }
+          }
+        >
           {limited ? (
             slots.length ? (
               <select
@@ -221,8 +258,7 @@ export function WhenPicker({
             </select>
           </div>
           )}
-          </div>
-        </>
+        </CalendarPopover>
       ) : null}
     </div>
   );
@@ -267,28 +303,17 @@ export function DateField({
         <span className={selected ? "text-ink" : "text-[#a39284]"}>{label}</span>
       </button>
       {open ? (
-        <>
-          <button
-            type="button"
-            aria-label="Close calendar"
-            className="fixed inset-0 z-20 cursor-default bg-transparent"
-            onClick={() => setOpen(false)}
-          />
-          <div className="absolute z-30 mt-2 w-80 max-w-[calc(100vw-2.5rem)] rounded-xl border border-line bg-surface p-3 shadow-[0_12px_28px_-16px_rgba(44,24,16,0.35)]">
-            <DayPicker
-              mode="single"
-              selected={selected}
-              defaultMonth={selected ?? maxDate}
-              onSelect={(day) => {
-                if (!day) return;
-                onChange(dayValue(day));
-                setOpen(false);
-              }}
-              disabled={maxDate ? { after: maxDate } : undefined}
-              classNames={dayPickerClassNames}
-            />
-          </div>
-        </>
+        <CalendarPopover
+          selected={selected}
+          defaultMonth={selected ?? maxDate}
+          onClose={() => setOpen(false)}
+          onSelect={(day) => {
+            if (!day) return;
+            onChange(dayValue(day));
+            setOpen(false);
+          }}
+          disabled={maxDate ? { after: maxDate } : undefined}
+        />
       ) : null}
     </div>
   );
