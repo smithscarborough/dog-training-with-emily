@@ -749,7 +749,7 @@ function ClientDetail({
           </div>
         </div>
         <div className="w-full shrink-0 rounded-2xl bg-pearl px-3.5 py-3 hairline sm:w-[24rem]">
-          <p id="client-status-label" className="text-[11px] font-semibold uppercase tracking-[0.14em] text-faint">
+          <p id="client-status-label" className="text-sm font-bold text-[#1a0e0a]">
             Client status
           </p>
           <div
