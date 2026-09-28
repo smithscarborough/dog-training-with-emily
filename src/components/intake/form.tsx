@@ -6,6 +6,7 @@ import { GOALS } from "@/lib/catalog";
 import type { IntakeInput } from "@/lib/server/dogs";
 import { formatUsPhone } from "@/lib/phone";
 import { formatUsAddress } from "@/lib/address";
+import { formatEmail, formatProperName, formatSentenceStart } from "@/lib/text";
 import { cn } from "@/lib/utils";
 import { DateField, WhenPicker } from "@/components/portal/when-picker";
 import { hoursSummary, type HoursDay } from "@/lib/hours";
@@ -155,9 +156,32 @@ export function IntakeForm({
 
   async function handle(e: FormEvent) {
     e.preventDefault();
-    const address = formatUsAddress(form.address);
-    const next = address === form.address ? form : { ...form, address };
-    if (next !== form) setForm(next);
+    const friend = formatProperName(heardFriend);
+    const other = formatSentenceStart(heardOther);
+    const next: IntakeInput = {
+      ...form,
+      owner_name: formatProperName(form.owner_name),
+      owner_email: formatEmail(form.owner_email),
+      address: formatUsAddress(form.address),
+      name: formatProperName(form.name),
+      breed: formatProperName(form.breed),
+      age_text: formatSentenceStart(form.age_text),
+      allergies: formatSentenceStart(form.allergies),
+      goals_other: formatSentenceStart(form.goals_other),
+      preferred_days: formatSentenceStart(form.preferred_days),
+      dislikes: formatSentenceStart(form.dislikes),
+      past_experiences: formatSentenceStart(form.past_experiences),
+      physical_limitations: formatSentenceStart(form.physical_limitations),
+      household: formatSentenceStart(form.household),
+      other_pets: formatSentenceStart(form.other_pets),
+      kids_in_home: formatSentenceStart(form.kids_in_home),
+      vet_info: formatProperName(form.vet_info),
+    };
+    if (heard === FRIEND) next.referral_source = friendSource(friend);
+    else if (heard === "Other") next.referral_source = other.trim();
+    setHeardFriend(friend);
+    setHeardOther(other);
+    setForm(next);
     setBusy(true);
     try {
       await onSubmit(next);
@@ -182,6 +206,7 @@ export function IntakeForm({
               autoComplete="name"
               value={form.owner_name}
               onChange={(e) => set("owner_name", e.target.value)}
+              onBlur={(e) => set("owner_name", formatProperName(e.target.value))}
               required
             />
           </Field>
@@ -191,6 +216,7 @@ export function IntakeForm({
               autoComplete="email"
               value={form.owner_email}
               onChange={(e) => set("owner_email", e.target.value)}
+              onBlur={(e) => set("owner_email", formatEmail(e.target.value))}
               required
             />
           </Field>
@@ -222,12 +248,18 @@ export function IntakeForm({
         <h2 className={heading}>Your dog</h2>
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Dog's name" required>
-            <Input value={form.name} onChange={(e) => set("name", e.target.value)} required />
+            <Input
+              value={form.name}
+              onChange={(e) => set("name", e.target.value)}
+              onBlur={(e) => set("name", formatProperName(e.target.value))}
+              required
+            />
           </Field>
           <Field label="Breed">
             <Input
               value={form.breed}
               onChange={(e) => set("breed", e.target.value)}
+              onBlur={(e) => set("breed", formatProperName(e.target.value))}
               placeholder="Lab mix"
             />
           </Field>
@@ -247,6 +279,7 @@ export function IntakeForm({
             <Input
               value={form.age_text}
               onChange={(e) => set("age_text", e.target.value)}
+              onBlur={(e) => set("age_text", formatSentenceStart(e.target.value))}
               placeholder="14 weeks, 3 years…"
             />
           </Field>
@@ -264,6 +297,7 @@ export function IntakeForm({
             <Input
               value={form.allergies}
               onChange={(e) => set("allergies", e.target.value)}
+              onBlur={(e) => set("allergies", formatSentenceStart(e.target.value))}
               placeholder="None, or chicken…"
             />
           </Field>
@@ -295,6 +329,7 @@ export function IntakeForm({
           <Textarea
             value={form.goals_other}
             onChange={(e) => set("goals_other", e.target.value)}
+            onBlur={(e) => set("goals_other", formatSentenceStart(e.target.value))}
             placeholder="Leash pulling, doorbell barking…"
           />
         </Field>
@@ -339,6 +374,7 @@ export function IntakeForm({
             <Input
               value={form.preferred_days}
               onChange={(e) => set("preferred_days", e.target.value)}
+              onBlur={(e) => set("preferred_days", formatSentenceStart(e.target.value))}
               placeholder="Tue / Thu after 4, weekend morning"
             />
           </Field>
@@ -353,6 +389,7 @@ export function IntakeForm({
             <Input
               value={form.household}
               onChange={(e) => set("household", e.target.value)}
+              onBlur={(e) => set("household", formatSentenceStart(e.target.value))}
               placeholder="Two adults"
             />
           </Field>
@@ -360,6 +397,7 @@ export function IntakeForm({
             <Input
               value={form.other_pets}
               onChange={(e) => set("other_pets", e.target.value)}
+              onBlur={(e) => set("other_pets", formatSentenceStart(e.target.value))}
               placeholder="One cat"
             />
           </Field>
@@ -367,6 +405,7 @@ export function IntakeForm({
             <Input
               value={form.kids_in_home}
               onChange={(e) => set("kids_in_home", e.target.value)}
+              onBlur={(e) => set("kids_in_home", formatSentenceStart(e.target.value))}
               placeholder="None, or ages 4 and 7"
             />
           </Field>
@@ -374,6 +413,7 @@ export function IntakeForm({
             <Input
               value={form.vet_info}
               onChange={(e) => set("vet_info", e.target.value)}
+              onBlur={(e) => set("vet_info", formatProperName(e.target.value))}
               placeholder="Clinic name"
             />
           </Field>
@@ -382,6 +422,7 @@ export function IntakeForm({
           <Textarea
             value={form.dislikes}
             onChange={(e) => set("dislikes", e.target.value)}
+            onBlur={(e) => set("dislikes", formatSentenceStart(e.target.value))}
             placeholder="Hats, nail clippers, skateboards…"
           />
         </Field>
@@ -389,6 +430,7 @@ export function IntakeForm({
           <Textarea
             value={form.past_experiences}
             onChange={(e) => set("past_experiences", e.target.value)}
+            onBlur={(e) => set("past_experiences", formatSentenceStart(e.target.value))}
             placeholder="A scare at the vet, a dog fight…"
           />
         </Field>
@@ -396,6 +438,7 @@ export function IntakeForm({
           <Textarea
             value={form.physical_limitations}
             onChange={(e) => set("physical_limitations", e.target.value)}
+            onBlur={(e) => set("physical_limitations", formatSentenceStart(e.target.value))}
             placeholder="Hip dysplasia, recovering from surgery…"
           />
         </Field>
@@ -431,6 +474,11 @@ export function IntakeForm({
                   setHeardFriend(e.target.value);
                   set("referral_source", friendSource(e.target.value));
                 }}
+                onBlur={(e) => {
+                  const name = formatProperName(e.target.value);
+                  setHeardFriend(name);
+                  set("referral_source", friendSource(name));
+                }}
                 placeholder="Their name"
                 autoComplete="off"
                 aria-label="Name of the friend or neighbor"
@@ -444,6 +492,11 @@ export function IntakeForm({
               onChange={(e) => {
                 setHeardOther(e.target.value);
                 set("referral_source", e.target.value);
+              }}
+              onBlur={(e) => {
+                const where = formatSentenceStart(e.target.value);
+                setHeardOther(where);
+                set("referral_source", where);
               }}
               placeholder="Where did you hear about us?"
               aria-label="Other way you heard about us"
