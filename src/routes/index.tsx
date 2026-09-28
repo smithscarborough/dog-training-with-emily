@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useState, type FormEvent } from "react";
-import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { ContactMethods, SocialLinks } from "@/components/brand/social-links";
 import { TeddyPortrait } from "@/components/brand/teddy-portrait";
@@ -101,6 +101,10 @@ function HomeBanner({ message }: { message: string }) {
 }
 
 function Hero() {
+  const navigate = useNavigate();
+  const [paws, setPaws] = useState(0);
+  const [leaving, setLeaving] = useState(false);
+
   return (
     <section className="overflow-hidden bg-bg">
       <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-12 sm:py-16 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)] lg:gap-16 lg:py-16">
@@ -114,10 +118,29 @@ function Hero() {
             I come to you: we work in your home, address your dog’s specific
             needs, and leave with you knowing exactly what they need from you.
           </p>
-          <div className="mt-6">
-            <Button size="lg" asChild className="book-cta">
-              <Link to="/intake">Book a consult</Link>
+          <div className="relative mt-6 w-fit">
+            <Button
+              size="lg"
+              type="button"
+              className="book-cta"
+              onClick={() => {
+                if (leaving) return;
+                setLeaving(true);
+                setPaws((n) => n + 1);
+                window.setTimeout(() => {
+                  void navigate({ to: "/intake" });
+                }, 420);
+              }}
+            >
+              Book a consult
             </Button>
+            {paws > 0 ? (
+              <span key={paws} className="paw-burst" aria-hidden="true">
+                <PawPrint />
+                <PawPrint />
+                <PawPrint />
+              </span>
+            ) : null}
           </div>
         </div>
         <TeddyPortrait className="mx-auto max-w-[14rem] sm:max-w-[16rem] lg:max-w-none" />

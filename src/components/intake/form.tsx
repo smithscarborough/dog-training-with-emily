@@ -7,7 +7,7 @@ import type { IntakeInput } from "@/lib/server/dogs";
 import { formatUsPhone } from "@/lib/phone";
 import { cn } from "@/lib/utils";
 import { DateField, WhenPicker } from "@/components/portal/when-picker";
-import type { HoursDay } from "@/lib/hours";
+import { hoursSummary, type HoursDay } from "@/lib/hours";
 
 const empty: IntakeInput = {
   owner_name: "",
@@ -286,7 +286,15 @@ export function IntakeForm({
         <h2 className={heading}>When I should come</h2>
         <div className="grid gap-5 sm:grid-cols-2">
           {hours ? (
-            <Field label="A time for the consult" hint="Optional. Only open hours are listed." className="sm:col-span-2">
+            <Field
+              label="A time for the consult"
+              hint={
+                hoursSummary(hours).startsWith("Closed")
+                  ? "Optional. No open times right now. Send the form and I’ll suggest one."
+                  : `Optional. Open ${hoursSummary(hours).replaceAll("   ", " · ")}. Houston time. Closed days can’t be selected.`
+              }
+              className="sm:col-span-2"
+            >
               <WhenPicker
                 value={form.preferred_at}
                 onChange={(value) => set("preferred_at", value)}
