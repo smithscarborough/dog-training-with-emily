@@ -7,7 +7,11 @@ import { assertDogAccess, loadStudio } from "./helpers";
 
 const STATUSES = new Set(CHECKINS.map((c) => c.id));
 
-function asStatus(value: string): CheckinStatus {
+function asStatus(value: string, note: string): CheckinStatus | "note" {
+  if (!value.trim()) {
+    if (!note.trim()) throw new Error("Choose how it went, or leave a note.");
+    return "note";
+  }
   if (!STATUSES.has(value as CheckinStatus)) {
     throw new Error("Pick practiced, skipped, or stuck.");
   }
@@ -67,8 +71,8 @@ export const submitCheckin = createServerFn({ method: "POST" })
       throw new Error("Check-ins come from the household.");
     }
     const dog = await assertDogAccess(context.userId, data.dogId);
-    const status = asStatus(data.status);
     const note = data.note.trim().slice(0, 600);
+    const status = asStatus(data.status, note);
     const sql = await getSql();
     const recent = await sql<CheckinRow>`
       select * from checkins

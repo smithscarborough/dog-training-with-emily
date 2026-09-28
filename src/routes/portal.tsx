@@ -388,7 +388,7 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
         </Field>
         <div className="flex flex-wrap items-center gap-3">
           <Button
-            disabled={!status || busy}
+            disabled={(!status && !note.trim()) || busy}
             onClick={() => {
               if (!status) return;
               setBusy(true);

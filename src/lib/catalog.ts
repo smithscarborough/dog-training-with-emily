@@ -199,7 +199,13 @@ export const CHECKINS = [
 export type CheckinStatus = (typeof CHECKINS)[number]["id"];
 
 export function checkinById(id: string) {
-  return CHECKINS.find((c) => c.id === id) ?? CHECKINS[0];
+  return (
+    CHECKINS.find((c) => c.id === id) ?? {
+      id,
+      label: id === "note" ? "Note" : "Update",
+      hint: "",
+    }
+  );
 }
 
 export const HOUSTON_AREAS = [
