@@ -552,6 +552,13 @@ function Clients({
   );
 }
 
+const CLIENT_STATUSES = [
+  { id: "pending", label: "Pending", hint: "On file, not training yet.", on: "bg-[#e0a23b] text-ink" },
+  { id: "active", label: "Active", hint: "Training now, and counted on the board.", on: "bg-[#2f8f58] text-white" },
+  { id: "paused", label: "Paused", hint: "On a break, but still on file.", on: "bg-[#6d5c4a] text-white" },
+  { id: "archived", label: "Archived", hint: "No longer a client. The record stays.", on: "bg-[#3d3835] text-white" },
+] as const;
+
 function FileFact({ label, value, href }: { label: string; value: string; href?: string }) {
   const text = value.trim();
   return (
@@ -587,9 +594,11 @@ function ClientDetail({
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [checkins, setCheckins] = useState<CheckinRow[]>([]);
   const [status, setStatus] = useState(dog.status);
+  const [statusBusy, setStatusBusy] = useState(false);
 
   useEffect(() => {
     setStatus(dog.status);
+    setStatusBusy(false);
   }, [dog.id, dog.status]);
 
   useEffect(() => {
@@ -620,10 +629,10 @@ function ClientDetail({
   return (
     <div className="min-w-0 space-y-6">
       {leading}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
           <DogAvatar dog={dog} size="lg" />
-          <div>
+          <div className="min-w-0">
             <h2 className="font-display text-3xl">{dog.name}</h2>
             <p className="text-sm text-muted">
               {dog.owner_name} · {dog.breed || "mixed"} · {dog.age_text || "age n/a"}
@@ -631,51 +640,54 @@ function ClientDetail({
             <p className="text-xs text-faint">{dog.address}</p>
           </div>
         </div>
-        <div className="flex flex-col items-center gap-2 rounded-xl bg-pearl px-4 py-3 hairline">
-          <p id="client-status-label" className="text-center text-xs font-semibold uppercase tracking-wide text-faint">
+        <div className="w-full shrink-0 rounded-2xl bg-pearl px-3.5 py-3 hairline sm:w-[24rem]">
+          <p id="client-status-label" className="text-[11px] font-semibold uppercase tracking-[0.14em] text-faint">
             Client status
           </p>
           <div
             role="radiogroup"
             aria-labelledby="client-status-label"
-            className="inline-flex flex-wrap gap-1 rounded-full bg-surface-2 p-1 shadow-[inset_0_0_0_1px_rgba(44,24,16,0.14)]"
+            className="mt-2 grid grid-cols-2 gap-1 rounded-xl bg-bg p-1 shadow-[inset_0_0_0_1px_rgba(44,24,16,0.1)] sm:grid-cols-4"
           >
-            {(
-              [
-                ["pending", "bg-[#e0a23b] text-ink hover:bg-[#d0922c]"],
-                ["active", "bg-[#3d9460] text-bg hover:bg-[#348556]"],
-                ["paused", "bg-[#7c6aab] text-bg hover:bg-[#6d5c99]"],
-                ["archived", "bg-[#4a6670] text-bg hover:bg-[#3f5861]"],
-              ] as const
-            ).map(([st, on]) => (
-              <button
-                key={st}
-                type="button"
-                role="radio"
-                aria-checked={status === st}
-                className={cn(
-                  "h-9 rounded-full px-3.5 text-xs font-medium capitalize transition-colors duration-150",
-                  status === st ? on : "text-ink hover:bg-bg",
-                )}
-                onClick={() => {
-                  if (status === st) return;
-                  const previous = status;
-                  setStatus(st);
-                  void setDogStatus({ data: { dogId: dog.id, status: st } })
-                    .then(() => {
-                      toast.success(`Marked ${st}.`);
-                      onRefresh();
-                    })
-                    .catch((err: unknown) => {
-                      setStatus(previous);
-                      toast.error(err instanceof Error ? err.message : "Could not update.");
-                    });
-                }}
-              >
-                {st}
-              </button>
-            ))}
+            {CLIENT_STATUSES.map((item) => {
+              const selected = status === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  disabled={statusBusy}
+                  className={cn(
+                    "h-9 rounded-lg px-2 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40",
+                    selected ? item.on : "text-ink/80 hover:bg-white",
+                    statusBusy && "opacity-70",
+                  )}
+                  onClick={() => {
+                    if (selected || statusBusy) return;
+                    const previous = status;
+                    setStatus(item.id);
+                    setStatusBusy(true);
+                    void setDogStatus({ data: { dogId: dog.id, status: item.id } })
+                      .then(() => {
+                        toast.success(`${dog.name} is now ${item.label.toLowerCase()}.`);
+                        onRefresh();
+                      })
+                      .catch((err: unknown) => {
+                        setStatus(previous);
+                        toast.error(err instanceof Error ? err.message : "Could not update.");
+                      })
+                      .finally(() => setStatusBusy(false));
+                  }}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
           </div>
+          <p className="mt-2.5 min-h-8 text-xs leading-relaxed text-muted">
+            {CLIENT_STATUSES.find((item) => item.id === status)?.hint}
+          </p>
         </div>
       </div>
 
