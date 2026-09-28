@@ -5,6 +5,7 @@ import { DogAvatar } from "@/components/dogs/dog-avatar";
 import { EspressoBanner } from "@/components/layout/espresso-banner";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { Overview } from "@/components/studio/overview";
+import { IntakeForm } from "@/components/intake/form";
 import { PhaseMeter } from "@/components/progress/phase-meter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

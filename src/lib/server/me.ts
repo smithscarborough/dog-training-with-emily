@@ -5,6 +5,7 @@ import type { DogRow, MePayload } from "@/lib/types";
 import { linkDogsByEmail, loadStudio, stripPrivate, userEmail } from "./helpers";
 import { ensureDemoSeed } from "./seed-demo";
 import { normalizeHours, serializeHours } from "@/lib/hours";
+import { normalizeUsPhone } from "@/lib/phone";
 
 export const getMe = createServerFn({ method: "GET" })
   .middleware([authMiddleware])

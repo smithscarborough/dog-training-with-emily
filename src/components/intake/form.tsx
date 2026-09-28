@@ -37,6 +37,22 @@ const empty: IntakeInput = {
   photo_url: null,
 };
 
+const REFERRALS = [
+  "A friend or neighbor",
+  "The Academy",
+  "Instagram",
+  "Facebook",
+  "Google",
+  "Nextdoor",
+] as const;
+
+function referralChoice(value: string) {
+  const trimmed = value.trim();
+  if ((REFERRALS as readonly string[]).includes(trimmed)) return { choice: trimmed, other: "" };
+  if (!trimmed) return { choice: "", other: "" };
+  return { choice: "Other", other: trimmed };
+}
+
 const heading =
   "font-display text-2xl text-ink after:mt-2 after:block after:h-0.5 after:w-8 after:bg-accent after:content-['']";
 
@@ -70,11 +86,20 @@ export function IntakeForm({
   hours?: HoursDay[];
 }) {
   const [form, setForm] = useState<IntakeInput>({ ...empty, ...initial });
+  const startingReferral = referralChoice(initial?.referral_source ?? "");
+  const [heard, setHeard] = useState(startingReferral.choice);
+  const [heardOther, setHeardOther] = useState(startingReferral.other);
   const [busy, setBusy] = useState(false);
   const [paws, setPaws] = useState(0);
 
   function set<K extends keyof IntakeInput>(key: K, value: IntakeInput[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  function pickReferral(next: string) {
+    setHeard(next);
+    if (next === "Other") set("referral_source", heardOther.trim());
+    else set("referral_source", next);
   }
 
   async function handle(e: FormEvent) {
@@ -154,13 +179,58 @@ export function IntakeForm({
               ) : null}
             </Field>
           ) : null}
-          <Field label="How did you hear about Dog Training with Emily?" className="sm:col-span-2">
-            <Input
-              value={form.referral_source}
-              onChange={(e) => set("referral_source", e.target.value)}
-              placeholder="A friend, the Academy, Instagram…"
-            />
-          </Field>
+          <fieldset className="sm:col-span-2">
+            <legend className="text-base font-bold text-[#1a0e0a]">
+              How did you hear about Dog Training with Emily?
+            </legend>
+            <div
+              role="radiogroup"
+              aria-label="How did you hear about Dog Training with Emily?"
+              className="mt-3 grid gap-2 sm:grid-cols-2"
+            >
+              {[...REFERRALS, "Other"].map((option) => {
+                const on = heard === option;
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    onClick={() => pickReferral(option)}
+                    className={cn(
+                      "flex h-12 items-center gap-3 rounded-xl border bg-surface px-3 text-left text-base text-ink transition-colors",
+                      on
+                        ? "border-ink shadow-[inset_0_0_0_1px_rgba(47,28,18,0.45)]"
+                        : "border-line hover:border-ink/30",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "grid size-4 shrink-0 place-items-center rounded-full border bg-white",
+                        on ? "border-ink" : "border-ink/30",
+                      )}
+                      aria-hidden="true"
+                    >
+                      <span className={cn("size-2 rounded-full bg-ink transition-transform duration-150", on ? "scale-100" : "scale-0")} />
+                    </span>
+                    {option}
+                  </button>
+                );
+              })}
+            </div>
+            {heard === "Other" ? (
+              <Input
+                className="mt-3"
+                value={heardOther}
+                onChange={(e) => {
+                  setHeardOther(e.target.value);
+                  set("referral_source", e.target.value);
+                }}
+                placeholder="Where did you hear about us?"
+                aria-label="Other way you heard about us"
+              />
+            ) : null}
+          </fieldset>
         </div>
       </section>
 
