@@ -349,7 +349,7 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
               ) : null}
             </>
           ) : (
-            <p className="text-sm leading-relaxed text-muted">Homework appears here after a session is wrapped.</p>
+            <p className="text-sm leading-relaxed text-muted">Homework appears here after a session wraps.</p>
           )}
         </div>
         <div className="space-y-4 border-t border-line pt-5">
