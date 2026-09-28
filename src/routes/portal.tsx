@@ -76,7 +76,7 @@ function PortalPage() {
     return (
       <div className="flex min-h-full flex-1 flex-col">
         <main className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center px-4 py-16 text-center">
-          <h1 className="font-display text-4xl">Looks like we don't have your dog on file yet.</h1>
+          <h1 className="font-display text-4xl">Looks like we don't have a dog on file for you yet.</h1>
           <p className="mt-3 text-muted leading-relaxed">
             Tell me about your dog and needs via the form below, and I will promptly follow up as needed.
           </p>
