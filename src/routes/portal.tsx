@@ -720,6 +720,7 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
   const [when, setWhen] = useState("");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
+  const [paws, setPaws] = useState(0);
 
   async function load() {
     const rows = await listSessions({ data: { dogId: dog.id } });
@@ -772,31 +773,42 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
               placeholder="Recall in the yard, loose leash on the block…"
             />
           </Field>
-          <Button
-            disabled={busy || !when}
-            onClick={() => {
-              setBusy(true);
-              void requestSession({
-                data: {
-                  dogId: dog.id,
-                  sessionType,
-                  scheduledAt: new Date(when).toISOString(),
-                  ownerNotes: notes,
-                },
-              })
-                .then(() => {
-                  toast.success("Request sent. I'll confirm the window.");
-                  setNotes("");
-                  return load();
+          <div className="relative w-fit">
+            <Button
+              disabled={busy || !when}
+              onClick={() => {
+                if (busy || !when) return;
+                setPaws((n) => n + 1);
+                setBusy(true);
+                void requestSession({
+                  data: {
+                    dogId: dog.id,
+                    sessionType,
+                    scheduledAt: new Date(when).toISOString(),
+                    ownerNotes: notes,
+                  },
                 })
-                .catch((err: unknown) =>
-                  toast.error(err instanceof Error ? err.message : "Could not request."),
-                )
-                .finally(() => setBusy(false));
-            }}
-          >
-            {busy ? "Sending…" : "Request session"}
-          </Button>
+                  .then(() => {
+                    toast.success("Request sent. I'll confirm the window.");
+                    setNotes("");
+                    return load();
+                  })
+                  .catch((err: unknown) =>
+                    toast.error(err instanceof Error ? err.message : "Could not request."),
+                  )
+                  .finally(() => setBusy(false));
+              }}
+            >
+              {busy ? "Sending…" : "Request session"}
+            </Button>
+            {paws > 0 ? (
+              <span key={paws} className="paw-burst" aria-hidden="true">
+                <PawPrint />
+                <PawPrint />
+                <PawPrint />
+              </span>
+            ) : null}
+          </div>
           <p className="text-xs text-faint">Cancel at least 24 hours ahead from this list.</p>
         </CardBody>
       </Card>
