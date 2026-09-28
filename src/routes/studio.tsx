@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { DogAvatar } from "@/components/dogs/dog-avatar";
 import { EspressoBanner } from "@/components/layout/espresso-banner";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { IntakeForm } from "@/components/intake/form";
+import { Overview } from "@/components/studio/overview";
 import { PhaseMeter } from "@/components/progress/phase-meter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -141,7 +141,7 @@ function StudioApp({
   studio: { email: string; phone: string; instagram: string; facebook: string; x_url: string; banner_text?: string; hours_json?: string };
   onRefresh: () => void;
 }) {
-  const [tab, setTab] = useState<"board" | "clients" | "calendar" | "inbox" | "settings">("board");
+  const [tab, setTab] = useState<"overview" | "board" | "clients" | "calendar" | "inbox" | "settings">("board");
   const [selected, setSelected] = useState<number | null>(dogs[0]?.id ?? null);
   const pending = dogs.filter((d) => d.status === "pending");
   const active = dogs.filter((d) => d.status === "active");
@@ -168,6 +168,7 @@ function StudioApp({
           <div className="flex w-full max-w-full gap-0.5 rounded-full bg-ink p-1 sm:inline-flex sm:w-auto sm:gap-1 sm:p-1.5">
           {(
             [
+              ["overview", "Overview"],
               ["board", "Board"],
               ["clients", "Clients"],
               ["calendar", "Calendar"],
@@ -191,6 +192,7 @@ function StudioApp({
         </div>
 
         <div className="mt-8">
+          {tab === "overview" ? <Overview dogs={dogs} /> : null}
           {tab === "board" ? (
             <Board dogs={dogs} onOpen={(id) => { setSelected(id); setTab("clients"); }} />
           ) : null}
