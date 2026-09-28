@@ -286,7 +286,7 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <Card>
+      <Card className="order-1">
         <CardHeader>
           <CardTitle>Pending Sessions</CardTitle>
         </CardHeader>
@@ -298,55 +298,7 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
           )}
         </CardBody>
       </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Birthdays</CardTitle>
-        </CardHeader>
-        <CardBody className="space-y-3">
-          {birthdays.length === 0 ? (
-            <p className="text-sm text-muted">No birthdays on file yet.</p>
-          ) : (
-            <>
-              {birthdays.slice(0, 8).map(({ dog, days, turning, label }) => (
-              <button
-                key={dog.id}
-                type="button"
-                className={cn(
-                  "flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left hairline transition-colors hover:bg-bg",
-                  days === 0 && "bg-[#eef8f2]",
-                )}
-                onClick={() => onOpen(dog.id)}
-              >
-                <DogAvatar dog={dog} size="sm" />
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-baseline justify-between gap-3">
-                    <span className="truncate font-medium text-ink">{dog.name}</span>
-                    <span
-                      className={cn(
-                        "shrink-0 text-xs",
-                        days === 0 ? "font-semibold text-[#1f7a45]" : "text-muted",
-                      )}
-                    >
-                      {days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`}
-                    </span>
-                  </span>
-                  <span className="mt-0.5 block truncate text-xs text-muted">
-                    {dog.owner_name}
-                    {turning > 0 ? ` · Turns ${turning}` : ""}
-                    {" · "}
-                    {label}
-                  </span>
-                </span>
-              </button>
-              ))}
-              {birthdays.length > 8 ? (
-                <p className="text-xs text-muted">And {birthdays.length - 8} more on file.</p>
-              ) : null}
-            </>
-          )}
-        </CardBody>
-      </Card>
-      <Card>
+      <Card className="order-2 lg:order-3">
         <CardHeader>
           <CardTitle>Pending Clients</CardTitle>
         </CardHeader>
@@ -401,7 +353,7 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
           )}
         </CardBody>
       </Card>
-      <Card>
+      <Card className="order-3 lg:order-2">
         <CardHeader>
           <CardTitle>Upcoming Sessions</CardTitle>
         </CardHeader>
@@ -413,7 +365,55 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
           )}
         </CardBody>
       </Card>
-      <Card>
+      <Card className="order-4">
+        <CardHeader>
+          <CardTitle>Birthdays</CardTitle>
+        </CardHeader>
+        <CardBody className="space-y-3">
+          {birthdays.length === 0 ? (
+            <p className="text-sm text-muted">No birthdays on file yet.</p>
+          ) : (
+            <>
+              {birthdays.slice(0, 8).map(({ dog, days, turning, label }) => (
+              <button
+                key={dog.id}
+                type="button"
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left hairline transition-colors hover:bg-bg",
+                  days === 0 && "bg-[#eef8f2]",
+                )}
+                onClick={() => onOpen(dog.id)}
+              >
+                <DogAvatar dog={dog} size="sm" />
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-baseline justify-between gap-3">
+                    <span className="truncate font-medium text-ink">{dog.name}</span>
+                    <span
+                      className={cn(
+                        "shrink-0 text-xs",
+                        days === 0 ? "font-semibold text-[#1f7a45]" : "text-muted",
+                      )}
+                    >
+                      {days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`}
+                    </span>
+                  </span>
+                  <span className="mt-0.5 block truncate text-xs text-muted">
+                    {dog.owner_name}
+                    {turning > 0 ? ` · Turns ${turning}` : ""}
+                    {" · "}
+                    {label}
+                  </span>
+                </span>
+              </button>
+              ))}
+              {birthdays.length > 8 ? (
+                <p className="text-xs text-muted">And {birthdays.length - 8} more on file.</p>
+              ) : null}
+            </>
+          )}
+        </CardBody>
+      </Card>
+      <Card className="order-5">
         <CardHeader>
           <CardTitle>Between sessions</CardTitle>
         </CardHeader>
