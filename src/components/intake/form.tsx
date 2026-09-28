@@ -39,9 +39,9 @@ const empty: IntakeInput = {
 
 const REFERRALS = [
   "A friend or neighbor",
-  "The Academy",
   "Instagram",
   "Facebook",
+  "X",
   "Google",
   "Nextdoor",
 ] as const;
