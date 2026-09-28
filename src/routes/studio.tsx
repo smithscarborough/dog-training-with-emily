@@ -649,7 +649,7 @@ function ClientDetail({
             aria-labelledby="client-status-label"
             className="mt-2 grid grid-cols-2 gap-1 rounded-xl bg-bg p-1 shadow-[inset_0_0_0_1px_rgba(44,24,16,0.1)] sm:grid-cols-4"
           >
-            {CLIENT_STATUSES.map((item) => {
+            {CLIENT_STATUSES.map((item, index) => {
               const selected = status === item.id;
               return (
                 <button
@@ -659,7 +659,7 @@ function ClientDetail({
                   aria-checked={selected}
                   disabled={statusBusy}
                   className={cn(
-                    "h-9 rounded-lg px-2 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40",
+                    "status-choice relative h-9 rounded-lg px-2 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40",
                     selected ? item.on : "text-ink/80 hover:bg-white",
                     statusBusy && "opacity-70",
                   )}
@@ -681,6 +681,20 @@ function ClientDetail({
                   }}
                 >
                   {item.label}
+                  {selected ? null : (
+                    <span
+                      role="tooltip"
+                      className={cn(
+                        "status-tip pointer-events-none absolute bottom-[calc(100%+8px)] z-30 w-max max-w-[12.5rem] rounded-lg bg-ink px-2.5 py-1.5 text-left text-[11px] font-normal normal-case leading-snug tracking-normal text-bg shadow-[0_10px_24px_-14px_rgba(44,24,16,0.75)]",
+                        index % 2 === 0 ? "left-0" : "right-0",
+                        index === 0 && "sm:left-0 sm:right-auto",
+                        index > 0 && index < CLIENT_STATUSES.length - 1 && "sm:left-1/2 sm:right-auto sm:-translate-x-1/2",
+                        index === CLIENT_STATUSES.length - 1 && "sm:right-0 sm:left-auto",
+                      )}
+                    >
+                      {item.hint}
+                    </span>
+                  )}
                 </button>
               );
             })}

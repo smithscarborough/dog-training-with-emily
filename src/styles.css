@@ -115,7 +115,15 @@
   box-shadow: var(--shadow-border);
 }
 
-.logo-shine {
+.status-tip {
+  display: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .status-choice:hover .status-tip,
+  .status-choice:focus-visible .status-tip {
+    display: block;
+  }
+}
   position: relative;
   display: inline-block;
   max-width: 100%;
