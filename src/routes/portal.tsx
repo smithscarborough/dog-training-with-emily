@@ -9,18 +9,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/input";
+import { Input, Textarea } from "@/components/ui/input";
 import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { SESSION_TYPES, CHECKINS, checkinById, dollars, sessionTypeById, phaseFor, portalCatalog } from "@/lib/catalog";
 import { formatWhen, statusTone, checkinTone } from "@/lib/format";
 import { cancelOwnSession, listSessions, requestSession } from "@/lib/server/sessions";
 import { getProgress } from "@/lib/server/progress";
-import { updateDogPhoto } from "@/lib/server/dogs";
+import { updateDogPhoto, updateOwnProfile } from "@/lib/server/dogs";
 import { fileToJpegDataUrl } from "@/lib/photo";
 import { listCheckins, submitCheckin, clearCheckin } from "@/lib/server/checkins";
 import type { CheckinRow, DogRow, ProgressLogRow, ProgressRow, SessionRow } from "@/lib/types";
-import { WhenPicker } from "@/components/portal/when-picker";
+import { WhenPicker, DateField } from "@/components/portal/when-picker";
+import { formatUsPhone } from "@/lib/phone";
+import { formatUsAddress } from "@/lib/address";
+import { formatEmail, formatProperName, formatSentenceStart } from "@/lib/text";
 import { parseHours, isWithinHours, type HoursDay } from "@/lib/hours";
 import { useMe } from "@/lib/use-me";
 import { cn } from "@/lib/utils";
@@ -876,8 +879,112 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
   );
 }
 
+function profileDraft(dog: DogRow) {
+  return {
+    owner_name: dog.owner_name,
+    owner_email: dog.owner_email,
+    owner_phone: dog.owner_phone,
+    address: dog.address,
+    name: dog.name,
+    breed: dog.breed,
+    age_text: dog.age_text,
+    birthday: dog.birthday,
+    weight_text: dog.weight_text,
+    allergies: dog.allergies,
+    sex: dog.sex,
+    spayed_neutered: dog.spayed_neutered,
+    dislikes: dog.dislikes,
+    past_experiences: dog.past_experiences,
+    physical_limitations: dog.physical_limitations,
+    household: dog.household,
+    other_pets: dog.other_pets,
+    kids_in_home: dog.kids_in_home,
+    vet_info: dog.vet_info,
+    preferred_days: dog.preferred_days,
+  };
+}
+
+type ProfileDraft = ReturnType<typeof profileDraft>;
+
+function todayKey() {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function birthdayLabel(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year!, month! - 1, day).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function sexLabel(dog: Pick<DogRow, "sex" | "spayed_neutered">) {
+  const altered =
+    dog.spayed_neutered === "Yes"
+      ? dog.sex === "Male"
+        ? "Neutered"
+        : dog.sex === "Female"
+          ? "Spayed"
+          : "Spayed or neutered"
+      : dog.spayed_neutered;
+  return [dog.sex, altered].filter(Boolean).join(" · ");
+}
+
+function Chips({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: readonly string[];
+  onChange: (next: string) => void;
+}) {
+  return (
+    <fieldset>
+      <legend className="text-sm font-bold text-[#1a0e0a]">{label}</legend>
+      <div role="radiogroup" aria-label={label} className="mt-2 flex flex-wrap gap-2">
+        {options.map((option) => {
+          const on = value === option;
+          return (
+            <button
+              key={option}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              onClick={() => onChange(on ? "" : option)}
+              className={cn("chip-3d rounded-full px-3 py-2 text-sm", on && "is-on")}
+            >
+              {option}
+            </button>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
+
 function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<ProfileDraft>(() => profileDraft(dog));
+  const [busy, setBusy] = useState(false);
+  const [paws, setPaws] = useState(0);
   const [removing, setRemoving] = useState(false);
+  const dirty = JSON.stringify(draft) !== JSON.stringify(profileDraft(dog));
+
+  useEffect(() => {
+    setEditing(false);
+    setDraft(profileDraft(dog));
+  }, [dog.id]);
+
+  function patch<K extends keyof ProfileDraft>(key: K, value: ProfileDraft[K]) {
+    setDraft((current) => ({ ...current, [key]: value }));
+  }
 
   function removePhoto() {
     if (removing) return;
@@ -893,35 +1000,259 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }) 
       .finally(() => setRemoving(false));
   }
 
+  function save() {
+    if (!dirty || busy) return;
+    setPaws((n) => n + 1);
+    setBusy(true);
+    void updateOwnProfile({ data: { dogId: dog.id, ...draft } })
+      .then(() => {
+        toast.success("Saved. Emily will see this before the next visit.");
+        setEditing(false);
+        onRefresh();
+      })
+      .catch((err: unknown) => toast.error(err instanceof Error ? err.message : "Could not save."))
+      .finally(() => setBusy(false));
+  }
+
   return (
     <div className="grid w-full gap-4 lg:grid-cols-2">
+      <div className="flex items-end justify-between gap-3 lg:col-span-2">
+        <p className="text-sm leading-relaxed text-muted">Emily sees this before she comes over.</p>
+        {editing ? null : (
+          <button
+            type="button"
+            className="chip-3d shrink-0 rounded-full px-4 py-2 text-sm"
+            onClick={() => {
+              setDraft(profileDraft(dog));
+              setEditing(true);
+            }}
+          >
+            Edit details
+          </button>
+        )}
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Household</CardTitle>
         </CardHeader>
         <CardBody className="space-y-4 text-sm">
-          <Row k="Owner" v={dog.owner_name} />
-          <Row k="Email" v={dog.owner_email} />
-          <Row k="Phone" v={dog.owner_phone} />
-          <Row k="Address" v={dog.address} />
-          <Row k="Age" v={dog.age_text} />
-          <Row k="Weight" v={dog.weight_text} />
-          <Row k="Allergies" v={dog.allergies} />
+          {editing ? (
+            <>
+              <Field label="Your name" required>
+                <Input
+                  value={draft.owner_name}
+                  onChange={(e) => patch("owner_name", e.target.value)}
+                  onBlur={(e) => patch("owner_name", formatProperName(e.target.value))}
+                />
+              </Field>
+              <Field label="Phone" required>
+                <Input
+                  type="tel"
+                  inputMode="tel"
+                  value={draft.owner_phone}
+                  onChange={(e) => patch("owner_phone", formatUsPhone(e.target.value))}
+                  placeholder="713-555-0148"
+                />
+              </Field>
+              <Field label="Email" required hint="How Emily reaches you. This does not change your login.">
+                <Input
+                  type="email"
+                  value={draft.owner_email}
+                  onChange={(e) => patch("owner_email", e.target.value)}
+                  onBlur={(e) => patch("owner_email", formatEmail(e.target.value))}
+                />
+              </Field>
+              <Field label="Home address" required>
+                <Input
+                  value={draft.address}
+                  onChange={(e) => patch("address", e.target.value)}
+                  onBlur={(e) => patch("address", formatUsAddress(e.target.value))}
+                />
+              </Field>
+              <Field label="Who lives here">
+                <Input
+                  value={draft.household}
+                  onChange={(e) => patch("household", e.target.value)}
+                  onBlur={(e) => patch("household", formatSentenceStart(e.target.value))}
+                  placeholder="Two adults"
+                />
+              </Field>
+              <Field label="Other pets">
+                <Input
+                  value={draft.other_pets}
+                  onChange={(e) => patch("other_pets", e.target.value)}
+                  onBlur={(e) => patch("other_pets", formatSentenceStart(e.target.value))}
+                  placeholder="One cat"
+                />
+              </Field>
+              <Field label="Kids in the home">
+                <Input
+                  value={draft.kids_in_home}
+                  onChange={(e) => patch("kids_in_home", e.target.value)}
+                  onBlur={(e) => patch("kids_in_home", formatSentenceStart(e.target.value))}
+                  placeholder="None, or ages 4 and 7"
+                />
+              </Field>
+              <Field label="Days that usually work">
+                <Input
+                  value={draft.preferred_days}
+                  onChange={(e) => patch("preferred_days", e.target.value)}
+                  onBlur={(e) => patch("preferred_days", formatSentenceStart(e.target.value))}
+                  placeholder="Tue / Thu after 4, weekend morning"
+                />
+              </Field>
+            </>
+          ) : (
+            <>
+              <Row k="Owner" v={dog.owner_name} />
+              <Row k="Email" v={dog.owner_email} />
+              <Row k="Phone" v={dog.owner_phone} />
+              <Row k="Address" v={dog.address} />
+              <Row k="Household" v={dog.household} />
+              <Row k="Other pets" v={dog.other_pets} />
+              <Row k="Kids" v={dog.kids_in_home} />
+              <Row k="Days that work" v={dog.preferred_days} />
+            </>
+          )}
         </CardBody>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>History we keep in mind</CardTitle>
+          <CardTitle>{dog.name}</CardTitle>
         </CardHeader>
         <CardBody className="space-y-4 text-sm">
-          <Row k="Dislikes" v={dog.dislikes} />
-          <Row k="Past experiences" v={dog.past_experiences} />
-          <Row k="Physical limits" v={dog.physical_limitations} />
-          <Row k="Other pets" v={dog.other_pets} />
-          <Row k="Kids" v={dog.kids_in_home} />
-          <Row k="Vet" v={dog.vet_info} />
+          {editing ? (
+            <>
+              <Field label="Dog’s name" required>
+                <Input
+                  value={draft.name}
+                  onChange={(e) => patch("name", e.target.value)}
+                  onBlur={(e) => patch("name", formatProperName(e.target.value))}
+                />
+              </Field>
+              <Field label="Breed">
+                <Input
+                  value={draft.breed}
+                  onChange={(e) => patch("breed", e.target.value)}
+                  onBlur={(e) => patch("breed", formatProperName(e.target.value))}
+                  placeholder="Lab mix"
+                />
+              </Field>
+              <Chips
+                label="Sex"
+                value={draft.sex}
+                options={["Female", "Male"]}
+                onChange={(value) => patch("sex", value)}
+              />
+              <Chips
+                label="Spayed or neutered"
+                value={draft.spayed_neutered}
+                options={["Yes", "No", "Not yet"]}
+                onChange={(value) => patch("spayed_neutered", value)}
+              />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Age">
+                  <Input
+                    value={draft.age_text}
+                    onChange={(e) => patch("age_text", e.target.value)}
+                    onBlur={(e) => patch("age_text", formatSentenceStart(e.target.value))}
+                    placeholder="3 years"
+                  />
+                </Field>
+                <Field label="Weight">
+                  <Input
+                    value={draft.weight_text}
+                    onChange={(e) => patch("weight_text", e.target.value)}
+                    placeholder="42 lbs"
+                  />
+                </Field>
+              </div>
+              <Field label="Birthday" hint="Optional. I’ll reach out on the day.">
+                <DateField value={draft.birthday} max={todayKey()} onChange={(value) => patch("birthday", value)} />
+              </Field>
+              <Field label="Allergies or dietary restrictions">
+                <Input
+                  value={draft.allergies}
+                  onChange={(e) => patch("allergies", e.target.value)}
+                  onBlur={(e) => patch("allergies", formatSentenceStart(e.target.value))}
+                  placeholder="None, or chicken"
+                />
+              </Field>
+              <Field label="Things this dog does not like">
+                <Textarea
+                  className="min-h-20"
+                  value={draft.dislikes}
+                  onChange={(e) => patch("dislikes", e.target.value)}
+                  onBlur={(e) => patch("dislikes", formatSentenceStart(e.target.value))}
+                />
+              </Field>
+              <Field label="Past bad experiences">
+                <Textarea
+                  className="min-h-20"
+                  value={draft.past_experiences}
+                  onChange={(e) => patch("past_experiences", e.target.value)}
+                  onBlur={(e) => patch("past_experiences", formatSentenceStart(e.target.value))}
+                />
+              </Field>
+              <Field label="Physical limitations">
+                <Textarea
+                  className="min-h-20"
+                  value={draft.physical_limitations}
+                  onChange={(e) => patch("physical_limitations", e.target.value)}
+                  onBlur={(e) => patch("physical_limitations", formatSentenceStart(e.target.value))}
+                />
+              </Field>
+              <Field label="Veterinarian">
+                <Input
+                  value={draft.vet_info}
+                  onChange={(e) => patch("vet_info", e.target.value)}
+                  onBlur={(e) => patch("vet_info", formatProperName(e.target.value))}
+                  placeholder="Clinic name"
+                />
+              </Field>
+            </>
+          ) : (
+            <>
+              <Row k="Birthday" v={birthdayLabel(dog.birthday)} />
+              <Row k="Sex" v={sexLabel(dog)} />
+              <Row k="Age" v={dog.age_text} />
+              <Row k="Weight" v={dog.weight_text} />
+              <Row k="Allergies" v={dog.allergies} />
+              <Row k="Dislikes" v={dog.dislikes} />
+              <Row k="Past experiences" v={dog.past_experiences} />
+              <Row k="Physical limits" v={dog.physical_limitations} />
+              <Row k="Vet" v={dog.vet_info} />
+            </>
+          )}
         </CardBody>
       </Card>
+      {editing ? (
+        <div className="flex flex-wrap items-center gap-4 lg:col-span-2">
+          <div className="relative w-fit">
+            <Button type="button" disabled={!dirty || busy} onClick={save}>
+              {busy ? "Saving…" : "Save changes"}
+            </Button>
+            {paws > 0 ? (
+              <span key={paws} className="paw-burst" aria-hidden="true">
+                <PawPrint />
+                <PawPrint />
+                <PawPrint />
+              </span>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            className="text-sm text-muted underline underline-offset-4 disabled:opacity-40"
+            disabled={busy}
+            onClick={() => {
+              setDraft(profileDraft(dog));
+              setEditing(false);
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      ) : null}
       <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle>{dog.name}’s photo</CardTitle>

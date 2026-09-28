@@ -6,6 +6,8 @@ import type { DogRow } from "@/lib/types";
 import { assertDogAccess, loadStudio, requireTrainer, stripPrivate } from "./helpers";
 import { seedProgressForDog } from "./progress-seed";
 import { normalizeUsPhone } from "@/lib/phone";
+import { formatUsAddress } from "@/lib/address";
+import { formatEmail, formatProperName, formatSentenceStart } from "@/lib/text";
 import { isWithinHours, parseHours } from "@/lib/hours";
 
 export type IntakeInput = {
@@ -237,6 +239,109 @@ export const setVisibleSkills = createServerFn({ method: "POST" })
       where id = ${data.dogId}
     `;
     return { keys };
+  });
+
+const SEX = new Set(["", "Female", "Male"]);
+const ALTERED = new Set(["", "Yes", "No", "Not yet"]);
+
+function clip(value: string, max: number) {
+  return value.trim().slice(0, max);
+}
+
+export type ProfileInput = {
+  dogId: number;
+  owner_name: string;
+  owner_email: string;
+  owner_phone: string;
+  address: string;
+  name: string;
+  breed: string;
+  age_text: string;
+  birthday: string;
+  weight_text: string;
+  allergies: string;
+  sex: string;
+  spayed_neutered: string;
+  dislikes: string;
+  past_experiences: string;
+  physical_limitations: string;
+  household: string;
+  other_pets: string;
+  kids_in_home: string;
+  vet_info: string;
+  preferred_days: string;
+};
+
+function cleanProfile(data: ProfileInput): ProfileInput {
+  const owner_name = formatProperName(clip(data.owner_name ?? "", 80));
+  const name = formatProperName(clip(data.name ?? "", 80));
+  const owner_email = formatEmail(clip(data.owner_email ?? "", 120));
+  const address = formatUsAddress(clip(data.address ?? "", 200));
+  if (!owner_name) throw new Error("Your name is required.");
+  if (!name) throw new Error("Your dog’s name is required.");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(owner_email)) throw new Error("Enter a real email.");
+  if (!address) throw new Error("Home address is required.");
+  const sex = clip(data.sex ?? "", 20);
+  const spayed = clip(data.spayed_neutered ?? "", 20);
+  if (!SEX.has(sex) || !ALTERED.has(spayed)) throw new Error("Check the sex and spay choices.");
+  return {
+    dogId: data.dogId,
+    owner_name,
+    owner_email,
+    owner_phone: normalizeUsPhone(data.owner_phone ?? "", true),
+    address,
+    name,
+    breed: formatProperName(clip(data.breed ?? "", 80)),
+    age_text: formatSentenceStart(clip(data.age_text ?? "", 80)),
+    birthday: cleanBirthday(data.birthday ?? ""),
+    weight_text: clip(data.weight_text ?? "", 40),
+    allergies: formatSentenceStart(clip(data.allergies ?? "", 400)),
+    sex,
+    spayed_neutered: spayed,
+    dislikes: formatSentenceStart(clip(data.dislikes ?? "", 2000)),
+    past_experiences: formatSentenceStart(clip(data.past_experiences ?? "", 2000)),
+    physical_limitations: formatSentenceStart(clip(data.physical_limitations ?? "", 2000)),
+    household: formatSentenceStart(clip(data.household ?? "", 200)),
+    other_pets: formatSentenceStart(clip(data.other_pets ?? "", 200)),
+    kids_in_home: formatSentenceStart(clip(data.kids_in_home ?? "", 200)),
+    vet_info: formatProperName(clip(data.vet_info ?? "", 200)),
+    preferred_days: formatSentenceStart(clip(data.preferred_days ?? "", 200)),
+  };
+}
+
+export const updateOwnProfile = createServerFn({ method: "POST" })
+  .validator((data: ProfileInput) => cleanProfile(data))
+  .middleware([authMiddleware])
+  .handler(async ({ context, data }) => {
+    const dog = await assertDogAccess(context.userId, data.dogId);
+    if (dog.owner_user_id !== context.userId) throw new Error("Only the household can update this.");
+    const sql = await getSql();
+    await sql`
+      update dogs set
+        owner_name = ${data.owner_name},
+        owner_email = ${data.owner_email},
+        owner_phone = ${data.owner_phone},
+        address = ${data.address},
+        name = ${data.name},
+        breed = ${data.breed},
+        age_text = ${data.age_text},
+        birthday = ${data.birthday},
+        weight_text = ${data.weight_text},
+        allergies = ${data.allergies},
+        sex = ${data.sex},
+        spayed_neutered = ${data.spayed_neutered},
+        dislikes = ${data.dislikes},
+        past_experiences = ${data.past_experiences},
+        physical_limitations = ${data.physical_limitations},
+        household = ${data.household},
+        other_pets = ${data.other_pets},
+        kids_in_home = ${data.kids_in_home},
+        vet_info = ${data.vet_info},
+        preferred_days = ${data.preferred_days},
+        updated_at = now()
+      where id = ${dog.id}
+    `;
+    return { ok: true };
   });
 
 export const updateDogPhoto = createServerFn({ method: "POST" })
