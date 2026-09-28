@@ -6,7 +6,7 @@ import { GOALS } from "@/lib/catalog";
 import type { IntakeInput } from "@/lib/server/dogs";
 import { formatUsPhone } from "@/lib/phone";
 import { cn } from "@/lib/utils";
-import { WhenPicker } from "@/components/portal/when-picker";
+import { DateField, WhenPicker } from "@/components/portal/when-picker";
 import type { HoursDay } from "@/lib/hours";
 
 const empty: IntakeInput = {
@@ -240,12 +240,7 @@ export function IntakeForm({
             />
           </Field>
           <Field label="Birthday" hint="Optional. I’ll reach out on the day.">
-            <Input
-              type="date"
-              value={form.birthday}
-              max={localToday()}
-              onChange={(e) => set("birthday", e.target.value)}
-            />
+            <DateField value={form.birthday} max={localToday()} onChange={(value) => set("birthday", value)} />
           </Field>
           <Field label="Allergies or dietary restrictions">
             <Input

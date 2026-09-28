@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { DogAvatar } from "@/components/dogs/dog-avatar";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -24,6 +24,59 @@ import { WhenPicker } from "@/components/portal/when-picker";
 import { parseHours, isWithinHours, type HoursDay } from "@/lib/hours";
 import { useMe } from "@/lib/use-me";
 import { cn } from "@/lib/utils";
+
+function PawPrint() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <ellipse cx="6.2" cy="8.2" rx="2.1" ry="2.6" />
+      <ellipse cx="12" cy="5.4" rx="2.15" ry="2.7" />
+      <ellipse cx="17.8" cy="8.2" rx="2.1" ry="2.6" />
+      <ellipse cx="8.6" cy="10" rx="1.7" ry="2.1" />
+      <path d="M7.2 14.2c.2-2.2 2.4-3.4 4.8-3.4s4.6 1.2 4.8 3.4c.2 2.4-2 4.8-4.8 4.8s-5-2.4-4.8-4.8z" />
+    </svg>
+  );
+}
+
+function EmptyPortal() {
+  const navigate = useNavigate();
+  const [paws, setPaws] = useState(0);
+  const [leaving, setLeaving] = useState(false);
+
+  return (
+    <div className="flex min-h-full flex-1 flex-col">
+      <main className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center px-4 py-16 text-center">
+        <h1 className="font-display text-4xl">Looks like we don't have a dog on file for you yet.</h1>
+        <p className="mt-3 text-muted leading-relaxed">
+          Tell me about your dog and needs via the form below, and I will promptly follow up as needed.
+        </p>
+        <p className="mt-3 text-muted leading-relaxed">Thank you!</p>
+        <div className="relative mt-6">
+          <Button
+            type="button"
+            onClick={() => {
+              if (leaving) return;
+              setLeaving(true);
+              setPaws((n) => n + 1);
+              window.setTimeout(() => {
+                void navigate({ to: "/intake" });
+              }, 420);
+            }}
+          >
+            Begin intake
+          </Button>
+          {paws > 0 ? (
+            <span key={paws} className="paw-burst" aria-hidden="true">
+              <PawPrint />
+              <PawPrint />
+              <PawPrint />
+            </span>
+          ) : null}
+        </div>
+      </main>
+      <SiteFooter />
+    </div>
+  );
+}
 
 function PortalPending() {
   return (
@@ -72,23 +125,7 @@ function PortalPage() {
     );
   }
 
-  if (!me?.dogs.length) {
-    return (
-      <div className="flex min-h-full flex-1 flex-col">
-        <main className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center px-4 py-16 text-center">
-          <h1 className="font-display text-4xl">Looks like we don't have a dog on file for you yet.</h1>
-          <p className="mt-3 text-muted leading-relaxed">
-            Tell me about your dog and needs via the form below, and I will promptly follow up as needed.
-          </p>
-          <p className="mt-3 text-muted leading-relaxed">Thank you!</p>
-          <Button className="mt-6" asChild>
-            <Link to="/intake">Begin intake</Link>
-          </Button>
-        </main>
-        <SiteFooter />
-      </div>
-    );
-  }
+  if (!me?.dogs.length) return <EmptyPortal />;
 
   return <PortalApp dogs={me.dogs} hours={parseHours(me.studio.hours_json)} onRefresh={() => void refresh()} />;
 }

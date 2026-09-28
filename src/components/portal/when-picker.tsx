@@ -41,6 +41,25 @@ function labelFor(value: string) {
 
 const MINUTES = [0, 15, 30, 45];
 
+const dayPickerClassNames = {
+  root: "w-full",
+  months: "w-full",
+  month: "w-full",
+  month_caption: "flex items-center justify-center pb-2 text-sm font-semibold text-ink",
+  nav: "absolute inset-x-0 top-0 flex justify-between px-1",
+  button_previous: "size-8 rounded-full text-ink hover:bg-surface-2",
+  button_next: "size-8 rounded-full text-ink hover:bg-surface-2",
+  weekdays: "flex",
+  weekday: "flex-1 py-1 text-center text-[11px] font-medium text-muted",
+  week: "flex",
+  day: "flex flex-1 items-center justify-center p-0.5",
+  day_button: cn("size-9 rounded-full text-sm text-ink transition-colors", "hover:bg-accent/20"),
+  selected: "[&_button]:bg-accent [&_button]:font-semibold [&_button]:text-ink",
+  today: "[&_button]:font-bold",
+  disabled: "[&_button]:text-faint [&_button]:hover:bg-transparent",
+  outside: "[&_button]:text-faint",
+};
+
 export function WhenPicker({
   value,
   onChange,
@@ -150,27 +169,7 @@ export function WhenPicker({
                 ? [{ before: today }, (date: Date) => !dayIsOpen(date, hours)]
                 : { before: today }
             }
-            classNames={{
-              root: "w-full",
-              months: "w-full",
-              month: "w-full",
-              month_caption: "flex items-center justify-center pb-2 text-sm font-semibold text-ink",
-              nav: "absolute inset-x-0 top-0 flex justify-between px-1",
-              button_previous: "size-8 rounded-full text-ink hover:bg-surface-2",
-              button_next: "size-8 rounded-full text-ink hover:bg-surface-2",
-              weekdays: "flex",
-              weekday: "flex-1 py-1 text-center text-[11px] font-medium text-muted",
-              week: "flex",
-              day: "flex flex-1 items-center justify-center p-0.5",
-              day_button: cn(
-                "size-9 rounded-full text-sm text-ink transition-colors",
-                "hover:bg-accent/20",
-              ),
-              selected: "[&_button]:bg-accent [&_button]:font-semibold [&_button]:text-ink",
-              today: "[&_button]:font-bold",
-              disabled: "[&_button]:text-faint [&_button]:hover:bg-transparent",
-              outside: "[&_button]:text-faint",
-            }}
+            classNames={dayPickerClassNames}
           />
           {limited ? (
             slots.length ? (
@@ -222,6 +221,72 @@ export function WhenPicker({
             </select>
           </div>
           )}
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
+function parseDay(value: string): Date | undefined {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
+  const [y, m, d] = value.split("-").map(Number);
+  const date = new Date(y!, m! - 1, d);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
+function dayValue(date: Date) {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+export function DateField({
+  value,
+  onChange,
+  max,
+  placeholder = "mm/dd/yyyy",
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  max?: string;
+  placeholder?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = parseDay(value);
+  const maxDate = max ? parseDay(max) : undefined;
+  const label = selected
+    ? selected.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    : placeholder;
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        className="date-trigger flex h-12 w-full items-center rounded-md border border-line bg-surface px-3 text-left text-base text-ink shadow-[inset_0_1px_0_rgba(47,28,18,0.04)]"
+        onClick={() => setOpen((current) => !current)}
+      >
+        <span className={selected ? "text-ink" : "text-[#a39284]"}>{label}</span>
+      </button>
+      {open ? (
+        <>
+          <button
+            type="button"
+            aria-label="Close calendar"
+            className="fixed inset-0 z-20 cursor-default bg-transparent"
+            onClick={() => setOpen(false)}
+          />
+          <div className="absolute z-30 mt-2 w-80 max-w-[calc(100vw-2.5rem)] rounded-xl border border-line bg-surface p-3 shadow-[0_12px_28px_-16px_rgba(44,24,16,0.35)]">
+            <DayPicker
+              mode="single"
+              selected={selected}
+              defaultMonth={selected ?? maxDate}
+              onSelect={(day) => {
+                if (!day) return;
+                onChange(dayValue(day));
+                setOpen(false);
+              }}
+              disabled={maxDate ? { after: maxDate } : undefined}
+              classNames={dayPickerClassNames}
+            />
           </div>
         </>
       ) : null}
