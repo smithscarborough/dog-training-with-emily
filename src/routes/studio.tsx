@@ -1381,7 +1381,7 @@ function HoursCard({ hoursJson, onRefresh }: { hoursJson: string; onRefresh: () 
   })();
 
   return (
-    <Card>
+    <Card className="w-full max-w-xl">
       <CardBody className="space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
@@ -1429,9 +1429,9 @@ function HoursCard({ hoursJson, onRefresh }: { hoursJson: string; onRefresh: () 
                       />
                     </button>
                     {row.open ? (
-                      <span className="flex min-w-0 flex-1 items-center gap-2">
+                      <span className="flex items-center gap-2">
                         <select
-                          className="h-10 min-w-0 flex-1 rounded-full border border-line bg-bg px-3 text-sm"
+                          className="h-10 w-[7.5rem] rounded-full border border-line bg-bg px-3 text-sm"
                           value={row.start}
                           onChange={(e) => patch(day, { start: e.target.value })}
                         >
@@ -1443,7 +1443,7 @@ function HoursCard({ hoursJson, onRefresh }: { hoursJson: string; onRefresh: () 
                         </select>
                         <span className="text-xs text-muted">to</span>
                         <select
-                          className="h-10 min-w-0 flex-1 rounded-full border border-line bg-bg px-3 text-sm"
+                          className="h-10 w-[7.5rem] rounded-full border border-line bg-bg px-3 text-sm"
                           value={row.end}
                           onChange={(e) => patch(day, { end: e.target.value })}
                         >
