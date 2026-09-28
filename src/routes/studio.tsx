@@ -21,6 +21,7 @@ import {
   saveTrainerNotes,
   setDogCredits,
   setDogStatus,
+  setDogBirthday,
   setVisibleSkills,
   trainerCreateClient,
 } from "@/lib/server/dogs";
@@ -227,6 +228,43 @@ function pendingSnapshot(dog: DogRow) {
   };
 }
 
+function localToday() {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function birthdayOn(year: number, month: number, day: number) {
+  const date = new Date(year, month - 1, day);
+  if (date.getMonth() !== month - 1) return new Date(year, month - 1, day - 1);
+  return date;
+}
+
+function upcomingBirthdays(dogs: DogRow[]) {
+  const today = new Date();
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const rows: { dog: DogRow; days: number; turning: number; label: string }[] = [];
+  for (const dog of dogs) {
+    if (dog.status === "archived") continue;
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec((dog.birthday || "").trim());
+    if (!match) continue;
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    let when = birthdayOn(start.getFullYear(), month, day);
+    if (when < start) when = birthdayOn(start.getFullYear() + 1, month, day);
+    const days = Math.round((when.getTime() - start.getTime()) / 86400000);
+    rows.push({
+      dog,
+      days,
+      turning: when.getFullYear() - year,
+      label: when.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }),
+    });
+  }
+  rows.sort((a, b) => a.days - b.days || a.dog.name.localeCompare(b.dog.name));
+  return rows;
+}
+
 function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void }) {
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [checkins, setCheckins] = useState<CheckinRow[]>([]);
@@ -244,6 +282,7 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
     .sort(byTime)
     .slice(0, 6);
   const pending = dogs.filter((d) => d.status === "pending");
+  const birthdays = upcomingBirthdays(dogs);
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
@@ -256,6 +295,54 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
             <p className="text-sm text-muted">No pending sessions.</p>
           ) : (
             toConfirm.map((s) => <BoardSession key={s.id} session={s} onOpen={onOpen} />)
+          )}
+        </CardBody>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Birthdays</CardTitle>
+        </CardHeader>
+        <CardBody className="space-y-3">
+          {birthdays.length === 0 ? (
+            <p className="text-sm text-muted">No birthdays on file yet.</p>
+          ) : (
+            <>
+              {birthdays.slice(0, 8).map(({ dog, days, turning, label }) => (
+              <button
+                key={dog.id}
+                type="button"
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left hairline transition-colors hover:bg-bg",
+                  days === 0 && "bg-[#eef8f2]",
+                )}
+                onClick={() => onOpen(dog.id)}
+              >
+                <DogAvatar dog={dog} size="sm" />
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-baseline justify-between gap-3">
+                    <span className="truncate font-medium text-ink">{dog.name}</span>
+                    <span
+                      className={cn(
+                        "shrink-0 text-xs",
+                        days === 0 ? "font-semibold text-[#1f7a45]" : "text-muted",
+                      )}
+                    >
+                      {days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`}
+                    </span>
+                  </span>
+                  <span className="mt-0.5 block truncate text-xs text-muted">
+                    {dog.owner_name}
+                    {turning > 0 ? ` · Turns ${turning}` : ""}
+                    {" · "}
+                    {label}
+                  </span>
+                </span>
+              </button>
+              ))}
+              {birthdays.length > 8 ? (
+                <p className="text-xs text-muted">And {birthdays.length - 8} more on file.</p>
+              ) : null}
+            </>
           )}
         </CardBody>
       </Card>
@@ -589,6 +676,7 @@ function ClientDetail({
   const [notes, setNotes] = useState(dog.trainer_private_notes);
   const [savedNote, setSavedNote] = useState(dog.trainer_private_notes);
   const [credits, setCredits] = useState(String(dog.credits));
+  const [birthday, setBirthday] = useState(dog.birthday || "");
   const [current, setCurrent] = useState<ProgressRow[]>([]);
   const [filter, setFilter] = useState<"working" | "all">("working");
   const [sessions, setSessions] = useState<SessionRow[]>([]);
@@ -605,6 +693,7 @@ function ClientDetail({
     setNotes(dog.trainer_private_notes);
     setSavedNote(dog.trainer_private_notes);
     setCredits(String(dog.credits));
+    setBirthday(dog.birthday || "");
     void getProgress({ data: { dogId: dog.id } })
       .then((r) => setCurrent(r.current))
       .catch(() => setCurrent([]));
@@ -767,6 +856,33 @@ function ClientDetail({
               }}
             >
               Update credits
+            </Button>
+            <Field label="Birthday">
+              <Input
+                type="date"
+                value={birthday}
+                max={localToday()}
+                onChange={(e) => setBirthday(e.target.value)}
+              />
+            </Field>
+            <p className="text-xs leading-relaxed text-muted">
+              Optional. Coming-up days show on the board.
+            </p>
+            <Button
+              size="sm"
+              disabled={birthday === (dog.birthday || "")}
+              onClick={() => {
+                void setDogBirthday({ data: { dogId: dog.id, birthday } })
+                  .then(() => {
+                    toast.success(birthday ? "Birthday saved." : "Birthday cleared.");
+                    onRefresh();
+                  })
+                  .catch((err: unknown) =>
+                    toast.error(err instanceof Error ? err.message : "Could not save."),
+                  );
+              }}
+            >
+              Save birthday
             </Button>
             <dl className="space-y-3 border-t border-line pt-4">
               <FileFact

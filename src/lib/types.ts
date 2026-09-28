@@ -23,6 +23,7 @@ export type DogRow = {
   name: string;
   breed: string;
   age_text: string;
+  birthday: string;
   weight_text: string;
   allergies: string;
   sex: string;

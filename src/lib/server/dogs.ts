@@ -15,6 +15,7 @@ export type IntakeInput = {
   name: string;
   breed: string;
   age_text: string;
+  birthday: string;
   weight_text: string;
   allergies: string;
   sex: string;
@@ -33,6 +34,25 @@ export type IntakeInput = {
   photo_url: string | null;
 };
 
+function cleanBirthday(value: string): string {
+  const raw = value.trim();
+  if (!raw) return "";
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+  if (!match) throw new Error("Birthday should be a real date.");
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+    throw new Error("Birthday should be a real date.");
+  }
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (date > today) throw new Error("Birthday can’t be in the future.");
+  if (year < 1980) throw new Error("Check the birth year.");
+  return raw;
+}
+
 function cleanIntake(data: IntakeInput): IntakeInput {
   const trim = (s: string) => s.trim();
   if (!trim(data.owner_name)) throw new Error("Owner name is required.");
@@ -48,6 +68,7 @@ function cleanIntake(data: IntakeInput): IntakeInput {
     name: trim(data.name),
     breed: trim(data.breed),
     age_text: trim(data.age_text),
+    birthday: cleanBirthday(data.birthday ?? ""),
     weight_text: trim(data.weight_text),
     allergies: trim(data.allergies),
     sex: trim(data.sex),
@@ -82,13 +103,13 @@ export const submitPublicIntake = createServerFn({ method: "POST" })
     const inserted = await sql<{ id: number }>`
       insert into dogs (
         owner_user_id, owner_name, owner_email, owner_phone, address,
-        name, breed, age_text, weight_text, allergies, sex, spayed_neutered,
+        name, breed, age_text, birthday, weight_text, allergies, sex, spayed_neutered,
         goals_json, goals_other, dislikes, past_experiences, physical_limitations,
         household, other_pets, kids_in_home, vet_info, preferred_days, referral_source,
         photo_url, status
       ) values (
         ${ownerId}, ${data.owner_name}, ${data.owner_email}, ${data.owner_phone}, ${data.address},
-        ${data.name}, ${data.breed}, ${data.age_text}, ${data.weight_text}, ${data.allergies},
+        ${data.name}, ${data.breed}, ${data.age_text}, ${data.birthday}, ${data.weight_text}, ${data.allergies},
         ${data.sex}, ${data.spayed_neutered},
         ${JSON.stringify(data.goals)}, ${data.goals_other}, ${data.dislikes}, ${data.past_experiences},
         ${data.physical_limitations}, ${data.household}, ${data.other_pets}, ${data.kids_in_home},
@@ -111,13 +132,13 @@ export const trainerCreateClient = createServerFn({ method: "POST" })
     const inserted = await sql<{ id: number }>`
       insert into dogs (
         owner_user_id, owner_name, owner_email, owner_phone, address,
-        name, breed, age_text, weight_text, allergies, sex, spayed_neutered,
+        name, breed, age_text, birthday, weight_text, allergies, sex, spayed_neutered,
         goals_json, goals_other, dislikes, past_experiences, physical_limitations,
         household, other_pets, kids_in_home, vet_info, preferred_days, referral_source,
         photo_url, status
       ) values (
         null, ${data.owner_name}, ${data.owner_email}, ${data.owner_phone}, ${data.address},
-        ${data.name}, ${data.breed}, ${data.age_text}, ${data.weight_text}, ${data.allergies},
+        ${data.name}, ${data.breed}, ${data.age_text}, ${data.birthday}, ${data.weight_text}, ${data.allergies},
         ${data.sex}, ${data.spayed_neutered},
         ${JSON.stringify(data.goals)}, ${data.goals_other}, ${data.dislikes}, ${data.past_experiences},
         ${data.physical_limitations}, ${data.household}, ${data.other_pets}, ${data.kids_in_home},
@@ -159,6 +180,19 @@ export const setDogCredits = createServerFn({ method: "POST" })
     const credits = Math.max(0, Math.round(data.credits));
     const sql = await getSql();
     await sql`update dogs set credits = ${credits}, updated_at = now() where id = ${data.dogId}`;
+    return { ok: true };
+  });
+
+export const setDogBirthday = createServerFn({ method: "POST" })
+  .validator((data: { dogId: number; birthday: string }) => ({
+    dogId: data.dogId,
+    birthday: cleanBirthday(data.birthday ?? ""),
+  }))
+  .middleware([authMiddleware])
+  .handler(async ({ context, data }) => {
+    await requireTrainer(context.userId);
+    const sql = await getSql();
+    await sql`update dogs set birthday = ${data.birthday}, updated_at = now() where id = ${data.dogId}`;
     return { ok: true };
   });
 

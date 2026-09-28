@@ -15,6 +15,7 @@ const empty: IntakeInput = {
   name: "",
   breed: "",
   age_text: "",
+  birthday: "",
   weight_text: "",
   allergies: "",
   sex: "",
@@ -35,6 +36,12 @@ const empty: IntakeInput = {
 
 const heading =
   "font-display text-2xl text-ink after:mt-2 after:block after:h-0.5 after:w-8 after:bg-accent after:content-['']";
+
+function localToday() {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
 
 function PawPrint() {
   return (
@@ -147,6 +154,14 @@ export function IntakeForm({
               value={form.age_text}
               onChange={(e) => set("age_text", e.target.value)}
               placeholder="14 weeks, 3 years…"
+            />
+          </Field>
+          <Field label="Birthday" hint="Optional. I’ll reach out on the day.">
+            <Input
+              type="date"
+              value={form.birthday}
+              max={localToday()}
+              onChange={(e) => set("birthday", e.target.value)}
             />
           </Field>
           <Field label="Weight">
