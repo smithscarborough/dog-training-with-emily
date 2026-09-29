@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { DogAvatar } from "@/components/dogs/dog-avatar";
@@ -970,6 +971,8 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
     if (!isWithinHours(picked, hours, sessionTypeById(sessionType).minutes)) setWhen("");
   }, [sessionType, hours, when]);
 
+  const confirming = sessions.find((row) => row.id === confirmingId) ?? null;
+
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[0.9fr_1.1fr]">
       <Card>
@@ -1088,6 +1091,7 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
                         </Button>
                         <Button
                           size="sm"
+                          type="button"
                           variant="outline"
                           className={cn(
                             "note-cta h-9 border-0 px-3.5 text-sm font-semibold",
@@ -1096,7 +1100,7 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
                           onClick={() => {
                             setMovingId(null);
                             setMoveWhen("");
-                            setConfirmingId(confirmingId === s.id ? null : s.id);
+                            setConfirmingId(s.id);
                           }}
                         >
                           Cancel
@@ -1105,33 +1109,6 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
                     ) : null}
                   </div>
                 </div>
-                {confirmingId === s.id ? (
-                  <div className="rounded-lg bg-pearl px-3.5 py-3">
-                    <p className="text-sm font-semibold text-ink">Cancel this visit?</p>
-                    <p className="mt-1 text-sm leading-relaxed text-muted">
-                      {formatWhen(s.scheduled_at)}. You’ll have a few seconds to undo it.
-                    </p>
-                    <div className="mt-3 flex flex-wrap items-center gap-4">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="note-cta h-9 border-0 px-3.5 text-sm font-semibold"
-                        disabled={cancelling}
-                        onClick={() => commitCancel(s)}
-                      >
-                        {cancelling ? "Cancelling…" : "Yes, cancel"}
-                      </Button>
-                      <button
-                        type="button"
-                        className="text-sm text-muted underline underline-offset-4 disabled:opacity-40"
-                        disabled={cancelling}
-                        onClick={() => setConfirmingId(null)}
-                      >
-                        Keep it
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
                 {pendingCancel?.id === s.id ? (
                   <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-bg px-3.5 py-3">
                     <p className="text-sm text-ink">Cancelled. You can undo this for a few seconds.</p>
@@ -1218,7 +1195,87 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
           ))
         )}
       </div>
+      {confirming ? (
+        <CancelVisitDialog
+          session={confirming}
+          busy={cancelling}
+          onKeep={() => {
+            if (!cancelling) setConfirmingId(null);
+          }}
+          onConfirm={() => commitCancel(confirming)}
+        />
+      ) : null}
     </div>
+  );
+}
+
+function CancelVisitDialog({
+  session,
+  busy,
+  onKeep,
+  onConfirm,
+}: {
+  session: SessionRow;
+  busy: boolean;
+  onKeep: () => void;
+  onConfirm: () => void;
+}) {
+  const keep = useRef(onKeep);
+  keep.current = onKeep;
+
+  useEffect(() => {
+    document.getElementById("keep-visit")?.focus();
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") keep.current();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[80] flex items-end justify-center p-4 sm:items-center">
+      <button
+        type="button"
+        aria-label="Keep this visit"
+        className="absolute inset-0 bg-ink/50"
+        onClick={onKeep}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cancel-visit-title"
+        className="relative w-full max-w-md rounded-2xl border border-line bg-surface px-6 py-6 shadow-[0_24px_60px_-28px_rgba(36,20,14,0.55)]"
+      >
+        <p id="cancel-visit-title" className="font-display text-3xl tracking-tight text-ink">
+          Cancel this visit?
+        </p>
+        <p className="mt-3 font-display text-xl font-semibold text-ink">
+          {sessionTypeById(session.session_type).name}
+        </p>
+        <p className="mt-1 text-base text-muted">{formatWhen(session.scheduled_at)}</p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          Nothing is cancelled until you confirm. You’ll still have a few seconds to undo it.
+        </p>
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <Button
+            id="keep-visit"
+            type="button"
+            variant="outline"
+            className="note-cta h-11 border-0 px-5 text-sm font-semibold"
+            disabled={busy}
+            onClick={onKeep}
+          >
+            Keep this visit
+          </Button>
+          <Button type="button" variant="espresso" disabled={busy} onClick={onConfirm}>
+            {busy ? "Cancelling…" : "Yes, cancel"}
+          </Button>
+        </div>
+      </div>
+    </div>,
+    document.body,
   );
 }
 
