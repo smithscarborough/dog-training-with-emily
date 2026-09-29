@@ -20,7 +20,7 @@ import { updateDogPhoto, updateOwnProfile } from "@/lib/server/dogs";
 import { fileToJpegDataUrl } from "@/lib/photo";
 import { listCheckins, submitCheckin, clearCheckin } from "@/lib/server/checkins";
 import { listMessages, markClientRead, recordHouseholdNote } from "@/lib/server/messages";
-import { notifyEmilyNote } from "@/lib/notify-studio";
+import { notifyEmilyNote, notifyEmilyCancel } from "@/lib/notify-studio";
 import { NoteThread } from "@/components/portal/note-thread";
 import type { CheckinRow, DogRow, ProgressLogRow, ProgressRow, SessionRow, MessageRow } from "@/lib/types";
 import { WhenPicker, DateField } from "@/components/portal/when-picker";
@@ -965,14 +965,14 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
                     </p>
                     <p className="mt-1 text-sm text-faint">{formatWhen(s.scheduled_at)}</p>
                   </div>
-                  <div className="flex shrink-0 items-center gap-1">
+                  <div className="flex shrink-0 flex-wrap items-center gap-2">
                     <Badge tone={statusTone(s.status)}>{s.status}</Badge>
                     {s.status === "requested" || s.status === "confirmed" ? (
                       <>
                         <Button
                           size="sm"
-                          variant="ghost"
-                          className={movingId === s.id ? "bg-pearl" : undefined}
+                          variant="soft"
+                          className={cn("h-9 px-3.5 text-sm font-semibold", movingId === s.id && "ring-2 ring-accent")}
                           onClick={() => {
                             setMovingId(movingId === s.id ? null : s.id);
                             setMoveWhen("");
@@ -982,11 +982,25 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
                         </Button>
                         <Button
                           size="sm"
-                          variant="ghost"
+                          variant="outline"
+                          className="h-9 border-ink/25 px-3.5 text-sm font-semibold text-ink"
                           onClick={() => {
                             void cancelOwnSession({ data: { sessionId: s.id } })
-                              .then(() => {
+                              .then(async (info) => {
                                 if (movingId === s.id) setMovingId(null);
+                                const mail = await notifyEmilyCancel({
+                                  ownerName: info.ownerName,
+                                  dogName: info.dogName,
+                                  sessionName: sessionTypeById(info.sessionType).name,
+                                  whenLabel: formatWhen(info.scheduledAt),
+                                });
+                                if (mail === "failed") {
+                                  toast.success("Cancelled in the portal. The email to Emily didn’t go through this time.");
+                                } else if (mail === "confirm") {
+                                  toast.message("Cancelled. Emily may need to confirm the form email once in Gmail.");
+                                } else {
+                                  toast.success("Cancelled. Emily gets an email, and it shows on her board.");
+                                }
                                 return load();
                               })
                               .catch((err: unknown) =>

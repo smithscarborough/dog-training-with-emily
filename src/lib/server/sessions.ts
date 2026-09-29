@@ -111,15 +111,23 @@ export const cancelOwnSession = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const sql = await getSql();
     const rows = await sql<SessionRow>`
-      select s.* from sessions s
+      select s.*, d.name as dog_name, d.owner_name
+      from sessions s
       join dogs d on d.id = s.dog_id
       where s.id = ${data.sessionId} and d.owner_user_id = ${context.userId}
     `;
     const session = rows[0];
     if (!session) throw new Error("Not found");
     if (session.status === "completed") throw new Error("Completed sessions cannot be cancelled.");
+    if (session.status === "cancelled") throw new Error("This visit is already cancelled.");
     await sql`update sessions set status = 'cancelled', updated_at = now() where id = ${session.id}`;
-    return { ok: true };
+    return {
+      ok: true as const,
+      dogName: session.dog_name ?? "Dog",
+      ownerName: session.owner_name ?? "Client",
+      sessionType: session.session_type,
+      scheduledAt: session.scheduled_at,
+    };
   });
 
 export const rescheduleOwnSession = createServerFn({ method: "POST" })

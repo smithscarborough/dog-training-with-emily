@@ -66,3 +66,33 @@ export async function notifyEmilyNote(fields: {
     return "failed";
   }
 }
+
+/** A client cancelled a visit. No reply link — Emily just needs to know. */
+export async function notifyEmilyCancel(fields: {
+  ownerName: string;
+  dogName: string;
+  sessionName: string;
+  whenLabel: string;
+}): Promise<NotifyResult> {
+  try {
+    const res = await fetch(`https://formsubmit.co/ajax/${PLACEHOLDER_EMAIL}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        name: fields.ownerName,
+        dog: fields.dogName,
+        message: `${fields.ownerName} cancelled the ${fields.sessionName} for ${fields.dogName} that was set for ${fields.whenLabel}.`,
+        _subject: `Cancelled: ${fields.dogName} — ${fields.ownerName}`,
+        _template: "table",
+        _captcha: "false",
+      }),
+    });
+    const json = (await res.json().catch(() => ({}))) as { success?: string | boolean; message?: string };
+    const text = `${json.success ?? ""} ${json.message ?? ""}`;
+    if (/confirm|activation|check your email/i.test(text)) return "confirm";
+    if (!res.ok) return "failed";
+    return "sent";
+  } catch {
+    return "failed";
+  }
+}

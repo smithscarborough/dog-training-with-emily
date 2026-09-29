@@ -325,6 +325,11 @@ function Board({
     .filter((s) => s.status === "confirmed" && +new Date(s.scheduled_at) >= +startOfToday)
     .sort(byTime)
     .slice(0, 6);
+  const recentCancelCutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
+  const justCancelled = sessions
+    .filter((s) => s.status === "cancelled" && +new Date(s.updated_at) >= recentCancelCutoff)
+    .sort((a, b) => +new Date(b.updated_at) - +new Date(a.updated_at))
+    .slice(0, 6);
   const pending = dogs.filter((d) => d.status === "pending");
   const birthdays = upcomingBirthdays(dogs);
 
@@ -356,6 +361,18 @@ function Board({
                   <span className="mt-1.5 block text-sm leading-relaxed text-ink">{note.body}</span>
                 </span>
               </button>
+            ))}
+          </CardBody>
+        </Card>
+      ) : null}
+      {justCancelled.length > 0 ? (
+        <Card className="order-0 lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Cancelled</CardTitle>
+          </CardHeader>
+          <CardBody className="space-y-3">
+            {justCancelled.map((s) => (
+              <BoardSession key={s.id} session={s} onOpen={onOpen} />
             ))}
           </CardBody>
         </Card>
