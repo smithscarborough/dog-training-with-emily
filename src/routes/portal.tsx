@@ -1028,54 +1028,52 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
                     </p>
                     <p className="mt-1 text-sm text-faint">{formatWhen(s.scheduled_at)}</p>
                   </div>
-                  <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
-                    <div className="flex flex-col items-start gap-2">
-                      <Badge tone={statusTone(s.status)}>{s.status}</Badge>
-                      {s.status === "requested" || s.status === "confirmed" ? (
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className={cn(
-                              "h-9 border-ink/25 px-3.5 text-sm font-semibold text-ink",
-                              movingId === s.id && "ring-2 ring-accent",
-                            )}
-                            onClick={() => {
-                              setMovingId(movingId === s.id ? null : s.id);
-                              setMoveWhen("");
-                            }}
-                          >
-                            New time
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-9 border-ink/25 px-3.5 text-sm font-semibold text-ink"
-                            onClick={() => {
-                              const previous = s.status === "confirmed" ? "confirmed" : "requested";
-                              void cancelOwnSession({ data: { sessionId: s.id } })
-                                .then((info) => {
-                                  if (movingId === s.id) setMovingId(null);
-                                  setPendingCancel({
-                                    id: s.id,
-                                    previous,
-                                    ownerName: info.ownerName,
-                                    dogName: info.dogName,
-                                    sessionType: info.sessionType,
-                                    scheduledAt: info.scheduledAt,
-                                  });
-                                  return load();
-                                })
-                                .catch((err: unknown) =>
-                                  toast.error(err instanceof Error ? err.message : "Could not cancel."),
-                                );
-                            }}
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      ) : null}
-                    </div>
+                  <div className="flex shrink-0 flex-wrap items-center gap-2">
+                    <Badge tone={statusTone(s.status)}>{s.status}</Badge>
+                    {s.status === "requested" || s.status === "confirmed" ? (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className={cn(
+                            "h-9 border-ink/25 px-3.5 text-sm font-semibold text-ink",
+                            movingId === s.id && "ring-2 ring-accent",
+                          )}
+                          onClick={() => {
+                            setMovingId(movingId === s.id ? null : s.id);
+                            setMoveWhen("");
+                          }}
+                        >
+                          New time
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-9 border-ink/25 px-3.5 text-sm font-semibold text-ink"
+                          onClick={() => {
+                            const previous = s.status === "confirmed" ? "confirmed" : "requested";
+                            void cancelOwnSession({ data: { sessionId: s.id } })
+                              .then((info) => {
+                                if (movingId === s.id) setMovingId(null);
+                                setPendingCancel({
+                                  id: s.id,
+                                  previous,
+                                  ownerName: info.ownerName,
+                                  dogName: info.dogName,
+                                  sessionType: info.sessionType,
+                                  scheduledAt: info.scheduledAt,
+                                });
+                                return load();
+                              })
+                              .catch((err: unknown) =>
+                                toast.error(err instanceof Error ? err.message : "Could not cancel."),
+                              );
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </>
+                    ) : null}
                   </div>
                 </div>
                 {pendingCancel?.id === s.id ? (
