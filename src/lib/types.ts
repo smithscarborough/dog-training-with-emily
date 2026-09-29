@@ -115,6 +115,19 @@ export type CheckinRow = {
   owner_name?: string;
 };
 
+export type MessageRow = {
+  id: number;
+  dog_id: number;
+  author: "client" | "trainer";
+  body: string;
+  read_by_trainer: boolean;
+  read_by_client: boolean;
+  reply_token: string | null;
+  created_at: string;
+  dog_name?: string;
+  owner_name?: string;
+};
+
 export type MePayload = {
   userId: string;
   email: string | null;

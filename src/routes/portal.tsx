@@ -19,7 +19,10 @@ import { getProgress } from "@/lib/server/progress";
 import { updateDogPhoto, updateOwnProfile } from "@/lib/server/dogs";
 import { fileToJpegDataUrl } from "@/lib/photo";
 import { listCheckins, submitCheckin, clearCheckin } from "@/lib/server/checkins";
-import type { CheckinRow, DogRow, ProgressLogRow, ProgressRow, SessionRow } from "@/lib/types";
+import { listMessages, markClientRead, recordHouseholdNote } from "@/lib/server/messages";
+import { notifyEmilyNote } from "@/lib/notify-studio";
+import { NoteThread } from "@/components/portal/note-thread";
+import type { CheckinRow, DogRow, ProgressLogRow, ProgressRow, SessionRow, MessageRow } from "@/lib/types";
 import { WhenPicker, DateField } from "@/components/portal/when-picker";
 import { formatUsPhone } from "@/lib/phone";
 import { formatUsAddress } from "@/lib/address";
@@ -145,6 +148,7 @@ function PortalApp({
   const [dogId, setDogId] = useState(dogs[0]!.id);
   const dog = dogs.find((d) => d.id === dogId) ?? dogs[0]!;
   const [tab, setTab] = useState<"home" | "progress" | "sessions" | "profile">("home");
+  const [noteUnread, setNoteUnread] = useState(false);
   const tabs = [
     { id: "home" as const, label: "Home" },
     { id: "progress" as const, label: "Progress" },
@@ -196,6 +200,15 @@ function PortalApp({
               )}
             >
               {t.label}
+              {t.id === "home" && noteUnread ? (
+                <span
+                  className={cn(
+                    "ml-1.5 inline-block size-2 rounded-full align-middle",
+                    tab === "home" ? "bg-accent-deep" : "bg-accent",
+                  )}
+                  aria-label="New reply from Emily"
+                />
+              ) : null}
             </button>
           ))}
           </div>
@@ -203,7 +216,11 @@ function PortalApp({
 
         <div className="mt-8">
           <div className={tab === "home" ? "" : "hidden"} hidden={tab !== "home"}>
-            <HomeTab dog={dog} />
+            <HomeTab
+              dog={dog}
+              watching={tab === "home"}
+              onUnread={setNoteUnread}
+            />
           </div>
           <div className={tab === "progress" ? "" : "hidden"} hidden={tab !== "progress"}>
             <ProgressTab dog={dog} />
@@ -238,7 +255,15 @@ function goalPill(id: string) {
   return GOAL_COLOR[id] ?? "bg-[#D7B8C4]";
 }
 
-function HomeTab({ dog }: { dog: DogRow }) {
+function HomeTab({
+  dog,
+  watching,
+  onUnread,
+}: {
+  dog: DogRow;
+  watching: boolean;
+  onUnread: (unread: boolean) => void;
+}) {
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   useEffect(() => {
     void listSessions({ data: { dogId: dog.id } }).then(setSessions).catch(() => setSessions([]));
@@ -255,7 +280,7 @@ function HomeTab({ dog }: { dog: DogRow }) {
 
   return (
     <div className="grid w-full gap-4 lg:grid-cols-2">
-      <CheckinCard dog={dog} lastDone={lastDone ?? null} />
+      <CheckinCard dog={dog} lastDone={lastDone ?? null} watching={watching} onUnread={onUnread} />
       <Card>
         <CardHeader>
           <CardTitle>Next on the calendar</CardTitle>
@@ -304,13 +329,24 @@ function HomeTab({ dog }: { dog: DogRow }) {
   );
 }
 
-function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | null }) {
+function CheckinCard({
+  dog,
+  lastDone,
+  watching,
+  onUnread,
+}: {
+  dog: DogRow;
+  lastDone: SessionRow | null;
+  watching: boolean;
+  onUnread: (unread: boolean) => void;
+}) {
   const [status, setStatus] = useState<(typeof CHECKINS)[number]["id"] | "">("");
   const [note, setNote] = useState("");
   const [latest, setLatest] = useState<CheckinRow | null>(null);
   const [busy, setBusy] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
   const [confetti, setConfetti] = useState(0);
+  const [thread, setThread] = useState<MessageRow[]>([]);
   const confettiTimer = useRef<number | null>(null);
 
   useEffect(() => {
@@ -340,6 +376,29 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
       })
       .catch(() => setLatest(null));
   }, [dog.id]);
+
+  function loadThread() {
+    void listMessages({ data: { dogId: dog.id } })
+      .then((rows) => {
+        setThread(rows);
+        onUnread(rows.some((row) => row.author === "trainer" && !row.read_by_client));
+      })
+      .catch(() => {
+        setThread([]);
+        onUnread(false);
+      });
+  }
+
+  useEffect(() => {
+    loadThread();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dog.id]);
+
+  useEffect(() => {
+    if (!watching) return;
+    if (!thread.some((row) => row.author === "trainer" && !row.read_by_client)) return;
+    void markClientRead({ data: { dogId: dog.id } }).then(() => onUnread(false));
+  }, [watching, dog.id, thread, onUnread]);
 
   const canEdit = !!latest && Date.now() - new Date(latest.created_at).getTime() < 18 * 60 * 60 * 1000;
 
@@ -436,10 +495,33 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
               if ((!status && !note.trim()) || busy) return;
               setBusy(true);
               void submitCheckin({ data: { dogId: dog.id, status, note } })
-                .then((row) => {
+                .then(async (row) => {
                   setLatest(row);
                   setConfirmClear(false);
-                  toast.success("Sent. Emily will see this before the next session.");
+                  const written = note.trim();
+                  if (!written) {
+                    toast.success("Sent. Emily will see this before the next session.");
+                    return;
+                  }
+                  const saved = await recordHouseholdNote({ data: { dogId: dog.id, body: written } });
+                  loadThread();
+                  if (!saved.posted || !saved.token) {
+                    toast.success("Sent. Emily will see this before the next session.");
+                    return;
+                  }
+                  const mail = await notifyEmilyNote({
+                    ownerName: saved.ownerName,
+                    dogName: saved.dogName,
+                    note: written,
+                    replyUrl: `${window.location.origin}/reply/${saved.token}`,
+                  });
+                  if (mail === "failed") {
+                    toast.success("Saved in the portal. The email to Emily didn’t go through this time.");
+                  } else if (mail === "confirm") {
+                    toast.message("Saved. Emily may need to confirm the form email once in Gmail.");
+                  } else {
+                    toast.success("Sent. Emily gets this by email, and her reply shows up here.");
+                  }
                 })
                 .catch((err: unknown) =>
                   toast.error(err instanceof Error ? err.message : "Could not send."),
@@ -503,6 +585,12 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
             </button>
           )
         ) : null}
+        <div className="border-t border-line pt-5">
+          <p className="text-sm font-bold text-ink">With Emily</p>
+          <div className="mt-3">
+            <NoteThread messages={thread} viewer="client" />
+          </div>
+        </div>
         </div>
       </CardBody>
     </Card>

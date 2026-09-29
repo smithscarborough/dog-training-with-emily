@@ -36,7 +36,9 @@ import {
   writeSessionRecap,
 } from "@/lib/server/sessions";
 import { listCheckins } from "@/lib/server/checkins";
-import type { CheckinRow, DogRow, InquiryRow, ProgressRow, SessionRow } from "@/lib/types";
+import { listMessages, listPendingNotes } from "@/lib/server/messages";
+import { NoteThread, TrainerReply } from "@/components/portal/note-thread";
+import type { CheckinRow, DogRow, InquiryRow, MessageRow, ProgressRow, SessionRow } from "@/lib/types";
 import { useMe } from "@/lib/use-me";
 import { cn } from "@/lib/utils";
 import {
@@ -144,8 +146,19 @@ function StudioApp({
 }) {
   const [tab, setTab] = useState<"overview" | "board" | "clients" | "calendar" | "inbox" | "settings">("board");
   const [selected, setSelected] = useState<number | null>(dogs[0]?.id ?? null);
+  const [waiting, setWaiting] = useState<MessageRow[]>([]);
   const pending = dogs.filter((d) => d.status === "pending");
   const active = dogs.filter((d) => d.status === "active");
+
+  function refreshWaiting() {
+    void listPendingNotes()
+      .then(setWaiting)
+      .catch(() => setWaiting([]));
+  }
+
+  useEffect(() => {
+    refreshWaiting();
+  }, []);
 
   return (
     <div className="flex min-h-full flex-col">
@@ -187,6 +200,11 @@ function StudioApp({
               )}
             >
               {label}
+              {id === "inbox" && waiting.length > 0 ? (
+                <span className="ml-1 inline-flex min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-bold text-ink">
+                  {waiting.length}
+                </span>
+              ) : null}
             </button>
           ))}
           </div>
@@ -195,7 +213,7 @@ function StudioApp({
         <div className="mt-8">
           {tab === "overview" ? <Overview dogs={dogs} /> : null}
           {tab === "board" ? (
-            <Board dogs={dogs} onOpen={(id) => { setSelected(id); setTab("clients"); }} />
+            <Board dogs={dogs} waiting={waiting} onOpen={(id) => { setSelected(id); setTab("clients"); }} />
           ) : null}
           {tab === "clients" ? (
             <Clients
@@ -203,12 +221,13 @@ function StudioApp({
               selected={selected}
               setSelected={setSelected}
               onRefresh={onRefresh}
+              onNotes={refreshWaiting}
             />
           ) : null}
           {tab === "calendar" ? (
             <Calendar dogs={dogs} hoursJson={studio.hours_json ?? ""} onRefresh={onRefresh} />
           ) : null}
-          {tab === "inbox" ? <Inbox /> : null}
+          {tab === "inbox" ? <Inbox waiting={waiting} onReplied={refreshWaiting} onOpen={(id) => { setSelected(id); setTab("clients"); }} /> : null}
           {tab === "settings" ? <Settings studio={studio} onRefresh={onRefresh} /> : null}
         </div>
       </main>
@@ -282,7 +301,15 @@ function upcomingBirthdays(dogs: DogRow[]) {
   return rows;
 }
 
-function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void }) {
+function Board({
+  dogs,
+  waiting,
+  onOpen,
+}: {
+  dogs: DogRow[];
+  waiting: MessageRow[];
+  onOpen: (id: number) => void;
+}) {
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [checkins, setCheckins] = useState<CheckinRow[]>([]);
   useEffect(() => {
@@ -303,6 +330,36 @@ function Board({ dogs, onOpen }: { dogs: DogRow[]; onOpen: (id: number) => void 
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
+      {waiting.length > 0 ? (
+        <Card className="order-0 lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Needs a reply</CardTitle>
+          </CardHeader>
+          <CardBody className="space-y-3">
+            {waiting.map((note) => (
+              <button
+                key={note.id}
+                type="button"
+                className="flex w-full items-start justify-between gap-3 rounded-lg px-3 py-3 text-left hairline transition-colors hover:bg-bg"
+                onClick={() => onOpen(note.dog_id)}
+              >
+                <span className="min-w-0">
+                  <span className="flex items-center gap-2">
+                    <span className="font-semibold text-ink">{note.dog_name}</span>
+                    <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ink">
+                      New
+                    </span>
+                  </span>
+                  <span className="mt-0.5 block text-xs text-muted">
+                    {note.owner_name} · {formatWhen(note.created_at)}
+                  </span>
+                  <span className="mt-1.5 block text-sm leading-relaxed text-ink">{note.body}</span>
+                </span>
+              </button>
+            ))}
+          </CardBody>
+        </Card>
+      ) : null}
       <Card className="order-1">
         <CardHeader>
           <CardTitle>Pending Sessions</CardTitle>
@@ -541,11 +598,13 @@ function Clients({
   selected,
   setSelected,
   onRefresh,
+  onNotes,
 }: {
   dogs: DogRow[];
   selected: number | null;
   setSelected: (id: number) => void;
   onRefresh: () => void;
+  onNotes: () => void;
 }) {
   const [q, setQ] = useState("");
   const [showNew, setShowNew] = useState(false);
@@ -650,7 +709,7 @@ function Clients({
         </ul>
       </Card>
       {dog ? (
-        <ClientDetail dog={dog} onRefresh={onRefresh} leading={onboardForm} />
+        <ClientDetail dog={dog} onRefresh={onRefresh} onNotes={onNotes} leading={onboardForm} />
       ) : (
         <div className="space-y-6">
           {onboardForm}
@@ -689,10 +748,12 @@ function FileFact({ label, value, href }: { label: string; value: string; href?:
 function ClientDetail({
   dog,
   onRefresh,
+  onNotes,
   leading,
 }: {
   dog: DogRow;
   onRefresh: () => void;
+  onNotes: () => void;
   leading?: ReactNode;
 }) {
   const [notes, setNotes] = useState(dog.trainer_private_notes);
@@ -703,6 +764,7 @@ function ClientDetail({
   const [filter, setFilter] = useState<"working" | "all">("working");
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [checkins, setCheckins] = useState<CheckinRow[]>([]);
+  const [thread, setThread] = useState<MessageRow[]>([]);
   const [status, setStatus] = useState(dog.status);
   const [statusBusy, setStatusBusy] = useState(false);
 
@@ -725,6 +787,9 @@ function ClientDetail({
     void listCheckins({ data: { dogId: dog.id, limit: 8 } })
       .then(setCheckins)
       .catch(() => setCheckins([]));
+    void listMessages({ data: { dogId: dog.id } })
+      .then(setThread)
+      .catch(() => setThread([]));
   }, [dog]);
 
   const byKey = useMemo(
@@ -920,6 +985,22 @@ function ClientDetail({
           </CardBody>
         </Card>
       </div>
+
+      <Card className="max-w-2xl">
+        <CardHeader>
+          <CardTitle>With this household</CardTitle>
+        </CardHeader>
+        <CardBody className="space-y-4">
+          <NoteThread messages={thread} viewer="trainer" clientName={dog.owner_name} />
+          <TrainerReply
+            dogId={dog.id}
+            onSent={() => {
+              void listMessages({ data: { dogId: dog.id } }).then(setThread).catch(() => setThread([]));
+              onNotes();
+            }}
+          />
+        </CardBody>
+      </Card>
 
       <Card className="max-w-2xl">
         <CardHeader>
@@ -1838,7 +1919,15 @@ function monthCells(year: number, month: number) {
   return cells;
 }
 
-function Inbox() {
+function Inbox({
+  waiting,
+  onReplied,
+  onOpen,
+}: {
+  waiting: MessageRow[];
+  onReplied: () => void;
+  onOpen: (id: number) => void;
+}) {
   const [rows, setRows] = useState<InquiryRow[]>([]);
   const [q, setQ] = useState("");
   useEffect(() => {
@@ -1857,7 +1946,35 @@ function Inbox() {
     });
   }, [rows, q]);
   return (
-    <div className="space-y-3">
+    <div className="space-y-8">
+      <section className="space-y-3">
+        <h2 className="font-display text-2xl tracking-tight">From clients</h2>
+        {waiting.length === 0 ? (
+          <p className="text-sm text-muted">No notes waiting on a reply.</p>
+        ) : (
+          waiting.map((note) => (
+            <Card key={note.id}>
+              <CardBody className="space-y-4">
+                <button type="button" className="text-left" onClick={() => onOpen(note.dog_id)}>
+                  <p>
+                    <span className="font-semibold text-ink">{note.dog_name}</span>
+                    <span className="text-faint"> · </span>
+                    <span className="font-medium text-ink">{note.owner_name}</span>
+                    <span className="ml-2 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ink">
+                      New
+                    </span>
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted">{formatWhen(note.created_at)}</p>
+                  <p className="mt-2.5 whitespace-pre-wrap text-sm leading-relaxed text-ink">{note.body}</p>
+                </button>
+                <TrainerReply dogId={note.dog_id} onSent={onReplied} />
+              </CardBody>
+            </Card>
+          ))
+        )}
+      </section>
+      <section className="space-y-3">
+      <h2 className="font-display text-2xl tracking-tight">Website inquiries</h2>
       <Input
         value={q}
         onChange={(e) => setQ(e.target.value)}
@@ -1897,6 +2014,7 @@ function Inbox() {
         </Card>
         ))
       )}
+      </section>
     </div>
   );
 }

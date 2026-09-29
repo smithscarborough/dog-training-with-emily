@@ -35,3 +35,34 @@ export async function notifyStudioInbox(fields: {
     return "failed";
   }
 }
+
+/** A household note. The reply link posts Emily's answer into that client's portal. */
+export async function notifyEmilyNote(fields: {
+  ownerName: string;
+  dogName: string;
+  note: string;
+  replyUrl: string;
+}): Promise<NotifyResult> {
+  try {
+    const res = await fetch(`https://formsubmit.co/ajax/${PLACEHOLDER_EMAIL}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        name: fields.ownerName,
+        dog: fields.dogName,
+        message: `${fields.note}\n\nReply in their portal:\n${fields.replyUrl}`,
+        _subject: `Note from ${fields.ownerName} about ${fields.dogName}`,
+        _template: "table",
+        _captcha: "false",
+        reply: fields.replyUrl,
+      }),
+    });
+    const json = (await res.json().catch(() => ({}))) as { success?: string | boolean; message?: string };
+    const text = `${json.success ?? ""} ${json.message ?? ""}`;
+    if (/confirm|activation|check your email/i.test(text)) return "confirm";
+    if (!res.ok) return "failed";
+    return "sent";
+  } catch {
+    return "failed";
+  }
+}
