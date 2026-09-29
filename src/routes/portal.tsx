@@ -1179,6 +1179,12 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
   );
 }
 
+function emptyMark(value: string) {
+  const v = (value ?? "").trim();
+  if (v === "—" || v === "–" || v === "-" || v === "---") return "";
+  return v;
+}
+
 function profileDraft(dog: DogRow) {
   return {
     owner_name: dog.owner_name,
@@ -1191,8 +1197,10 @@ function profileDraft(dog: DogRow) {
     birthday: dog.birthday,
     weight_text: dog.weight_text,
     allergies: dog.allergies,
-    sex: dog.sex,
-    spayed_neutered: dog.spayed_neutered,
+    sex: emptyMark(dog.sex),
+    spayed_neutered: emptyMark(dog.spayed_neutered) === "Spayed" || emptyMark(dog.spayed_neutered) === "Neutered"
+      ? "Yes"
+      : emptyMark(dog.spayed_neutered),
     dislikes: dog.dislikes,
     past_experiences: dog.past_experiences,
     physical_limitations: dog.physical_limitations,
@@ -1223,15 +1231,17 @@ function birthdayLabel(value: string) {
 }
 
 function sexLabel(dog: Pick<DogRow, "sex" | "spayed_neutered">) {
+  const sex = emptyMark(dog.sex);
+  const alteredRaw = emptyMark(dog.spayed_neutered);
   const altered =
-    dog.spayed_neutered === "Yes"
-      ? dog.sex === "Male"
+    alteredRaw === "Yes" || alteredRaw === "Spayed" || alteredRaw === "Neutered"
+      ? sex === "Male"
         ? "Neutered"
-        : dog.sex === "Female"
+        : sex === "Female"
           ? "Spayed"
           : "Spayed or neutered"
-      : dog.spayed_neutered;
-  return [dog.sex, altered].filter(Boolean).join(" · ");
+      : alteredRaw;
+  return [sex, altered].filter(Boolean).join(" · ");
 }
 
 function Chips({

@@ -272,6 +272,12 @@ export type ProfileInput = {
   preferred_days: string;
 };
 
+function emptyMark(value: string) {
+  const v = (value ?? "").trim();
+  if (v === "—" || v === "–" || v === "-" || v === "---") return "";
+  return v;
+}
+
 function cleanProfile(data: ProfileInput): ProfileInput {
   const owner_name = formatProperName(clip(data.owner_name ?? "", 80));
   const name = formatProperName(clip(data.name ?? "", 80));
@@ -281,8 +287,9 @@ function cleanProfile(data: ProfileInput): ProfileInput {
   if (!name) throw new Error("Your dog’s name is required.");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(owner_email)) throw new Error("Enter a real email.");
   if (!address) throw new Error("Home address is required.");
-  const sex = clip(data.sex ?? "", 20);
-  const spayed = clip(data.spayed_neutered ?? "", 20);
+  const sex = emptyMark(clip(data.sex ?? "", 20));
+  const spayedRaw = emptyMark(clip(data.spayed_neutered ?? "", 20));
+  const spayed = spayedRaw === "Spayed" || spayedRaw === "Neutered" ? "Yes" : spayedRaw;
   if (!SEX.has(sex) || !ALTERED.has(spayed)) throw new Error("Check the sex and spay choices.");
   return {
     dogId: data.dogId,
