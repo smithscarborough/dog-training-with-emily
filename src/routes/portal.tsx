@@ -362,40 +362,23 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
         </p>
         <p className="text-sm font-bold text-ink">Choose one</p>
         <div className="flex flex-wrap gap-2">
-          {CHECKINS.map((c, index) => {
-            const selected = status === c.id;
-            return (
-              <button
-                key={c.id}
-                type="button"
-                onClick={() => {
-                  setStatus(c.id);
-                  setConfirmClear(false);
-                }}
-                className={cn(
-                  "status-choice relative rounded-full px-3 py-2 text-sm chip-3d",
-                  selected && "is-on",
-                )}
-              >
-                {c.label}
-                {c.hint && !selected ? (
-                  <span
-                    role="tooltip"
-                    className={cn(
-                      "status-tip pointer-events-none absolute bottom-[calc(100%+8px)] z-30 w-max max-w-[14rem] rounded-lg bg-ink px-2.5 py-1.5 text-left text-[11px] font-normal normal-case leading-snug tracking-normal text-bg shadow-[0_10px_24px_-14px_rgba(44,24,16,0.75)]",
-                      index === CHECKINS.length - 1 ? "right-0" : "left-1/2 -translate-x-1/2",
-                    )}
-                  >
-                    {c.hint}
-                  </span>
-                ) : null}
-              </button>
-            );
-          })}
+          {CHECKINS.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => {
+                setStatus(c.id);
+                setConfirmClear(false);
+              }}
+              className={cn("chip-3d rounded-full px-3 py-2 text-sm", status === c.id && "is-on")}
+            >
+              {c.label}
+            </button>
+          ))}
         </div>
-        {status && checkinById(status).hint ? (
-          <p className="text-sm text-muted [@media(hover:hover)]:sr-only">{checkinById(status).hint}</p>
-        ) : null}
+        <p className="min-h-12 text-sm leading-relaxed text-muted" aria-live="polite">
+          {status ? checkinById(status).hint : ""}
+        </p>
         <Field label="Note for Emily (optional)">
           <Textarea
             value={note}
