@@ -130,6 +130,26 @@ export const cancelOwnSession = createServerFn({ method: "POST" })
     };
   });
 
+export const restoreOwnSession = createServerFn({ method: "POST" })
+  .validator((data: { sessionId: number; status: "requested" | "confirmed" }) => data)
+  .middleware([authMiddleware])
+  .handler(async ({ context, data }) => {
+    const sql = await getSql();
+    const rows = await sql<SessionRow>`
+      select s.* from sessions s
+      join dogs d on d.id = s.dog_id
+      where s.id = ${data.sessionId} and d.owner_user_id = ${context.userId}
+    `;
+    const session = rows[0];
+    if (!session) throw new Error("Not found");
+    if (session.status !== "cancelled") throw new Error("This visit is no longer cancelled.");
+    if (data.status !== "requested" && data.status !== "confirmed") {
+      throw new Error("This visit can’t be restored.");
+    }
+    await sql`update sessions set status = ${data.status}, updated_at = now() where id = ${session.id}`;
+    return { ok: true };
+  });
+
 export const rescheduleOwnSession = createServerFn({ method: "POST" })
   .validator((data: { sessionId: number; scheduledAt: string }) => data)
   .middleware([authMiddleware])

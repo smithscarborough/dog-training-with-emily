@@ -14,7 +14,7 @@ import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { SESSION_TYPES, CHECKINS, checkinById, dollars, sessionTypeById, phaseFor, portalCatalog } from "@/lib/catalog";
 import { formatWhen, statusTone, checkinTone } from "@/lib/format";
-import { cancelOwnSession, listSessions, requestSession, rescheduleOwnSession } from "@/lib/server/sessions";
+import { cancelOwnSession, listSessions, requestSession, rescheduleOwnSession, restoreOwnSession } from "@/lib/server/sessions";
 import { getProgress } from "@/lib/server/progress";
 import { updateDogPhoto, updateOwnProfile } from "@/lib/server/dogs";
 import { fileToJpegDataUrl } from "@/lib/photo";
@@ -852,6 +852,69 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
   const [movingId, setMovingId] = useState<number | null>(null);
   const [moveWhen, setMoveWhen] = useState("");
   const [moving, setMoving] = useState(false);
+  const [pendingCancel, setPendingCancel] = useState<{
+    id: number;
+    previous: "requested" | "confirmed";
+    ownerName: string;
+    dogName: string;
+    sessionType: string;
+    scheduledAt: string;
+  } | null>(null);
+  const pendingCancelRef = useRef(pendingCancel);
+  pendingCancelRef.current = pendingCancel;
+  const toldRef = useRef(new Set<number>());
+
+  function tellEmily(
+    pending: NonNullable<typeof pendingCancel>,
+  ) {
+    if (toldRef.current.has(pending.id)) return;
+    toldRef.current.add(pending.id);
+    void notifyEmilyCancel({
+      ownerName: pending.ownerName,
+      dogName: pending.dogName,
+      sessionName: sessionTypeById(pending.sessionType).name,
+      whenLabel: formatWhen(pending.scheduledAt),
+    }).then((mail) => {
+      if (mail === "failed") {
+        toast.success("Cancelled in the portal. The email to Emily didn’t go through this time.");
+      } else if (mail === "confirm") {
+        toast.message("Cancelled. Emily may need to confirm the form email once in Gmail.");
+      } else {
+        toast.success("Cancelled. Emily gets an email, and it shows on her board.");
+      }
+    });
+  }
+
+  function undoCancel() {
+    const pending = pendingCancelRef.current;
+    if (!pending || toldRef.current.has(pending.id)) return;
+    setPendingCancel(null);
+    void restoreOwnSession({ data: { sessionId: pending.id, status: pending.previous } })
+      .then(() => {
+        toast.success("Restored. Emily was not emailed.");
+        return load();
+      })
+      .catch((err: unknown) =>
+        toast.error(err instanceof Error ? err.message : "Could not restore."),
+      );
+  }
+
+  useEffect(() => {
+    if (!pendingCancel) return;
+    const pending = pendingCancel;
+    const timer = window.setTimeout(() => {
+      tellEmily(pending);
+      setPendingCancel((current) => (current?.id === pending.id ? null : current));
+    }, 8000);
+    return () => window.clearTimeout(timer);
+  }, [pendingCancel]);
+
+  useEffect(() => {
+    return () => {
+      const pending = pendingCancelRef.current;
+      if (pending) tellEmily(pending);
+    };
+  }, [dog.id]);
 
   async function load() {
     const rows = await listSessions({ data: { dogId: dog.id } });
@@ -985,22 +1048,18 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
                           variant="outline"
                           className="h-9 border-ink/25 px-3.5 text-sm font-semibold text-ink"
                           onClick={() => {
+                            const previous = s.status === "confirmed" ? "confirmed" : "requested";
                             void cancelOwnSession({ data: { sessionId: s.id } })
-                              .then(async (info) => {
+                              .then((info) => {
                                 if (movingId === s.id) setMovingId(null);
-                                const mail = await notifyEmilyCancel({
+                                setPendingCancel({
+                                  id: s.id,
+                                  previous,
                                   ownerName: info.ownerName,
                                   dogName: info.dogName,
-                                  sessionName: sessionTypeById(info.sessionType).name,
-                                  whenLabel: formatWhen(info.scheduledAt),
+                                  sessionType: info.sessionType,
+                                  scheduledAt: info.scheduledAt,
                                 });
-                                if (mail === "failed") {
-                                  toast.success("Cancelled in the portal. The email to Emily didn’t go through this time.");
-                                } else if (mail === "confirm") {
-                                  toast.message("Cancelled. Emily may need to confirm the form email once in Gmail.");
-                                } else {
-                                  toast.success("Cancelled. Emily gets an email, and it shows on her board.");
-                                }
                                 return load();
                               })
                               .catch((err: unknown) =>
@@ -1014,6 +1073,19 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
                     ) : null}
                   </div>
                 </div>
+                {pendingCancel?.id === s.id ? (
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-bg px-3.5 py-3">
+                    <p className="text-sm text-ink">Cancelled. You can undo this for a few seconds.</p>
+                    <Button
+                      size="sm"
+                      variant="soft"
+                      className="h-9 px-3.5 text-sm font-semibold"
+                      onClick={undoCancel}
+                    >
+                      Undo
+                    </Button>
+                  </div>
+                ) : null}
                 {movingId === s.id ? (
                   <div className="rounded-lg bg-pearl px-3.5 py-3">
                     <p className="text-sm font-semibold text-ink">Ask for a different time</p>
