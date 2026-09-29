@@ -689,20 +689,26 @@
 @keyframes confetti-pop {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) translate(0, 0) rotate(0deg) scale(0.15);
-    animation-timing-function: cubic-bezier(0.02, 0.9, 0.15, 1);
+    transform: translate(-50%, -50%) translate(0, 0) rotate(0deg) scale(0.2);
   }
-  14% {
+  10% {
     opacity: 1;
-    transform: translate(-50%, -50%) translate(calc(var(--x) * 0.8), var(--y)) rotate(calc(var(--spin) * 0.4)) scale(1);
-    animation-timing-function: cubic-bezier(0.42, 0, 0.68, 0.4);
+    transform: translate(-50%, -50%) translate(calc(var(--x) * 0.39), calc(var(--y) * 0.35)) rotate(calc(var(--spin) * 0.12)) scale(1);
+  }
+  28% {
+    transform: translate(-50%, -50%) translate(calc(var(--x) * 0.69), calc(var(--y) * 0.7)) rotate(calc(var(--spin) * 0.28)) scale(1);
   }
   48% {
     opacity: 1;
+    transform: translate(-50%, -50%) translate(calc(var(--x) * 0.88), calc(var(--y) * 0.96)) rotate(calc(var(--spin) * 0.48)) scale(1);
+  }
+  66% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(calc(var(--x) * 0.94), var(--y)) rotate(calc(var(--spin) * 0.66)) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) translate(calc(var(--x) * 1.15), calc(var(--y) + 30px)) rotate(calc(var(--spin) * 1.7)) scale(1);
+    transform: translate(-50%, -50%) translate(var(--x), calc(var(--y) * 0.62)) rotate(var(--spin)) scale(1);
   }
 }
 
