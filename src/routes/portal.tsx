@@ -1139,11 +1139,43 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }) 
       .finally(() => setBusy(false));
   }
 
+  function saveButton() {
+    return (
+      <div className="relative w-fit">
+        <Button type="button" disabled={!dirty || busy} onClick={save}>
+          {busy ? "Saving…" : "Save changes"}
+        </Button>
+        {paws > 0 ? (
+          <span key={paws} className="paw-burst" aria-hidden="true">
+            <PawPrint />
+            <PawPrint />
+            <PawPrint />
+          </span>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <div className="grid w-full gap-4 lg:grid-cols-2">
-      <div className="flex items-end justify-between gap-3 lg:col-span-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 lg:col-span-2">
         <p className="text-sm leading-relaxed text-muted">Emily sees this before she comes over.</p>
-        {editing ? null : (
+        {editing ? (
+          <div className="ml-auto flex flex-wrap items-center gap-4">
+            {saveButton()}
+            <button
+              type="button"
+              className="text-sm text-muted underline underline-offset-4 disabled:opacity-40"
+              disabled={busy}
+              onClick={() => {
+                setDraft(profileDraft(dog));
+                setEditing(false);
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
           <button
             type="button"
             className="chip-3d shrink-0 rounded-full px-4 py-2 text-sm"
@@ -1353,18 +1385,7 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }) 
       </Card>
       {editing ? (
         <div className="flex flex-wrap items-center gap-4 lg:col-span-2">
-          <div className="relative w-fit">
-            <Button type="button" disabled={!dirty || busy} onClick={save}>
-              {busy ? "Saving…" : "Save changes"}
-            </Button>
-            {paws > 0 ? (
-              <span key={paws} className="paw-burst" aria-hidden="true">
-                <PawPrint />
-                <PawPrint />
-                <PawPrint />
-              </span>
-            ) : null}
-          </div>
+          {saveButton()}
           <button
             type="button"
             className="text-sm text-muted underline underline-offset-4 disabled:opacity-40"
