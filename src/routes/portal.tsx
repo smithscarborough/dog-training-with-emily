@@ -366,13 +366,8 @@ function CheckinCard({
       .then((rows) => {
         const row = rows[0] ?? null;
         setLatest(row);
-        if (row && Date.now() - new Date(row.created_at).getTime() < 18 * 60 * 60 * 1000) {
-          setStatus(row.status);
-          setNote(row.note);
-        } else {
-          setStatus("");
-          setNote("");
-        }
+        setStatus("");
+        setNote("");
       })
       .catch(() => setLatest(null));
   }, [dog.id]);
@@ -498,6 +493,8 @@ function CheckinCard({
                 .then(async (row) => {
                   setLatest(row);
                   setConfirmClear(false);
+                  setStatus("");
+                  setNote("");
                   const written = note.trim();
                   if (!written) {
                     toast.success("Sent. Emily will see this before the next session.");
@@ -529,7 +526,7 @@ function CheckinCard({
                 .finally(() => setBusy(false));
             }}
           >
-            {busy ? "Sending…" : canEdit ? "Update check-in" : "Send to Emily"}
+            {busy ? "Sending…" : "Send to Emily"}
           </Button>
           {latest ? (
             <span className="text-sm text-muted">
