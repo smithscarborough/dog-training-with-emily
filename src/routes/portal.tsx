@@ -368,7 +368,7 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
               <span key={c.id} className="practice-pop">
                 {confetti > 0 ? (
                   <span key={confetti} className="confetti-burst" aria-hidden="true">
-                    {Array.from({ length: 14 }, (_, i) => (
+                    {Array.from({ length: 20 }, (_, i) => (
                       <i key={i} />
                     ))}
                   </span>
