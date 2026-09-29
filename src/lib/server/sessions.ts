@@ -121,3 +121,40 @@ export const cancelOwnSession = createServerFn({ method: "POST" })
     await sql`update sessions set status = 'cancelled', updated_at = now() where id = ${session.id}`;
     return { ok: true };
   });
+
+export const rescheduleOwnSession = createServerFn({ method: "POST" })
+  .validator((data: { sessionId: number; scheduledAt: string }) => data)
+  .middleware([authMiddleware])
+  .handler(async ({ context, data }) => {
+    const sql = await getSql();
+    const rows = await sql<SessionRow>`
+      select s.* from sessions s
+      join dogs d on d.id = s.dog_id
+      where s.id = ${data.sessionId} and d.owner_user_id = ${context.userId}
+    `;
+    const session = rows[0];
+    if (!session) throw new Error("Not found");
+    if (session.status !== "requested" && session.status !== "confirmed") {
+      throw new Error("This visit can’t be moved.");
+    }
+    const when = new Date(data.scheduledAt);
+    if (Number.isNaN(when.getTime())) throw new Error("Pick a valid date and time.");
+    if (when.getTime() < Date.now() - 60_000) throw new Error("Pick a time that’s still ahead.");
+    const studio = await loadStudio();
+    const minutes = session.duration_min || sessionTypeById(session.session_type).minutes;
+    if (!isWithinHours(when, parseHours(studio.hours_json), minutes)) {
+      throw new Error("That time isn’t open. Pick another.");
+    }
+    const stamp = "Asked for a new time.";
+    const note = session.owner_notes.trim();
+    const ownerNotes = note.includes(stamp) ? note : note ? `${note}\n${stamp}` : stamp;
+    await sql`
+      update sessions set
+        scheduled_at = ${when.toISOString()},
+        status = 'requested',
+        owner_notes = ${ownerNotes},
+        updated_at = now()
+      where id = ${session.id}
+    `;
+    return { ok: true };
+  });

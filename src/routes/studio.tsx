@@ -540,6 +540,9 @@ function BoardSession({ session, onOpen }: { session: SessionRow; onOpen: (id: n
         <span className="text-xs text-muted">
           {sessionTypeById(session.session_type).name} · {formatWhen(session.scheduled_at)}
         </span>
+        {session.owner_notes?.includes("Asked for a new time.") ? (
+          <span className="mt-1 block text-xs font-medium text-accent-deep">New time requested</span>
+        ) : null}
       </span>
       <Badge tone={statusTone(session.status)} className="shrink-0">{session.status}</Badge>
     </button>
@@ -1375,6 +1378,9 @@ function SessionEditor({ session, onChange }: { session: SessionRow; onChange: (
         <div>
           <p className="font-medium">{sessionTypeById(session.session_type).name}</p>
           <p className="text-xs text-muted">{formatWhen(session.scheduled_at)}</p>
+          {session.owner_notes?.includes("Asked for a new time.") ? (
+            <p className="mt-1 text-xs font-medium text-accent-deep">They asked for a new time.</p>
+          ) : null}
         </div>
         <div className="flex flex-wrap gap-1">
           {(

@@ -14,7 +14,7 @@ import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { SESSION_TYPES, CHECKINS, checkinById, dollars, sessionTypeById, phaseFor, portalCatalog } from "@/lib/catalog";
 import { formatWhen, statusTone, checkinTone } from "@/lib/format";
-import { cancelOwnSession, listSessions, requestSession } from "@/lib/server/sessions";
+import { cancelOwnSession, listSessions, requestSession, rescheduleOwnSession } from "@/lib/server/sessions";
 import { getProgress } from "@/lib/server/progress";
 import { updateDogPhoto, updateOwnProfile } from "@/lib/server/dogs";
 import { fileToJpegDataUrl } from "@/lib/photo";
@@ -849,6 +849,9 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
   const [paws, setPaws] = useState(0);
+  const [movingId, setMovingId] = useState<number | null>(null);
+  const [moveWhen, setMoveWhen] = useState("");
+  const [moving, setMoving] = useState(false);
 
   async function load() {
     const rows = await listSessions({ data: { dogId: dog.id } });
@@ -937,7 +940,9 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
               </span>
             ) : null}
           </div>
-          <p className="text-xs text-faint">Cancel at least 24 hours ahead from this list.</p>
+          <p className="text-xs text-faint">
+            From the list, cancel or ask for a new time. A day ahead is best.
+          </p>
         </CardBody>
       </Card>
       <div className="space-y-3">
@@ -960,25 +965,93 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
                     </p>
                     <p className="mt-1 text-sm text-faint">{formatWhen(s.scheduled_at)}</p>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-1">
                     <Badge tone={statusTone(s.status)}>{s.status}</Badge>
                     {s.status === "requested" || s.status === "confirmed" ? (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                          void cancelOwnSession({ data: { sessionId: s.id } })
-                            .then(() => load())
-                            .catch((err: unknown) =>
-                              toast.error(err instanceof Error ? err.message : "Could not cancel."),
-                            );
-                        }}
-                      >
-                        Cancel
-                      </Button>
+                      <>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className={movingId === s.id ? "bg-pearl" : undefined}
+                          onClick={() => {
+                            setMovingId(movingId === s.id ? null : s.id);
+                            setMoveWhen("");
+                          }}
+                        >
+                          New time
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            void cancelOwnSession({ data: { sessionId: s.id } })
+                              .then(() => {
+                                if (movingId === s.id) setMovingId(null);
+                                return load();
+                              })
+                              .catch((err: unknown) =>
+                                toast.error(err instanceof Error ? err.message : "Could not cancel."),
+                              );
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </>
                     ) : null}
                   </div>
                 </div>
+                {movingId === s.id ? (
+                  <div className="rounded-lg bg-pearl px-3.5 py-3">
+                    <p className="text-sm font-semibold text-ink">Ask for a different time</p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted">
+                      Emily confirms the new time. A confirmed visit goes back to requested until she does.
+                    </p>
+                    <div className="mt-3">
+                      <WhenPicker
+                        value={moveWhen}
+                        onChange={setMoveWhen}
+                        enabled={active && movingId === s.id}
+                        hours={hours}
+                        durationMin={s.duration_min || sessionTypeById(s.session_type).minutes}
+                      />
+                    </div>
+                    <div className="mt-3 flex flex-wrap items-center gap-4">
+                      <Button
+                        size="sm"
+                        disabled={moving || !moveWhen}
+                        onClick={() => {
+                          if (moving || !moveWhen) return;
+                          setMoving(true);
+                          void rescheduleOwnSession({
+                            data: { sessionId: s.id, scheduledAt: new Date(moveWhen).toISOString() },
+                          })
+                            .then(() => {
+                              toast.success("New time sent. I’ll confirm it.");
+                              setMovingId(null);
+                              setMoveWhen("");
+                              return load();
+                            })
+                            .catch((err: unknown) =>
+                              toast.error(err instanceof Error ? err.message : "Could not move this visit."),
+                            )
+                            .finally(() => setMoving(false));
+                        }}
+                      >
+                        {moving ? "Sending…" : "Send new time"}
+                      </Button>
+                      <button
+                        type="button"
+                        className="text-sm text-muted underline underline-offset-4"
+                        onClick={() => {
+                          setMovingId(null);
+                          setMoveWhen("");
+                        }}
+                      >
+                        Never mind
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
                 {s.homework ? (
                   <div className="rounded-lg bg-pearl px-3.5 py-3">
                     <p className="text-xs font-bold uppercase tracking-wide text-accent-deep">Homework</p>
