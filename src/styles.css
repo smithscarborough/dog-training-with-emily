@@ -658,19 +658,19 @@
   border-radius: 1.5px;
   background: var(--c);
   opacity: 0;
-  animation: confetti-pop 460ms linear both;
+  animation: confetti-pop 760ms linear both;
 }
 .confetti-burst i:nth-child(3n) {
   width: 6px;
   height: 6px;
   border-radius: 999px;
-  animation-duration: 420ms;
+  animation-duration: 700ms;
 }
 .confetti-burst i:nth-child(3n + 2) {
   width: 4px;
   height: 11px;
   border-radius: 1px;
-  animation-duration: 500ms;
+  animation-duration: 840ms;
 }
 .confetti-burst i:nth-child(1) { --x: 0px; --y: -58px; --spin: 40deg; --c: #ff375f; }
 .confetti-burst i:nth-child(2) { --x: 18px; --y: -52px; --spin: -50deg; --c: #ffd60a; animation-delay: 8ms; }
@@ -692,14 +692,17 @@
     transform: translate(-50%, -50%) translate(0, 0) rotate(0deg) scale(0.15);
     animation-timing-function: cubic-bezier(0.02, 0.9, 0.15, 1);
   }
-  16% {
+  14% {
     opacity: 1;
-    transform: translate(-50%, -50%) translate(calc(var(--x) * 0.78), calc(var(--y) * 0.84)) rotate(calc(var(--spin) * 0.65)) scale(1);
-    animation-timing-function: cubic-bezier(0.2, 0.2, 0.3, 1);
+    transform: translate(-50%, -50%) translate(calc(var(--x) * 0.8), var(--y)) rotate(calc(var(--spin) * 0.4)) scale(1);
+    animation-timing-function: cubic-bezier(0.42, 0, 0.68, 0.4);
+  }
+  48% {
+    opacity: 1;
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) translate(var(--x), calc(var(--y) + 6px)) rotate(var(--spin)) scale(1);
+    transform: translate(-50%, -50%) translate(calc(var(--x) * 1.15), calc(var(--y) + 30px)) rotate(calc(var(--spin) * 1.7)) scale(1);
   }
 }
 
