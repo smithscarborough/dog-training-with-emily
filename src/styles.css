@@ -659,19 +659,19 @@
   background: linear-gradient(148deg, color-mix(in srgb, var(--c, #43c5b9) 42%, white), var(--c, #43c5b9) 58%);
   box-shadow: 0 1px 1.5px rgba(44, 24, 16, 0.12);
   opacity: 0;
-  animation: confetti-pop 760ms linear both;
+  animation: confetti-pop 640ms linear both;
 }
 .confetti-burst i:nth-child(3n) {
   width: 6px;
   height: 6px;
   border-radius: 999px;
-  animation-duration: 700ms;
+  animation-duration: 580ms;
 }
 .confetti-burst i:nth-child(3n + 2) {
   width: 4px;
   height: 11px;
   border-radius: 1px;
-  animation-duration: 820ms;
+  animation-duration: 700ms;
 }
 .confetti-burst i:nth-child(1) { --x: 2px; --peak: -58px; --spin: -64deg; --c: #43c5b9; }
 .confetti-burst i:nth-child(2) { --x: 20px; --peak: -50px; --spin: 84deg; --c: #f4e7d4; animation-delay: 18ms; }
@@ -690,20 +690,17 @@
 @keyframes confetti-pop {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) translate(0, 2px) rotate(0deg) scale(0.45);
-    animation-timing-function: cubic-bezier(0.14, 0.82, 0.24, 1);
+    transform: translate(-50%, -50%) translate(0, 2px) rotate(0deg) scale(0.4);
+    animation-timing-function: cubic-bezier(0.08, 0.75, 0.2, 1);
   }
-  16% {
+  18% {
     opacity: 1;
-  }
-  68% {
-    opacity: 1;
-    transform: translate(-50%, -50%) translate(calc(var(--x) * 0.9), var(--peak)) rotate(calc(var(--spin) * 0.7)) scale(1);
-    animation-timing-function: cubic-bezier(0.22, 0.04, 0.36, 1);
+    transform: translate(-50%, -50%) translate(calc(var(--x) * 0.16), calc(var(--peak) * 0.46)) rotate(calc(var(--spin) * 0.18)) scale(0.85);
+    animation-timing-function: cubic-bezier(0.16, 0.45, 0.28, 1);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) translate(var(--x), calc(var(--peak) + 12px)) rotate(var(--spin)) scale(0.94);
+    transform: translate(-50%, -50%) translate(var(--x), var(--peak)) rotate(var(--spin)) scale(1);
   }
 }
 
