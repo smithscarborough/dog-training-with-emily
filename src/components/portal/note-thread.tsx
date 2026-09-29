@@ -17,10 +17,10 @@ export function NoteThread({
   clientName?: string;
 }) {
   const dogId = messages[0]?.dog_id ?? 0;
-  const [open, setOpen] = useState(false);
+  const [extra, setExtra] = useState(0);
 
   useEffect(() => {
-    setOpen(false);
+    setExtra(0);
   }, [dogId]);
 
   if (!messages.length) {
@@ -34,27 +34,34 @@ export function NoteThread({
   }
 
   const recent = 4;
-  const older = messages.slice(0, Math.max(0, messages.length - recent));
-  const buriedReply =
-    viewer === "client" && older.some((message) => message.author === "trainer" && !message.read_by_client);
-  const shown = open || buriedReply ? messages : messages.slice(-recent);
+  const step = 8;
+  const unreadAt = messages.findIndex(
+    (message) => message.author === "trainer" && !message.read_by_client,
+  );
+  const unreadFromEnd = unreadAt >= 0 ? messages.length - unreadAt : 0;
+  const shownCount = Math.min(
+    messages.length,
+    Math.max(recent + extra, viewer === "client" ? unreadFromEnd : 0),
+  );
+  const shown = messages.slice(-shownCount);
   const hidden = messages.length - shown.length;
+  const next = Math.min(step, hidden);
 
   return (
     <div>
       {hidden > 0 ? (
         <button
           type="button"
-          onClick={() => setOpen(true)}
+          onClick={() => setExtra(shownCount - recent + next)}
           className="mb-3 w-full rounded-lg px-3 py-2.5 text-sm font-medium text-accent-deep hairline transition-colors hover:bg-pearl"
         >
-          Show {hidden} earlier {hidden === 1 ? "note" : "notes"}
+          Show {next} earlier {next === 1 ? "note" : "notes"}
         </button>
       ) : null}
-      {open && messages.length > recent ? (
+      {shownCount > recent ? (
         <button
           type="button"
-          onClick={() => setOpen(false)}
+          onClick={() => setExtra(0)}
           className="mb-3 w-full rounded-lg px-3 py-2.5 text-sm font-medium text-muted hairline transition-colors hover:bg-pearl hover:text-ink"
         >
           Hide earlier notes
