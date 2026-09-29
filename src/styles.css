@@ -645,68 +645,65 @@
 .confetti-burst {
   position: absolute;
   left: 50%;
-  top: 0;
+  top: 50%;
   z-index: 0;
   width: 0;
   height: 0;
   pointer-events: none;
-  /* Hide every piece until it clears the top edge of the button. */
-  clip-path: inset(-130px -64px 0 -64px);
 }
 .confetti-burst i {
   position: absolute;
   width: 7px;
   height: 10px;
   border-radius: 1.5px;
-  background: linear-gradient(160deg, color-mix(in srgb, var(--c) 68%, white), var(--c));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--c) 78%, white), var(--c));
   opacity: 0;
-  animation: confetti-pop 680ms linear both;
+  animation: confetti-pop 720ms linear both;
 }
 .confetti-burst i:nth-child(3n) {
   width: 6px;
   height: 6px;
   border-radius: 999px;
-  animation-duration: 620ms;
+  animation-duration: 660ms;
 }
 .confetti-burst i:nth-child(3n + 2) {
   width: 4px;
   height: 11px;
   border-radius: 1px;
-  animation-duration: 740ms;
+  animation-duration: 780ms;
 }
-.confetti-burst i:nth-child(1) { --x: 0px; --y: -66px; --spin: -70deg; --c: #ff5a7a; }
-.confetti-burst i:nth-child(2) { --x: 14px; --y: -60px; --spin: 110deg; --c: #ffd23f; animation-delay: 14ms; }
-.confetti-burst i:nth-child(3) { --x: -14px; --y: -62px; --spin: -120deg; --c: #3ddcff; animation-delay: 6ms; }
-.confetti-burst i:nth-child(4) { --x: 26px; --y: -52px; --spin: 80deg; --c: #7c5cff; animation-delay: 20ms; }
-.confetti-burst i:nth-child(5) { --x: -26px; --y: -54px; --spin: -50deg; --c: #ff8a3d; animation-delay: 4ms; }
-.confetti-burst i:nth-child(6) { --x: 34px; --y: -42px; --spin: 140deg; --c: #3ddc97; animation-delay: 18ms; }
-.confetti-burst i:nth-child(7) { --x: -34px; --y: -44px; --spin: -90deg; --c: #ff4d4d; animation-delay: 10ms; }
-.confetti-burst i:nth-child(8) { --x: 8px; --y: -72px; --spin: 36deg; --c: #5b8cff; animation-delay: 16ms; }
-.confetti-burst i:nth-child(9) { --x: -8px; --y: -70px; --spin: -150deg; --c: #ff7ad9; animation-delay: 8ms; }
-.confetti-burst i:nth-child(10) { --x: 20px; --y: -46px; --spin: 60deg; --c: #ffe14a; animation-delay: 22ms; }
-.confetti-burst i:nth-child(11) { --x: -20px; --y: -48px; --spin: -100deg; --c: #3ddcff; animation-delay: 12ms; }
-.confetti-burst i:nth-child(12) { --x: 30px; --y: -36px; --spin: 100deg; --c: #ff8a3d; animation-delay: 2ms; }
-.confetti-burst i:nth-child(13) { --x: -30px; --y: -38px; --spin: -40deg; --c: #7c5cff; animation-delay: 18ms; }
-.confetti-burst i:nth-child(14) { --x: 4px; --y: -56px; --spin: 150deg; --c: #3ddc97; animation-delay: 10ms; }
-.confetti-burst i:nth-child(15) { --x: -16px; --y: -40px; --spin: -80deg; --c: #ff5a7a; animation-delay: 24ms; }
-.confetti-burst i:nth-child(16) { --x: 16px; --y: -40px; --spin: 50deg; --c: #ffd23f; animation-delay: 8ms; }
+.confetti-burst i:nth-child(1) { --x: 0px; --y: -62px; --spin: 140deg; --c: #ff375f; }
+.confetti-burst i:nth-child(2) { --x: 16px; --y: -56px; --spin: -160deg; --c: #ffd60a; animation-delay: 20ms; }
+.confetti-burst i:nth-child(3) { --x: -16px; --y: -58px; --spin: 120deg; --c: #64d2ff; animation-delay: 8ms; }
+.confetti-burst i:nth-child(4) { --x: 28px; --y: -50px; --spin: -100deg; --c: #bf5af2; animation-delay: 28ms; }
+.confetti-burst i:nth-child(5) { --x: -28px; --y: -52px; --spin: 180deg; --c: #ff9f0a; animation-delay: 12ms; }
+.confetti-burst i:nth-child(6) { --x: 34px; --y: -46px; --spin: -140deg; --c: #30d158; animation-delay: 4ms; }
+.confetti-burst i:nth-child(7) { --x: -32px; --y: -48px; --spin: 90deg; --c: #ff453a; animation-delay: 24ms; }
+.confetti-burst i:nth-child(8) { --x: 8px; --y: -70px; --spin: -80deg; --c: #0a84ff; animation-delay: 16ms; }
+.confetti-burst i:nth-child(9) { --x: -8px; --y: -68px; --spin: 160deg; --c: #ff375f; animation-delay: 6ms; }
+.confetti-burst i:nth-child(10) { --x: 22px; --y: -54px; --spin: -120deg; --c: #ffd60a; animation-delay: 18ms; }
+.confetti-burst i:nth-child(11) { --x: -22px; --y: -56px; --spin: 70deg; --c: #64d2ff; animation-delay: 10ms; }
+.confetti-burst i:nth-child(12) { --x: 12px; --y: -44px; --spin: -200deg; --c: #bf5af2; animation-delay: 26ms; }
+.confetti-burst i:nth-child(13) { --x: -12px; --y: -46px; --spin: 110deg; --c: #ff9f0a; animation-delay: 14ms; }
+.confetti-burst i:nth-child(14) { --x: 4px; --y: -60px; --spin: -50deg; --c: #30d158; animation-delay: 2ms; }
 @keyframes confetti-pop {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) translate(0, 10px) rotate(0deg) scale(0.3);
-    animation-timing-function: cubic-bezier(0.1, 0.8, 0.18, 1);
+    transform: translate(-50%, -50%) translate(0, 2px) rotate(0deg) scale(0.35, 0.5);
+    animation-timing-function: cubic-bezier(0.06, 0.7, 0.16, 1);
   }
   20% {
     opacity: 1;
-    transform: translate(-50%, -50%) translate(calc(var(--x) * 0.08), -8px) rotate(calc(var(--spin) * 0.16)) scale(0.8);
-    animation-timing-function: cubic-bezier(0.16, 0.55, 0.28, 1);
+    transform: translate(-50%, -50%) translate(calc(var(--x) * 0.16), calc(var(--y) * 0.48)) rotate(calc(var(--spin) * 0.2)) scale(1, 1);
   }
-  70% {
+  52% {
     opacity: 1;
+    transform: translate(-50%, -50%) translate(calc(var(--x) * 0.66), var(--y)) rotate(calc(var(--spin) * 0.55)) scale(0.22, 1);
+    animation-timing-function: cubic-bezier(0.2, 0.05, 0.3, 1);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) translate(var(--x), var(--y)) rotate(var(--spin)) scale(1);
+    transform: translate(-50%, -50%) translate(var(--x), calc(var(--y) + 10px)) rotate(var(--spin)) scale(0.9, 1);
   }
 }
 
