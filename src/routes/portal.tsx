@@ -19,7 +19,7 @@ import { getProgress } from "@/lib/server/progress";
 import { updateDogPhoto, updateOwnProfile } from "@/lib/server/dogs";
 import { fileToJpegDataUrl } from "@/lib/photo";
 import { listCheckins, submitCheckin, clearCheckin } from "@/lib/server/checkins";
-import { listMessages, markClientRead, recordHouseholdNote } from "@/lib/server/messages";
+import { listMessages, markClientRead, recordHouseholdNote, deleteOwnNote } from "@/lib/server/messages";
 import { notifyEmilyNote, notifyEmilyCancel } from "@/lib/notify-studio";
 import { NoteThread } from "@/components/portal/note-thread";
 import type { CheckinRow, DogRow, ProgressLogRow, ProgressRow, SessionRow, MessageRow } from "@/lib/types";
@@ -585,7 +585,20 @@ function CheckinCard({
         <div className="border-t border-line pt-5">
           <p className="text-sm font-bold text-ink">With Emily</p>
           <div className="mt-3">
-            <NoteThread messages={thread} viewer="client" />
+            <NoteThread
+              messages={thread}
+              viewer="client"
+              onDelete={(messageId) => {
+                void deleteOwnNote({ data: { messageId } })
+                  .then(() => {
+                    toast.success("Removed. If the email already went out, that copy stays in Emily’s inbox.");
+                    loadThread();
+                  })
+                  .catch((err: unknown) =>
+                    toast.error(err instanceof Error ? err.message : "Could not remove that note."),
+                  );
+              }}
+            />
           </div>
         </div>
         </div>

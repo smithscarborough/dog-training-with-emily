@@ -11,13 +11,16 @@ export function NoteThread({
   messages,
   viewer,
   clientName,
+  onDelete,
 }: {
   messages: MessageRow[];
   viewer: "client" | "trainer";
   clientName?: string;
+  onDelete?: (messageId: number) => void;
 }) {
   const dogId = messages[0]?.dog_id ?? 0;
   const [extra, setExtra] = useState(0);
+  const [confirmId, setConfirmId] = useState<number | null>(null);
 
   useEffect(() => {
     setExtra(0);
@@ -89,6 +92,38 @@ export function NoteThread({
               ) : null}
             </p>
             <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-ink">{message.body}</p>
+            {viewer === "client" && !fromEmily && onDelete ? (
+              confirmId === message.id ? (
+                <p className="mt-2 text-xs text-muted">
+                  Remove this note?{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConfirmId(null);
+                      onDelete(message.id);
+                    }}
+                    className="font-semibold text-ink underline decoration-ink/40 underline-offset-2 hover:decoration-ink"
+                  >
+                    Yes, remove it
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmId(null)}
+                    className="ml-3 text-faint hover:text-ink"
+                  >
+                    Keep it
+                  </button>
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setConfirmId(message.id)}
+                  className="mt-2 text-xs font-medium text-faint underline-offset-4 hover:text-muted hover:underline"
+                >
+                  Delete
+                </button>
+              )
+            ) : null}
           </li>
         );
       })}

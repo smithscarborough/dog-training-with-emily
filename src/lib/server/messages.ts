@@ -58,6 +58,23 @@ export const recordHouseholdNote = createServerFn({ method: "POST" })
     return { posted: true as const, token: replyToken, dogName: dog.name, ownerName: dog.owner_name };
   });
 
+export const deleteOwnNote = createServerFn({ method: "POST" })
+  .validator((data: { messageId: number }) => data)
+  .middleware([authMiddleware])
+  .handler(async ({ context, data }) => {
+    const sql = await getSql();
+    const rows = await sql<MessageRow>`
+      select m.* from messages m
+      join dogs d on d.id = m.dog_id
+      where m.id = ${data.messageId} and d.owner_user_id = ${context.userId}
+    `;
+    const message = rows[0];
+    if (!message) throw new Error("Not found");
+    if (message.author !== "client") throw new Error("You can only remove your own notes.");
+    await sql`delete from messages where id = ${message.id}`;
+    return { ok: true };
+  });
+
 export const replyAsTrainer = createServerFn({ method: "POST" })
   .validator((data: { dogId: number; body: string }) => data)
   .middleware([authMiddleware])
