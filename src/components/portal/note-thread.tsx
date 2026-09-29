@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
@@ -16,6 +16,13 @@ export function NoteThread({
   viewer: "client" | "trainer";
   clientName?: string;
 }) {
+  const dogId = messages[0]?.dog_id ?? 0;
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [dogId]);
+
   if (!messages.length) {
     return (
       <p className="text-sm leading-relaxed text-muted">
@@ -25,9 +32,36 @@ export function NoteThread({
       </p>
     );
   }
+
+  const recent = 4;
+  const older = messages.slice(0, Math.max(0, messages.length - recent));
+  const buriedReply =
+    viewer === "client" && older.some((message) => message.author === "trainer" && !message.read_by_client);
+  const shown = open || buriedReply ? messages : messages.slice(-recent);
+  const hidden = messages.length - shown.length;
+
   return (
-    <ol className="space-y-3">
-      {messages.map((message) => {
+    <div>
+      {hidden > 0 ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="mb-3 w-full rounded-lg px-3 py-2.5 text-sm font-medium text-accent-deep hairline transition-colors hover:bg-pearl"
+        >
+          Show {hidden} earlier {hidden === 1 ? "note" : "notes"}
+        </button>
+      ) : null}
+      {open && messages.length > recent ? (
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="mb-3 w-full rounded-lg px-3 py-2.5 text-sm font-medium text-muted hairline transition-colors hover:bg-pearl hover:text-ink"
+        >
+          Hide earlier notes
+        </button>
+      ) : null}
+      <ol className="space-y-3">
+        {shown.map((message) => {
         const fromEmily = message.author === "trainer";
         return (
           <li
@@ -51,7 +85,8 @@ export function NoteThread({
           </li>
         );
       })}
-    </ol>
+      </ol>
+    </div>
   );
 }
 
