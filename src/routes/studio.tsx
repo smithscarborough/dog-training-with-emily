@@ -1725,12 +1725,12 @@ function Calendar({
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h3 className="font-display text-2xl tracking-tight">{monthLabel}</h3>
               <div className="flex items-center gap-2">
-                <button type="button" className="chip-3d rounded-full px-3 py-1.5 text-sm" onClick={() => shiftMonth(-1)}>
+                <button type="button" className="chip-3d cursor-pointer rounded-full px-3 py-1.5 text-sm" onClick={() => shiftMonth(-1)}>
                   Prev
                 </button>
                 <button
                   type="button"
-                  className="chip-3d rounded-full px-3 py-1.5 text-sm"
+                  className="chip-3d cursor-pointer rounded-full px-3 py-1.5 text-sm"
                   onClick={() => {
                     const [year, month] = todayKey.split("-").map(Number);
                     setCursor({ year: year!, month: month! });
@@ -1739,7 +1739,7 @@ function Calendar({
                 >
                   Today
                 </button>
-                <button type="button" className="chip-3d rounded-full px-3 py-1.5 text-sm" onClick={() => shiftMonth(1)}>
+                <button type="button" className="chip-3d cursor-pointer rounded-full px-3 py-1.5 text-sm" onClick={() => shiftMonth(1)}>
                   Next
                 </button>
               </div>
@@ -1761,7 +1761,7 @@ function Calendar({
                     type="button"
                     onClick={() => setSelected(cell.key)}
                     className={cn(
-                      "relative flex min-h-16 flex-col gap-1 rounded-lg bg-pearl p-1.5 text-left hover:z-30 sm:min-h-24 sm:p-2",
+                      "relative flex min-h-16 cursor-pointer flex-col gap-1 rounded-lg bg-pearl p-1.5 text-left hover:z-30 sm:min-h-24 sm:p-2",
                       !cell.inMonth && "opacity-40",
                       cell.key === todayKey && "ring-1 ring-accent",
                       cell.key === selected && "ring-2 ring-ink",
