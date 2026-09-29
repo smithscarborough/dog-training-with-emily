@@ -703,6 +703,87 @@
   }
 }
 
+.photo-upload-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 999px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(67, 197, 185, 0.08) 0deg,
+    rgba(67, 197, 185, 0.2) 220deg,
+    #43c5b9 330deg,
+    #1f8a82 360deg
+  );
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+  animation: photo-spin 0.85s linear infinite;
+  pointer-events: none;
+}
+.photo-upload-veil {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(36, 20, 14, 0.18);
+  pointer-events: none;
+}
+.photo-upload-veil::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 28%, rgba(255, 255, 255, 0.72) 50%, transparent 72%);
+  transform: translateX(-130%);
+  animation: photo-shimmer 1.15s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+.photo-upload-label {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: var(--color-ink);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.photo-upload-dots {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: 6px;
+}
+.photo-upload-dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: #43c5b9;
+  animation: photo-dot 0.9s ease-in-out infinite;
+}
+.photo-upload-dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.photo-upload-dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes photo-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+@keyframes photo-shimmer {
+  to {
+    transform: translateX(130%);
+  }
+}
+@keyframes photo-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-photo {
     animation: none;
@@ -722,5 +803,10 @@
   .paw-burst,
   .confetti-burst {
     display: none;
+  }
+  .photo-upload-ring,
+  .photo-upload-veil::after,
+  .photo-upload-dots i {
+    animation: none;
   }
 }

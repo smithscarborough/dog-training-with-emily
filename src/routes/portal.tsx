@@ -133,7 +133,7 @@ function PortalPage() {
 
   if (!me?.dogs.length) return <EmptyPortal />;
 
-  return <PortalApp dogs={me.dogs} hours={parseHours(me.studio.hours_json)} onRefresh={() => void refresh()} />;
+  return <PortalApp dogs={me.dogs} hours={parseHours(me.studio.hours_json)} onRefresh={refresh} />;
 }
 
 function PortalApp({
@@ -143,7 +143,7 @@ function PortalApp({
 }: {
   dogs: DogRow[];
   hours: HoursDay[];
-  onRefresh: () => void;
+  onRefresh: () => void | Promise<unknown>;
 }) {
   const [dogId, setDogId] = useState(dogs[0]!.id);
   const dog = dogs.find((d) => d.id === dogId) ?? dogs[0]!;
@@ -1279,11 +1279,12 @@ function Chips({
   );
 }
 
-function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }) {
+function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | Promise<unknown> }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<ProfileDraft>(() => profileDraft(dog));
   const [busy, setBusy] = useState(false);
   const [removing, setRemoving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const dirty = JSON.stringify(draft) !== JSON.stringify(profileDraft(dog));
 
   useEffect(() => {
@@ -1578,9 +1579,14 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }) 
           <CardTitle>{dog.name}’s photo</CardTitle>
         </CardHeader>
         <CardBody className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <div className="relative w-fit">
+          <div className="relative w-fit" aria-busy={uploading}>
             <DogAvatar dog={dog} size="lg" />
-            {dog.photo_url ? (
+            {uploading ? (
+              <>
+                <span className="photo-upload-ring" aria-hidden />
+                <span className="photo-upload-veil" aria-hidden />
+              </>
+            ) : dog.photo_url ? (
               <button
                 type="button"
                 aria-label={`Remove ${dog.name}’s photo`}
@@ -1596,6 +1602,16 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }) 
           </div>
           <div className="min-w-0">
             <p className="text-sm text-muted">Optional. A clear face shot works best.</p>
+            {uploading ? (
+              <p className="photo-upload-label mt-3" role="status">
+                Uploading photo
+                <span className="photo-upload-dots" aria-hidden>
+                  <i />
+                  <i />
+                  <i />
+                </span>
+              </p>
+            ) : (
             <label className="relative mt-3 inline-flex cursor-pointer overflow-hidden">
               <span className="book-cta inline-flex h-11 items-center justify-center rounded-md px-5 text-sm font-medium">
                 {dog.photo_url ? "Replace photo" : "Upload a photo"}
@@ -1607,19 +1623,22 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }) 
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   e.target.value = "";
-                  if (!file) return;
+                  if (!file || uploading) return;
+                  setUploading(true);
                   void fileToJpegDataUrl(file)
                     .then((photo_url) => updateDogPhoto({ data: { dogId: dog.id, photo_url } }))
+                    .then(() => onRefresh())
                     .then(() => {
                       toast.success("Photo saved.");
-                      onRefresh();
                     })
                     .catch((err: unknown) =>
                       toast.error(err instanceof Error ? err.message : "Could not save photo."),
-                    );
+                    )
+                    .finally(() => setUploading(false));
                 }}
               />
             </label>
+            )}
           </div>
         </CardBody>
       </Card>
