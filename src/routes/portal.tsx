@@ -1098,7 +1098,6 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }) 
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<ProfileDraft>(() => profileDraft(dog));
   const [busy, setBusy] = useState(false);
-  const [paws, setPaws] = useState(0);
   const [removing, setRemoving] = useState(false);
   const dirty = JSON.stringify(draft) !== JSON.stringify(profileDraft(dog));
 
@@ -1127,7 +1126,6 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }) 
 
   function save() {
     if (!dirty || busy) return;
-    setPaws((n) => n + 1);
     setBusy(true);
     void updateOwnProfile({ data: { dogId: dog.id, ...draft } })
       .then(() => {
@@ -1141,18 +1139,9 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void }) 
 
   function saveButton() {
     return (
-      <div className="relative w-fit">
-        <Button type="button" disabled={!dirty || busy} onClick={save}>
-          {busy ? "Saving…" : "Save changes"}
-        </Button>
-        {paws > 0 ? (
-          <span key={paws} className="paw-burst" aria-hidden="true">
-            <PawPrint />
-            <PawPrint />
-            <PawPrint />
-          </span>
-        ) : null}
-      </div>
+      <Button type="button" disabled={!dirty || busy} onClick={save}>
+        {busy ? "Saving…" : "Save changes"}
+      </Button>
     );
   }
 
