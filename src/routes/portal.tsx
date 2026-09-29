@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { DogAvatar } from "@/components/dogs/dog-avatar";
@@ -311,6 +311,19 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
   const [busy, setBusy] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
   const [confetti, setConfetti] = useState(0);
+  const confettiTimer = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (confettiTimer.current) window.clearTimeout(confettiTimer.current);
+    };
+  }, []);
+
+  function popConfetti() {
+    setConfetti((n) => n + 1);
+    if (confettiTimer.current) window.clearTimeout(confettiTimer.current);
+    confettiTimer.current = window.setTimeout(() => setConfetti(0), 1100);
+  }
 
   useEffect(() => {
     void listCheckins({ data: { dogId: dog.id, limit: 1 } })
@@ -378,7 +391,7 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
                   onClick={() => {
                     setStatus(c.id);
                     setConfirmClear(false);
-                    setConfetti((n) => n + 1);
+                    popConfetti();
                   }}
                   className={cn(
                     "relative z-10 rounded-full px-3 py-2 text-sm chip-3d",
