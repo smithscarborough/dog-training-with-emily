@@ -865,6 +865,8 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
   const [movingId, setMovingId] = useState<number | null>(null);
   const [moveWhen, setMoveWhen] = useState("");
   const [moving, setMoving] = useState(false);
+  const [confirmingId, setConfirmingId] = useState<number | null>(null);
+  const [cancelling, setCancelling] = useState(false);
   const [pendingCancel, setPendingCancel] = useState<{
     id: number;
     previous: "requested" | "confirmed";
@@ -910,6 +912,30 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
       .catch((err: unknown) =>
         toast.error(err instanceof Error ? err.message : "Could not restore."),
       );
+  }
+
+  function commitCancel(session: SessionRow) {
+    if (cancelling) return;
+    const previous = session.status === "confirmed" ? "confirmed" : "requested";
+    setCancelling(true);
+    void cancelOwnSession({ data: { sessionId: session.id } })
+      .then((info) => {
+        if (movingId === session.id) setMovingId(null);
+        setConfirmingId(null);
+        setPendingCancel({
+          id: session.id,
+          previous,
+          ownerName: info.ownerName,
+          dogName: info.dogName,
+          sessionType: info.sessionType,
+          scheduledAt: info.scheduledAt,
+        });
+        return load();
+      })
+      .catch((err: unknown) =>
+        toast.error(err instanceof Error ? err.message : "Could not cancel."),
+      )
+      .finally(() => setCancelling(false));
   }
 
   useEffect(() => {
@@ -1053,6 +1079,7 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
                             movingId === s.id && "ring-2 ring-accent",
                           )}
                           onClick={() => {
+                            setConfirmingId(null);
                             setMovingId(movingId === s.id ? null : s.id);
                             setMoveWhen("");
                           }}
@@ -1062,25 +1089,14 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
                         <Button
                           size="sm"
                           variant="outline"
-                          className="note-cta h-9 border-0 px-3.5 text-sm font-semibold"
+                          className={cn(
+                            "note-cta h-9 border-0 px-3.5 text-sm font-semibold",
+                            confirmingId === s.id && "ring-2 ring-accent",
+                          )}
                           onClick={() => {
-                            const previous = s.status === "confirmed" ? "confirmed" : "requested";
-                            void cancelOwnSession({ data: { sessionId: s.id } })
-                              .then((info) => {
-                                if (movingId === s.id) setMovingId(null);
-                                setPendingCancel({
-                                  id: s.id,
-                                  previous,
-                                  ownerName: info.ownerName,
-                                  dogName: info.dogName,
-                                  sessionType: info.sessionType,
-                                  scheduledAt: info.scheduledAt,
-                                });
-                                return load();
-                              })
-                              .catch((err: unknown) =>
-                                toast.error(err instanceof Error ? err.message : "Could not cancel."),
-                              );
+                            setMovingId(null);
+                            setMoveWhen("");
+                            setConfirmingId(confirmingId === s.id ? null : s.id);
                           }}
                         >
                           Cancel
@@ -1089,6 +1105,33 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
                     ) : null}
                   </div>
                 </div>
+                {confirmingId === s.id ? (
+                  <div className="rounded-lg bg-pearl px-3.5 py-3">
+                    <p className="text-sm font-semibold text-ink">Cancel this visit?</p>
+                    <p className="mt-1 text-sm leading-relaxed text-muted">
+                      {formatWhen(s.scheduled_at)}. You’ll have a few seconds to undo it.
+                    </p>
+                    <div className="mt-3 flex flex-wrap items-center gap-4">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="note-cta h-9 border-0 px-3.5 text-sm font-semibold"
+                        disabled={cancelling}
+                        onClick={() => commitCancel(s)}
+                      >
+                        {cancelling ? "Cancelling…" : "Yes, cancel"}
+                      </Button>
+                      <button
+                        type="button"
+                        className="text-sm text-muted underline underline-offset-4 disabled:opacity-40"
+                        disabled={cancelling}
+                        onClick={() => setConfirmingId(null)}
+                      >
+                        Keep it
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
                 {pendingCancel?.id === s.id ? (
                   <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-bg px-3.5 py-3">
                     <p className="text-sm text-ink">Cancelled. You can undo this for a few seconds.</p>
