@@ -363,27 +363,45 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
         </p>
         <p className="text-sm font-bold text-ink">Choose one</p>
         <div className="flex flex-wrap gap-2">
-          {CHECKINS.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => {
-                setStatus(c.id);
-                setConfirmClear(false);
-                if (c.id === "practiced") setConfetti((n) => n + 1);
-              }}
-              className={cn("relative rounded-full px-3 py-2 text-sm chip-3d", status === c.id && "is-on")}
-            >
-              {c.label}
-              {c.id === "practiced" && confetti > 0 ? (
-                <span key={confetti} className="confetti-burst" aria-hidden="true">
-                  {Array.from({ length: 12 }, (_, i) => (
-                    <i key={i} />
-                  ))}
-                </span>
-              ) : null}
-            </button>
-          ))}
+          {CHECKINS.map((c) =>
+            c.id === "practiced" ? (
+              <span key={c.id} className="practice-pop">
+                {confetti > 0 ? (
+                  <span key={confetti} className="confetti-burst" aria-hidden="true">
+                    {Array.from({ length: 18 }, (_, i) => (
+                      <i key={i} />
+                    ))}
+                  </span>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStatus(c.id);
+                    setConfirmClear(false);
+                    setConfetti((n) => n + 1);
+                  }}
+                  className={cn(
+                    "relative z-10 rounded-full px-3 py-2 text-sm chip-3d",
+                    status === c.id && "is-on",
+                  )}
+                >
+                  {c.label}
+                </button>
+              </span>
+            ) : (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => {
+                  setStatus(c.id);
+                  setConfirmClear(false);
+                }}
+                className={cn("rounded-full px-3 py-2 text-sm chip-3d", status === c.id && "is-on")}
+              >
+                {c.label}
+              </button>
+            ),
+          )}
         </div>
         <p className="min-h-12 text-sm leading-relaxed text-muted" aria-live="polite">
           {status ? checkinById(status).hint : ""}
