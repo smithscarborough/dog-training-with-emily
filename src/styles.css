@@ -660,33 +660,33 @@
   border-radius: 1px;
   background: var(--c, #43c5b9);
   opacity: 0;
-  animation: confetti-pop 980ms linear both;
+  animation: confetti-pop 820ms linear both;
 }
 .confetti-burst i:nth-child(3n) {
   width: 5px;
   height: 5px;
   border-radius: 999px;
-  animation-duration: 900ms;
+  animation-duration: 740ms;
 }
 .confetti-burst i:nth-child(3n + 2) {
   width: 3px;
   height: 10px;
-  animation-duration: 1060ms;
+  animation-duration: 880ms;
 }
-.confetti-burst i:nth-child(1) { --x: 4px; --peak: -78px; --spin: -80deg; --c: #43c5b9; }
-.confetti-burst i:nth-child(2) { --x: 26px; --peak: -64px; --spin: 110deg; --c: #f4e7d4; animation-delay: 24ms; }
-.confetti-burst i:nth-child(3) { --x: -22px; --peak: -70px; --spin: -130deg; --c: #e4c16a; animation-delay: 12ms; }
-.confetti-burst i:nth-child(4) { --x: 40px; --peak: -48px; --spin: 150deg; --c: #7ed9d0; animation-delay: 36ms; }
-.confetti-burst i:nth-child(5) { --x: -38px; --peak: -52px; --spin: -100deg; --c: #f3d2cf; animation-delay: 8ms; }
-.confetti-burst i:nth-child(6) { --x: 14px; --peak: -86px; --spin: 60deg; --c: #43c5b9; animation-delay: 44ms; }
-.confetti-burst i:nth-child(7) { --x: -12px; --peak: -82px; --spin: -150deg; --c: #f4e7d4; animation-delay: 18ms; }
-.confetti-burst i:nth-child(8) { --x: 52px; --peak: -36px; --spin: 90deg; --c: #e4c16a; animation-delay: 30ms; }
-.confetti-burst i:nth-child(9) { --x: -48px; --peak: -34px; --spin: -70deg; --c: #7ed9d0; animation-delay: 16ms; }
-.confetti-burst i:nth-child(10) { --x: -4px; --peak: -90px; --spin: 40deg; --c: #f3d2cf; animation-delay: 40ms; }
-.confetti-burst i:nth-child(11) { --x: 32px; --peak: -58px; --spin: -120deg; --c: #43c5b9; animation-delay: 6ms; }
-.confetti-burst i:nth-child(12) { --x: -30px; --peak: -60px; --spin: 130deg; --c: #f4e7d4; animation-delay: 28ms; }
-.confetti-burst i:nth-child(13) { --x: 18px; --peak: -44px; --spin: -50deg; --c: #e4c16a; animation-delay: 48ms; }
-.confetti-burst i:nth-child(14) { --x: -16px; --peak: -46px; --spin: 80deg; --c: #7ed9d0; animation-delay: 20ms; }
+.confetti-burst i:nth-child(1) { --x: 3px; --peak: -36px; --spin: -70deg; --c: #43c5b9; }
+.confetti-burst i:nth-child(2) { --x: 18px; --peak: -30px; --spin: 90deg; --c: #f4e7d4; animation-delay: 24ms; }
+.confetti-burst i:nth-child(3) { --x: -16px; --peak: -32px; --spin: -110deg; --c: #e4c16a; animation-delay: 12ms; }
+.confetti-burst i:nth-child(4) { --x: 28px; --peak: -22px; --spin: 120deg; --c: #7ed9d0; animation-delay: 36ms; }
+.confetti-burst i:nth-child(5) { --x: -26px; --peak: -24px; --spin: -80deg; --c: #f3d2cf; animation-delay: 8ms; }
+.confetti-burst i:nth-child(6) { --x: 10px; --peak: -42px; --spin: 50deg; --c: #43c5b9; animation-delay: 44ms; }
+.confetti-burst i:nth-child(7) { --x: -8px; --peak: -40px; --spin: -120deg; --c: #f4e7d4; animation-delay: 18ms; }
+.confetti-burst i:nth-child(8) { --x: 34px; --peak: -18px; --spin: 80deg; --c: #e4c16a; animation-delay: 30ms; }
+.confetti-burst i:nth-child(9) { --x: -32px; --peak: -16px; --spin: -60deg; --c: #7ed9d0; animation-delay: 16ms; }
+.confetti-burst i:nth-child(10) { --x: -2px; --peak: -44px; --spin: 36deg; --c: #f3d2cf; animation-delay: 40ms; }
+.confetti-burst i:nth-child(11) { --x: 22px; --peak: -28px; --spin: -100deg; --c: #43c5b9; animation-delay: 6ms; }
+.confetti-burst i:nth-child(12) { --x: -20px; --peak: -28px; --spin: 100deg; --c: #f4e7d4; animation-delay: 28ms; }
+.confetti-burst i:nth-child(13) { --x: 12px; --peak: -20px; --spin: -44deg; --c: #e4c16a; animation-delay: 48ms; }
+.confetti-burst i:nth-child(14) { --x: -12px; --peak: -22px; --spin: 70deg; --c: #7ed9d0; animation-delay: 20ms; }
 @keyframes confetti-pop {
   0% {
     opacity: 0;
