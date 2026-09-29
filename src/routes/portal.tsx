@@ -310,6 +310,7 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
   const [latest, setLatest] = useState<CheckinRow | null>(null);
   const [busy, setBusy] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
+  const [confetti, setConfetti] = useState(0);
 
   useEffect(() => {
     void listCheckins({ data: { dogId: dog.id, limit: 1 } })
@@ -369,10 +370,18 @@ function CheckinCard({ dog, lastDone }: { dog: DogRow; lastDone: SessionRow | nu
               onClick={() => {
                 setStatus(c.id);
                 setConfirmClear(false);
+                if (c.id === "practiced") setConfetti((n) => n + 1);
               }}
-              className={cn("chip-3d rounded-full px-3 py-2 text-sm", status === c.id && "is-on")}
+              className={cn("relative rounded-full px-3 py-2 text-sm chip-3d", status === c.id && "is-on")}
             >
               {c.label}
+              {c.id === "practiced" && confetti > 0 ? (
+                <span key={confetti} className="confetti-burst" aria-hidden="true">
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <i key={i} />
+                  ))}
+                </span>
+              ) : null}
             </button>
           ))}
         </div>
