@@ -48,9 +48,9 @@ const dayPickerClassNames = {
   month_caption: "pointer-events-none relative z-0 flex h-9 items-center justify-center text-sm font-semibold text-ink",
   nav: "absolute inset-x-0 top-0 z-10 flex items-center justify-between",
   button_previous:
-    "inline-flex size-9 cursor-pointer items-center justify-center rounded-full border border-line bg-pearl text-ink hover:border-ink/30 hover:bg-accent-soft [&_svg]:size-4 [&_svg]:fill-current",
+    "inline-flex size-9 cursor-pointer items-center justify-center rounded-full border border-line bg-bg text-ink hover:border-ink/30 hover:bg-accent-soft [&_svg]:size-4 [&_svg]:fill-current",
   button_next:
-    "inline-flex size-9 cursor-pointer items-center justify-center rounded-full border border-line bg-pearl text-ink hover:border-ink/30 hover:bg-accent-soft [&_svg]:size-4 [&_svg]:fill-current",
+    "inline-flex size-9 cursor-pointer items-center justify-center rounded-full border border-line bg-bg text-ink hover:border-ink/30 hover:bg-accent-soft [&_svg]:size-4 [&_svg]:fill-current",
   weekdays: "mt-2 flex",
   weekday: "flex-1 py-1 text-center text-[11px] font-medium text-muted",
   week: "flex",
