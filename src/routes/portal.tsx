@@ -1036,7 +1036,7 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
                           size="sm"
                           variant="outline"
                           className={cn(
-                            "h-9 border-ink/25 px-3.5 text-sm font-semibold text-ink",
+                            "note-cta h-9 border-0 px-3.5 text-sm font-semibold",
                             movingId === s.id && "ring-2 ring-accent",
                           )}
                           onClick={() => {
@@ -1049,7 +1049,7 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-9 border-ink/25 px-3.5 text-sm font-semibold text-ink"
+                          className="note-cta h-9 border-0 px-3.5 text-sm font-semibold"
                           onClick={() => {
                             const previous = s.status === "confirmed" ? "confirmed" : "requested";
                             void cancelOwnSession({ data: { sessionId: s.id } })
