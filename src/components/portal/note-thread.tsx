@@ -82,54 +82,61 @@ export function NoteThread({
               fromEmily ? "border-l-2 border-accent bg-accent-soft/35" : "bg-pearl",
             )}
           >
-            <p className="text-xs text-muted">
-              <span className={cn("font-semibold", fromEmily ? "text-accent-deep" : "text-ink")}>
-                {fromEmily ? "Emily" : viewer === "client" ? "You" : clientName || message.owner_name || "Client"}
-              </span>
-              <span className="text-faint"> · </span>
-              {formatWhen(message.created_at)}
-              {viewer === "client" && fromEmily && !message.read_by_client ? (
-                <span className="ml-2 font-semibold text-accent-deep">New</span>
-              ) : null}
-            </p>
-            <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-ink">{message.body}</p>
-            {viewer === "client" && !fromEmily && onDelete ? (
-              confirmId === message.id ? (
-                <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
-                  <p className="text-sm font-semibold text-ink">Remove this note?</p>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="espresso"
-                    disabled={removingId === message.id}
-                    onClick={() => {
-                      if (!onDelete || removingId === message.id) return;
-                      setRemovingId(message.id);
-                      void Promise.resolve(onDelete(message.id))
-                        .catch(() => setRemovingId(null))
-                        .then(() => setRemovingId(null));
-                    }}
-                  >
-                    {removingId === message.id ? "Removing…" : "Remove"}
-                  </Button>
-                  <button
-                    type="button"
-                    disabled={removingId === message.id}
-                    onClick={() => setConfirmId(null)}
-                    className="text-sm font-medium text-muted underline underline-offset-4 hover:text-ink disabled:opacity-40"
-                  >
-                    Keep it
-                  </button>
-                </div>
-              ) : (
+            <div className="flex items-start justify-between gap-3">
+              <p className="min-w-0 text-xs text-muted">
+                <span className={cn("font-semibold", fromEmily ? "text-accent-deep" : "text-ink")}>
+                  {fromEmily ? "Emily" : viewer === "client" ? "You" : clientName || message.owner_name || "Client"}
+                </span>
+                <span className="text-faint"> · </span>
+                {formatWhen(message.created_at)}
+                {viewer === "client" && fromEmily && !message.read_by_client ? (
+                  <span className="ml-2 font-semibold text-accent-deep">New</span>
+                ) : null}
+              </p>
+              {viewer === "client" && !fromEmily && onDelete && confirmId !== message.id ? (
                 <button
                   type="button"
+                  aria-label="Delete this note"
                   onClick={() => setConfirmId(message.id)}
-                  className="mt-2.5 inline-flex h-8 items-center rounded-full border border-line bg-surface px-3 text-xs font-semibold text-ink/75 transition-colors hover:border-ink/30 hover:text-ink"
+                  className="note-remove -mr-1 -mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-1 text-xs font-semibold text-muted transition-colors hover:bg-white hover:text-ink"
                 >
+                  <svg viewBox="0 0 16 16" className="size-3.5" fill="none" aria-hidden="true">
+                    <path d="M3.2 4.2h9.6M6.2 4.1V3.1c0-.4.3-.7.7-.7h2.2c.4 0 .7.3.7.7v1M4.4 4.2l.5 8.1c0 .4.4.7.8.7h4.6c.4 0 .8-.3.8-.7l.5-8.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                   Delete
                 </button>
-              )
+              ) : null}
+            </div>
+            <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-ink">{message.body}</p>
+            {viewer === "client" && !fromEmily && onDelete && confirmId === message.id ? (
+              <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line/80 pt-3">
+                <p className="mr-1 text-sm font-semibold text-ink">Remove this note?</p>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="note-cta h-9 border-0 px-3.5 text-sm font-semibold"
+                  disabled={removingId === message.id}
+                  onClick={() => setConfirmId(null)}
+                >
+                  Keep it
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="espresso"
+                  disabled={removingId === message.id}
+                  onClick={() => {
+                    if (!onDelete || removingId === message.id) return;
+                    setRemovingId(message.id);
+                    void Promise.resolve(onDelete(message.id))
+                      .catch(() => setRemovingId(null))
+                      .then(() => setRemovingId(null));
+                  }}
+                >
+                  {removingId === message.id ? "Removing…" : "Remove"}
+                </Button>
+              </div>
             ) : null}
           </li>
         );

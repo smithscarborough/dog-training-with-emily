@@ -474,6 +474,7 @@ function CheckinCard({
         <p className="min-h-12 text-sm leading-relaxed text-muted" aria-live="polite">
           {status ? checkinById(status).hint : ""}
         </p>
+        <div className="mx-auto w-full max-w-xl space-y-4">
         <Field label="Note for Emily (optional)">
           <Textarea
             value={note}
@@ -584,7 +585,6 @@ function CheckinCard({
           )
         ) : null}
         <div className="border-t border-line pt-5">
-          <div className="max-w-2xl">
           <p className="text-sm font-bold text-ink">With Emily</p>
           <div className="mt-3">
             <NoteThread
@@ -603,7 +603,7 @@ function CheckinCard({
               }
             />
           </div>
-          </div>
+        </div>
         </div>
         </div>
       </CardBody>
