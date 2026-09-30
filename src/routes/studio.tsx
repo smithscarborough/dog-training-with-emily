@@ -5,6 +5,7 @@ import { DogAvatar } from "@/components/dogs/dog-avatar";
 import { EspressoBanner } from "@/components/layout/espresso-banner";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { Overview } from "@/components/studio/overview";
+import { PrivateNoteEditor } from "@/components/studio/private-note";
 import { IntakeForm } from "@/components/intake/form";
 import { PhaseMeter } from "@/components/progress/phase-meter";
 import { Badge } from "@/components/ui/badge";
@@ -919,16 +920,9 @@ function ClientDetail({
           </CardHeader>
           <CardBody className="space-y-3">
             <p className="text-xs text-muted">
-              {notes === savedNote
-                ? "Clients never see this. Click the note to edit."
-                : "Unsaved changes. Clients never see this."}
+              {notes === savedNote ? "Clients never see this." : "Unsaved changes. Clients never see this."}
             </p>
-            <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Click to add a private note."
-              aria-label="Private note"
-            />
+            <PrivateNoteEditor key={dog.id} value={notes} onChange={setNotes} />
             <Button
               size="sm"
               disabled={notes === savedNote}
