@@ -16,11 +16,12 @@ export function NoteThread({
   messages: MessageRow[];
   viewer: "client" | "trainer";
   clientName?: string;
-  onDelete?: (messageId: number) => void;
+  onDelete?: (messageId: number) => void | Promise<unknown>;
 }) {
   const dogId = messages[0]?.dog_id ?? 0;
   const [extra, setExtra] = useState(0);
   const [confirmId, setConfirmId] = useState<number | null>(null);
+  const [removingId, setRemovingId] = useState<number | null>(null);
 
   useEffect(() => {
     setExtra(0);
@@ -81,48 +82,60 @@ export function NoteThread({
               fromEmily ? "border-l-2 border-accent bg-accent-soft/35" : "bg-pearl",
             )}
           >
-            <p className="text-xs text-muted">
-              <span className={cn("font-semibold", fromEmily ? "text-accent-deep" : "text-ink")}>
-                {fromEmily ? "Emily" : viewer === "client" ? "You" : clientName || message.owner_name || "Client"}
-              </span>
-              <span className="text-faint"> · </span>
-              {formatWhen(message.created_at)}
-              {viewer === "client" && fromEmily && !message.read_by_client ? (
-                <span className="ml-2 font-semibold text-accent-deep">New</span>
-              ) : null}
-            </p>
-            <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-ink">{message.body}</p>
-            {viewer === "client" && !fromEmily && onDelete ? (
-              confirmId === message.id ? (
-                <p className="mt-2 text-xs text-muted">
-                  Remove this note?{" "}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setConfirmId(null);
-                      onDelete(message.id);
-                    }}
-                    className="font-semibold text-ink underline decoration-ink/40 underline-offset-2 hover:decoration-ink"
-                  >
-                    Yes, remove it
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setConfirmId(null)}
-                    className="ml-3 text-faint hover:text-ink"
-                  >
-                    Keep it
-                  </button>
-                </p>
-              ) : (
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-xs text-muted">
+                <span className={cn("font-semibold", fromEmily ? "text-accent-deep" : "text-ink")}>
+                  {fromEmily ? "Emily" : viewer === "client" ? "You" : clientName || message.owner_name || "Client"}
+                </span>
+                <span className="text-faint"> · </span>
+                {formatWhen(message.created_at)}
+                {viewer === "client" && fromEmily && !message.read_by_client ? (
+                  <span className="ml-2 font-semibold text-accent-deep">New</span>
+                ) : null}
+              </p>
+              {viewer === "client" && !fromEmily && onDelete && confirmId !== message.id ? (
                 <button
                   type="button"
                   onClick={() => setConfirmId(message.id)}
-                  className="mt-2 text-xs font-medium text-faint underline-offset-4 hover:text-muted hover:underline"
+                  className="shrink-0 rounded-full border border-line bg-surface px-2.5 py-1 text-xs font-semibold text-muted transition-colors hover:border-ink/25 hover:text-ink"
                 >
                   Delete
                 </button>
-              )
+              ) : null}
+            </div>
+            <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-ink">{message.body}</p>
+            {viewer === "client" && !fromEmily && onDelete && confirmId === message.id ? (
+              <div className="mt-3 rounded-lg border border-line bg-surface px-3 py-3">
+                <p className="text-sm font-semibold text-ink">Remove this note?</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted">
+                  It comes off your portal. If the email already went out, that copy stays with Emily.
+                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="espresso"
+                    disabled={removingId === message.id}
+                    onClick={() => {
+                      if (!onDelete || removingId === message.id) return;
+                      setRemovingId(message.id);
+                      void Promise.resolve(onDelete(message.id))
+                        .catch(() => setRemovingId(null))
+                        .then(() => setRemovingId(null));
+                    }}
+                  >
+                    {removingId === message.id ? "Removing…" : "Remove"}
+                  </Button>
+                  <button
+                    type="button"
+                    disabled={removingId === message.id}
+                    onClick={() => setConfirmId(null)}
+                    className="text-sm text-muted underline underline-offset-4 hover:text-ink disabled:opacity-40"
+                  >
+                    Keep it
+                  </button>
+                </div>
+              </div>
             ) : null}
           </li>
         );

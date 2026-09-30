@@ -589,16 +589,17 @@ function CheckinCard({
             <NoteThread
               messages={thread}
               viewer="client"
-              onDelete={(messageId) => {
-                void deleteOwnNote({ data: { messageId } })
+              onDelete={(messageId) =>
+                deleteOwnNote({ data: { messageId } })
                   .then(() => {
                     toast.success("Removed. If the email already went out, that copy stays in Emily’s inbox.");
                     loadThread();
                   })
-                  .catch((err: unknown) =>
-                    toast.error(err instanceof Error ? err.message : "Could not remove that note."),
-                  );
-              }}
+                  .catch((err: unknown) => {
+                    toast.error(err instanceof Error ? err.message : "Could not remove that note.");
+                    throw err;
+                  })
+              }
             />
           </div>
         </div>
