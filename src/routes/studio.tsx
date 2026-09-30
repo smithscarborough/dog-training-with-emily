@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { DogAvatar } from "@/components/dogs/dog-avatar";
@@ -148,6 +148,7 @@ function StudioApp({
   const [tab, setTab] = useState<"overview" | "board" | "clients" | "calendar" | "inbox" | "settings">("board");
   const [selected, setSelected] = useState<number | null>(dogs[0]?.id ?? null);
   const [waiting, setWaiting] = useState<MessageRow[]>([]);
+  const [noteFocus, setNoteFocus] = useState<number | null>(null);
   const pending = dogs.filter((d) => d.status === "pending");
   const active = dogs.filter((d) => d.status === "active");
 
@@ -214,7 +215,19 @@ function StudioApp({
         <div className="mt-8">
           {tab === "overview" ? <Overview dogs={dogs} /> : null}
           {tab === "board" ? (
-            <Board dogs={dogs} waiting={waiting} onOpen={(id) => { setSelected(id); setTab("clients"); }} />
+            <Board
+              dogs={dogs}
+              waiting={waiting}
+              onOpen={(id) => {
+                setSelected(id);
+                setTab("clients");
+              }}
+              onReply={(id) => {
+                setSelected(id);
+                setNoteFocus(id);
+                setTab("clients");
+              }}
+            />
           ) : null}
           {tab === "clients" ? (
             <Clients
@@ -223,12 +236,24 @@ function StudioApp({
               setSelected={setSelected}
               onRefresh={onRefresh}
               onNotes={refreshWaiting}
+              focusNotes={noteFocus != null && noteFocus === selected}
+              onNotesOpened={() => setNoteFocus(null)}
             />
           ) : null}
           {tab === "calendar" ? (
             <Calendar dogs={dogs} hoursJson={studio.hours_json ?? ""} onRefresh={onRefresh} />
           ) : null}
-          {tab === "inbox" ? <Inbox waiting={waiting} onReplied={refreshWaiting} onOpen={(id) => { setSelected(id); setTab("clients"); }} /> : null}
+          {tab === "inbox" ? (
+            <Inbox
+              waiting={waiting}
+              onReplied={refreshWaiting}
+              onOpen={(id) => {
+                setSelected(id);
+                setNoteFocus(id);
+                setTab("clients");
+              }}
+            />
+          ) : null}
           {tab === "settings" ? <Settings studio={studio} onRefresh={onRefresh} /> : null}
         </div>
       </main>
@@ -306,10 +331,12 @@ function Board({
   dogs,
   waiting,
   onOpen,
+  onReply,
 }: {
   dogs: DogRow[];
   waiting: MessageRow[];
   onOpen: (id: number) => void;
+  onReply: (id: number) => void;
 }) {
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [checkins, setCheckins] = useState<CheckinRow[]>([]);
@@ -347,7 +374,7 @@ function Board({
                 key={note.id}
                 type="button"
                 className="flex w-full items-start justify-between gap-3 rounded-lg px-3 py-3 text-left hairline transition-colors hover:bg-bg"
-                onClick={() => onOpen(note.dog_id)}
+                onClick={() => onReply(note.dog_id)}
               >
                 <span className="min-w-0">
                   <span className="flex items-center gap-2">
@@ -631,12 +658,16 @@ function Clients({
   setSelected,
   onRefresh,
   onNotes,
+  focusNotes = false,
+  onNotesOpened,
 }: {
   dogs: DogRow[];
   selected: number | null;
   setSelected: (id: number) => void;
   onRefresh: () => void;
   onNotes: () => void;
+  focusNotes?: boolean;
+  onNotesOpened?: () => void;
 }) {
   const [q, setQ] = useState("");
   const [showNew, setShowNew] = useState(false);
@@ -741,7 +772,14 @@ function Clients({
         </ul>
       </Card>
       {dog ? (
-        <ClientDetail dog={dog} onRefresh={onRefresh} onNotes={onNotes} leading={onboardForm} />
+        <ClientDetail
+          dog={dog}
+          onRefresh={onRefresh}
+          onNotes={onNotes}
+          leading={onboardForm}
+          focusNotes={focusNotes}
+          onNotesOpened={onNotesOpened}
+        />
       ) : (
         <div className="space-y-6">
           {onboardForm}
@@ -782,11 +820,15 @@ function ClientDetail({
   onRefresh,
   onNotes,
   leading,
+  focusNotes = false,
+  onNotesOpened,
 }: {
   dog: DogRow;
   onRefresh: () => void;
   onNotes: () => void;
   leading?: ReactNode;
+  focusNotes?: boolean;
+  onNotesOpened?: () => void;
 }) {
   const [notes, setNotes] = useState(dog.trainer_private_notes);
   const [savedNote, setSavedNote] = useState(dog.trainer_private_notes);
@@ -823,6 +865,26 @@ function ClientDetail({
       .then(setThread)
       .catch(() => setThread([]));
   }, [dog]);
+
+  const notesOpened = useRef(onNotesOpened);
+  notesOpened.current = onNotesOpened;
+
+  useLayoutEffect(() => {
+    if (!focusNotes) return;
+    const scroller = document.getElementById("app-scroll");
+    const notes = document.getElementById("client-notes");
+    if (!scroller || !notes) return;
+    const headerH = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+    const top =
+      notes.getBoundingClientRect().top -
+      scroller.getBoundingClientRect().top +
+      scroller.scrollTop -
+      headerH -
+      16;
+    scroller.scrollTo({ top: Math.max(0, top) });
+    notes.querySelector("textarea")?.focus({ preventScroll: true });
+    notesOpened.current?.();
+  }, [focusNotes, dog.id]);
 
   const byKey = useMemo(
     () => Object.fromEntries(current.map((p) => [p.skill_key, p])),
@@ -1011,7 +1073,7 @@ function ClientDetail({
         </Card>
       </div>
 
-      <Card className="max-w-2xl">
+      <Card id="client-notes" className="max-w-2xl">
         <CardHeader>
           <CardTitle>Notes</CardTitle>
           <p className="text-sm text-muted">
