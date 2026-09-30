@@ -93,51 +93,53 @@ export function NoteThread({
                   <span className="ml-2 font-semibold text-accent-deep">New</span>
                 ) : null}
               </p>
-              {viewer === "client" && !fromEmily && onDelete && confirmId !== message.id ? (
-                <button
-                  type="button"
-                  aria-label="Delete this note"
-                  onClick={() => setConfirmId(message.id)}
-                  className="note-remove -mr-1 -mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-1 text-xs font-semibold text-muted transition-colors hover:bg-white hover:text-ink"
-                >
-                  <svg viewBox="0 0 16 16" className="size-3.5" fill="none" aria-hidden="true">
-                    <path d="M3.2 4.2h9.6M6.2 4.1V3.1c0-.4.3-.7.7-.7h2.2c.4 0 .7.3.7.7v1M4.4 4.2l.5 8.1c0 .4.4.7.8.7h4.6c.4 0 .8-.3.8-.7l.5-8.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  Delete
-                </button>
+              {viewer === "client" && !fromEmily && onDelete ? (
+                confirmId === message.id ? (
+                  <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                    <p className="text-xs font-semibold text-ink">Remove this note?</p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="note-cta h-8 border-0 px-3 text-xs font-semibold"
+                      disabled={removingId === message.id}
+                      onClick={() => setConfirmId(null)}
+                    >
+                      Keep it
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="espresso"
+                      className="h-8 px-3 text-xs"
+                      disabled={removingId === message.id}
+                      onClick={() => {
+                        if (!onDelete || removingId === message.id) return;
+                        setRemovingId(message.id);
+                        void Promise.resolve(onDelete(message.id))
+                          .catch(() => setRemovingId(null))
+                          .then(() => setRemovingId(null));
+                      }}
+                    >
+                      {removingId === message.id ? "Removing…" : "Remove"}
+                    </Button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    aria-label="Delete this note"
+                    onClick={() => setConfirmId(message.id)}
+                    className="note-remove -mr-1 -mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-1 text-xs font-semibold text-muted transition-colors hover:bg-white hover:text-ink"
+                  >
+                    <svg viewBox="0 0 16 16" className="size-3.5" fill="none" aria-hidden="true">
+                      <path d="M3.2 4.2h9.6M6.2 4.1V3.1c0-.4.3-.7.7-.7h2.2c.4 0 .7.3.7.7v1M4.4 4.2l.5 8.1c0 .4.4.7.8.7h4.6c.4 0 .8-.3.8-.7l.5-8.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Delete
+                  </button>
+                )
               ) : null}
             </div>
             <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-ink">{message.body}</p>
-            {viewer === "client" && !fromEmily && onDelete && confirmId === message.id ? (
-              <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line/80 pt-3">
-                <p className="mr-1 text-sm font-semibold text-ink">Remove this note?</p>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="note-cta h-9 border-0 px-3.5 text-sm font-semibold"
-                  disabled={removingId === message.id}
-                  onClick={() => setConfirmId(null)}
-                >
-                  Keep it
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="espresso"
-                  disabled={removingId === message.id}
-                  onClick={() => {
-                    if (!onDelete || removingId === message.id) return;
-                    setRemovingId(message.id);
-                    void Promise.resolve(onDelete(message.id))
-                      .catch(() => setRemovingId(null))
-                      .then(() => setRemovingId(null));
-                  }}
-                >
-                  {removingId === message.id ? "Removing…" : "Remove"}
-                </Button>
-              </div>
-            ) : null}
           </li>
         );
       })}
