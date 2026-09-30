@@ -1193,8 +1193,27 @@ function ClientDetail({
           <TrainerBook dog={dog} onBooked={() => {
             void listSessions({ data: { dogId: dog.id } }).then(setSessions);
           }} />
+          <div className="mt-6 border-t border-line pt-5">
+            <h3 className="font-display text-lg font-semibold tracking-tight">Visits</h3>
+            <p className="mt-1 text-sm text-muted">
+              Confirm a request here. When the visit is over, mark it completed — that takes one credit off.
+            </p>
+          </div>
           <ul className="mt-4 space-y-3">
-            {sessions.map((s) => (
+            {sessions.length === 0 ? (
+              <li className="text-sm text-muted">Nothing booked yet.</li>
+            ) : null}
+            {sessions
+              .slice()
+              .sort((a, b) => {
+                const rank = (row: SessionRow) =>
+                  row.status === "confirmed" || row.status === "requested" ? 0 : row.status === "completed" ? 1 : 2;
+                const byRank = rank(a) - rank(b);
+                if (byRank) return byRank;
+                const at = +new Date(a.scheduled_at) - +new Date(b.scheduled_at);
+                return a.status === "completed" || a.status === "cancelled" ? -at : at;
+              })
+              .map((s) => (
               <SessionEditor key={s.id} session={s} onChange={() => {
                 void listSessions({ data: { dogId: dog.id } }).then(setSessions);
               }} />
@@ -1456,80 +1475,173 @@ function SessionEditor({ session, onChange }: { session: SessionRow; onChange: (
   const [homework, setHomework] = useState(session.homework);
   const [priv, setPriv] = useState(session.trainer_private_notes);
   const [status, setStatus] = useState(session.status);
+  const [closing, setClosing] = useState(false);
+  const [busy, setBusy] = useState(false);
   useEffect(() => {
     setStatus(session.status);
-  }, [session.id, session.status]);
+    setRecap(session.recap);
+    setHomework(session.homework);
+    setPriv(session.trainer_private_notes);
+    setClosing(false);
+  }, [session.id, session.status, session.recap, session.homework, session.trainer_private_notes]);
+
+  function changeStatus(next: SessionRow["status"], done: string) {
+    if (busy || status === next) return;
+    const previous = status;
+    setBusy(true);
+    setStatus(next);
+    void setSessionStatus({ data: { sessionId: session.id, status: next } })
+      .then(() => {
+        toast.success(done);
+        onChange();
+      })
+      .catch((err: unknown) => {
+        setStatus(previous);
+        toast.error(err instanceof Error ? err.message : "Could not update.");
+      })
+      .finally(() => setBusy(false));
+  }
+
+  function completeVisit() {
+    if (busy) return;
+    setBusy(true);
+    void writeSessionRecap({
+      data: {
+        sessionId: session.id,
+        recap,
+        homework,
+        trainer_private_notes: priv,
+      },
+    })
+      .then(() => setSessionStatus({ data: { sessionId: session.id, status: "completed" } }))
+      .then(() => {
+        setStatus("completed");
+        setClosing(false);
+        toast.success("Visit completed. One credit came off.");
+        onChange();
+      })
+      .catch((err: unknown) => {
+        toast.error(err instanceof Error ? err.message : "Could not complete the visit.");
+      })
+      .finally(() => setBusy(false));
+  }
+
+  const showCloseout = status === "completed" || closing;
+
   return (
     <li className="rounded-lg bg-bg p-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
           <p className="font-medium">{sessionTypeById(session.session_type).name}</p>
           <p className="text-xs text-muted">{formatWhen(session.scheduled_at)}</p>
           {session.owner_notes?.includes("Asked for a new time.") ? (
             <p className="mt-1 text-xs font-medium text-accent-deep">They asked for a new time.</p>
           ) : null}
         </div>
-        <div className="flex flex-wrap gap-1">
-          {(
-            [
-              ["requested", "is-requested"],
-              ["confirmed", "is-confirmed"],
-              ["completed", "is-completed"],
-              ["cancelled", "is-cancelled"],
-            ] as const
-          ).map(([st, on]) => (
-            <button
-              key={st}
-              type="button"
-              className={cn("chip-3d rounded-full px-3 py-1.5 text-sm", status === st && on)}
-              onClick={() => {
-                if (status === st) return;
-                const previous = status;
-                setStatus(st);
-                void setSessionStatus({ data: { sessionId: session.id, status: st } })
-                  .then(onChange)
-                  .catch((err: unknown) => {
-                    setStatus(previous);
-                    toast.error(err instanceof Error ? err.message : "Could not update.");
-                  });
-              }}
-            >
-              {st}
-            </button>
-          ))}
+        <Badge
+          tone={status === "completed" ? "ok" : statusTone(status)}
+          className={cn("capitalize", status === "completed" && "bg-[#2f8f58] px-3 py-1 font-bold text-white")}
+        >
+          {status}
+        </Badge>
+      </div>
+
+      {status === "requested" ? (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Button size="sm" disabled={busy} onClick={() => changeStatus("confirmed", "Session confirmed.")}>
+            Confirm session
+          </Button>
+          <Button size="sm" variant="ghost" disabled={busy} onClick={() => changeStatus("cancelled", "Session cancelled.")}>
+            Cancel
+          </Button>
         </div>
-      </div>
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">
-        <Field label="Recap (client can see)">
-          <Textarea value={recap} onChange={(e) => setRecap(e.target.value)} />
-        </Field>
-        <Field label="Homework (client can see)">
-          <Textarea value={homework} onChange={(e) => setHomework(e.target.value)} />
-        </Field>
-        <Field label="Private session notes" className="sm:col-span-2">
-          <Textarea value={priv} onChange={(e) => setPriv(e.target.value)} />
-        </Field>
-      </div>
-      <Button
-        size="sm"
-        className="mt-2"
-        onClick={() => {
-          void writeSessionRecap({
-            data: {
-              sessionId: session.id,
-              recap,
-              homework,
-              trainer_private_notes: priv,
-            },
-          })
-            .then(() => toast.success("Recap saved."))
-            .catch((err: unknown) =>
-              toast.error(err instanceof Error ? err.message : "Could not save."),
-            );
-        }}
-      >
-        Save recap
-      </Button>
+      ) : null}
+
+      {status === "confirmed" && !closing ? (
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+          <Button size="sm" disabled={busy} onClick={() => setClosing(true)}>
+            Mark completed
+          </Button>
+          <Button size="sm" variant="ghost" disabled={busy} onClick={() => changeStatus("cancelled", "Session cancelled.")}>
+            Cancel
+          </Button>
+          <p className="text-xs text-muted">Finishing the visit takes one credit off.</p>
+        </div>
+      ) : null}
+
+      {status === "cancelled" ? (
+        <div className="mt-3">
+          <Button size="sm" variant="outline" disabled={busy} onClick={() => changeStatus("confirmed", "Back on the calendar.")}>
+            Put back on the calendar
+          </Button>
+        </div>
+      ) : null}
+
+      {showCloseout ? (
+        <div className="mt-3 border-t border-line pt-3">
+          {status === "completed" ? (
+            <p className="mb-3 text-xs text-muted">The client can see the recap and homework. Private notes stay here.</p>
+          ) : (
+            <p className="mb-3 text-xs text-muted">Write what they should see, then complete the visit. One credit comes off.</p>
+          )}
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Field label="Recap (client can see)">
+              <Textarea value={recap} onChange={(e) => setRecap(e.target.value)} />
+            </Field>
+            <Field label="Homework (client can see)">
+              <Textarea value={homework} onChange={(e) => setHomework(e.target.value)} />
+            </Field>
+            <Field label="Private session notes" className="sm:col-span-2">
+              <Textarea value={priv} onChange={(e) => setPriv(e.target.value)} />
+            </Field>
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {status === "completed" ? (
+              <>
+                <Button
+                  size="sm"
+                  disabled={busy}
+                  onClick={() => {
+                    setBusy(true);
+                    void writeSessionRecap({
+                      data: {
+                        sessionId: session.id,
+                        recap,
+                        homework,
+                        trainer_private_notes: priv,
+                      },
+                    })
+                      .then(() => toast.success("Recap saved."))
+                      .catch((err: unknown) =>
+                        toast.error(err instanceof Error ? err.message : "Could not save."),
+                      )
+                      .finally(() => setBusy(false));
+                  }}
+                >
+                  Save recap
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={busy}
+                  onClick={() => changeStatus("confirmed", "Back to confirmed. The credit was put back.")}
+                >
+                  Not done yet
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button size="sm" disabled={busy} onClick={completeVisit}>
+                  {busy ? "Completing…" : "Complete visit"}
+                </Button>
+                <Button size="sm" variant="ghost" disabled={busy} onClick={() => setClosing(false)}>
+                  Not yet
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      ) : null}
     </li>
   );
 }

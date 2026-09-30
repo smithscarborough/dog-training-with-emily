@@ -84,6 +84,9 @@ export const setSessionStatus = createServerFn({ method: "POST" })
     if (data.status === "completed" && session.status !== "completed") {
       await sql`update dogs set credits = greatest(credits - 1, 0), updated_at = now() where id = ${session.dog_id}`;
     }
+    if (session.status === "completed" && data.status !== "completed") {
+      await sql`update dogs set credits = credits + 1, updated_at = now() where id = ${session.dog_id}`;
+    }
     await sql`update sessions set status = ${data.status}, updated_at = now() where id = ${data.sessionId}`;
     return { ok: true };
   });
