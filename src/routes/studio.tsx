@@ -385,7 +385,7 @@ function Board({
           {toConfirm.length === 0 ? (
             <p className="text-sm text-muted">No pending sessions.</p>
           ) : (
-            toConfirm.map((s) => <BoardSession key={s.id} session={s} onOpen={onOpen} />)
+            toConfirm.map((s) => <BoardSession key={s.id} session={s} onOpen={onOpen} showClient />)
           )}
         </CardBody>
       </Card>
@@ -545,7 +545,15 @@ function Board({
   );
 }
 
-function BoardSession({ session, onOpen }: { session: SessionRow; onOpen: (id: number) => void }) {
+function BoardSession({
+  session,
+  onOpen,
+  showClient = false,
+}: {
+  session: SessionRow;
+  onOpen: (id: number) => void;
+  showClient?: boolean;
+}) {
   return (
     <button
       type="button"
@@ -554,6 +562,9 @@ function BoardSession({ session, onOpen }: { session: SessionRow; onOpen: (id: n
     >
       <span>
         <span className="block font-medium">{session.dog_name}</span>
+        {showClient && session.owner_name ? (
+          <span className="mt-0.5 block text-xs text-muted">{session.owner_name}</span>
+        ) : null}
         <span className="text-xs text-muted">
           {sessionTypeById(session.session_type).name} · {formatWhen(session.scheduled_at)}
         </span>
