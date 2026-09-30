@@ -974,6 +974,18 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
     if (!isWithinHours(picked, hours, sessionTypeById(sessionType).minutes)) setWhen("");
   }, [sessionType, hours, when]);
 
+  const hadConsult = sessions.some((row) => {
+    if (row.session_type !== "consult" || row.status === "cancelled" || row.status === "requested") return false;
+    if (row.status === "completed") return true;
+    return new Date(row.scheduled_at).getTime() <= Date.now();
+  });
+  const typeOptions = SESSION_TYPES.filter((type) => type.id !== "consult" || !hadConsult);
+  const requestType = hadConsult && sessionType === "consult" ? "hour" : sessionType;
+
+  useEffect(() => {
+    if (hadConsult && sessionType === "consult") setSessionType("hour");
+  }, [hadConsult, sessionType]);
+
   const confirming = sessions.find((row) => row.id === confirmingId) ?? null;
 
   return (
@@ -986,10 +998,10 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
           <Field label="Type">
             <select
               className="h-11 w-full rounded-md border border-line bg-surface px-3 text-sm"
-              value={sessionType}
+              value={requestType}
               onChange={(e) => setSessionType(e.target.value as typeof sessionType)}
             >
-              {SESSION_TYPES.map((s) => (
+              {typeOptions.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name} · {dollars(s.price)}
                 </option>
@@ -1002,7 +1014,7 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
               onChange={setWhen}
               enabled={active}
               hours={hours}
-              durationMin={sessionTypeById(sessionType).minutes}
+              durationMin={sessionTypeById(requestType).minutes}
             />
           </Field>
           <Field label="What should we work on?">
@@ -1022,7 +1034,7 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
                 void requestSession({
                   data: {
                     dogId: dog.id,
-                    sessionType,
+                    sessionType: requestType,
                     scheduledAt: new Date(when).toISOString(),
                     ownerNotes: notes,
                   },
