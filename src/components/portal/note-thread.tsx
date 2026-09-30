@@ -82,35 +82,21 @@ export function NoteThread({
               fromEmily ? "border-l-2 border-accent bg-accent-soft/35" : "bg-pearl",
             )}
           >
-            <div className="flex items-start justify-between gap-3">
-              <p className="text-xs text-muted">
-                <span className={cn("font-semibold", fromEmily ? "text-accent-deep" : "text-ink")}>
-                  {fromEmily ? "Emily" : viewer === "client" ? "You" : clientName || message.owner_name || "Client"}
-                </span>
-                <span className="text-faint"> · </span>
-                {formatWhen(message.created_at)}
-                {viewer === "client" && fromEmily && !message.read_by_client ? (
-                  <span className="ml-2 font-semibold text-accent-deep">New</span>
-                ) : null}
-              </p>
-              {viewer === "client" && !fromEmily && onDelete && confirmId !== message.id ? (
-                <button
-                  type="button"
-                  onClick={() => setConfirmId(message.id)}
-                  className="shrink-0 rounded-full border border-line bg-surface px-2.5 py-1 text-xs font-semibold text-muted transition-colors hover:border-ink/25 hover:text-ink"
-                >
-                  Delete
-                </button>
+            <p className="text-xs text-muted">
+              <span className={cn("font-semibold", fromEmily ? "text-accent-deep" : "text-ink")}>
+                {fromEmily ? "Emily" : viewer === "client" ? "You" : clientName || message.owner_name || "Client"}
+              </span>
+              <span className="text-faint"> · </span>
+              {formatWhen(message.created_at)}
+              {viewer === "client" && fromEmily && !message.read_by_client ? (
+                <span className="ml-2 font-semibold text-accent-deep">New</span>
               ) : null}
-            </div>
+            </p>
             <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-ink">{message.body}</p>
-            {viewer === "client" && !fromEmily && onDelete && confirmId === message.id ? (
-              <div className="mt-3 rounded-lg border border-line bg-surface px-3 py-3">
-                <p className="text-sm font-semibold text-ink">Remove this note?</p>
-                <p className="mt-1 text-xs leading-relaxed text-muted">
-                  It comes off your portal. If the email already went out, that copy stays with Emily.
-                </p>
-                <div className="mt-3 flex flex-wrap items-center gap-3">
+            {viewer === "client" && !fromEmily && onDelete ? (
+              confirmId === message.id ? (
+                <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <p className="text-sm font-semibold text-ink">Remove this note?</p>
                   <Button
                     type="button"
                     size="sm"
@@ -130,12 +116,20 @@ export function NoteThread({
                     type="button"
                     disabled={removingId === message.id}
                     onClick={() => setConfirmId(null)}
-                    className="text-sm text-muted underline underline-offset-4 hover:text-ink disabled:opacity-40"
+                    className="text-sm font-medium text-muted underline underline-offset-4 hover:text-ink disabled:opacity-40"
                   >
                     Keep it
                   </button>
                 </div>
-              </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setConfirmId(message.id)}
+                  className="mt-2.5 inline-flex h-8 items-center rounded-full border border-line bg-surface px-3 text-xs font-semibold text-ink/75 transition-colors hover:border-ink/30 hover:text-ink"
+                >
+                  Delete
+                </button>
+              )
             ) : null}
           </li>
         );
