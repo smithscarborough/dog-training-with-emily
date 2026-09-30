@@ -288,10 +288,12 @@ function HomeTab({
         </CardHeader>
         <CardBody>
           {upcoming ? (
-            <div>
-              <p className="font-display text-2xl">{sessionTypeById(upcoming.session_type).name}</p>
-              <p className="mt-1 text-sm text-muted">{formatWhen(upcoming.scheduled_at)}</p>
-              <Badge className="mt-3" tone={statusTone(upcoming.status)}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-display text-2xl">{sessionTypeById(upcoming.session_type).name}</p>
+                <p className="mt-1 text-sm text-muted">{formatWhen(upcoming.scheduled_at)}</p>
+              </div>
+              <Badge className="shrink-0" tone={statusTone(upcoming.status)}>
                 {upcoming.status}
               </Badge>
             </div>
@@ -1078,51 +1080,51 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
               )}
             >
               <CardBody className="space-y-3">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <p className="font-display text-xl font-semibold tracking-tight text-ink">
-                      {sessionTypeById(s.session_type).name}
-                    </p>
-                    <p className="mt-1 text-sm text-faint">{formatWhen(s.scheduled_at)}</p>
+                <div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-display text-xl font-semibold tracking-tight text-ink">
+                        {sessionTypeById(s.session_type).name}
+                      </p>
+                      <p className="mt-1 text-sm text-faint">{formatWhen(s.scheduled_at)}</p>
+                    </div>
+                    <Badge tone={statusTone(s.status)} className="shrink-0">{s.status}</Badge>
                   </div>
-                  <div className="flex shrink-0 flex-wrap items-center gap-2">
-                    <Badge tone={statusTone(s.status)}>{s.status}</Badge>
-                    {s.status === "requested" || s.status === "confirmed" ? (
-                      <>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className={cn(
-                            "note-cta h-9 border-0 px-3.5 text-sm font-semibold",
-                            movingId === s.id && "ring-2 ring-accent",
-                          )}
-                          onClick={() => {
-                            setConfirmingId(null);
-                            setMovingId(movingId === s.id ? null : s.id);
-                            setMoveWhen("");
-                          }}
-                        >
-                          New time
-                        </Button>
-                        <Button
-                          size="sm"
-                          type="button"
-                          variant="outline"
-                          className={cn(
-                            "note-cta h-9 border-0 px-3.5 text-sm font-semibold",
-                            confirmingId === s.id && "ring-2 ring-accent",
-                          )}
-                          onClick={() => {
-                            setMovingId(null);
-                            setMoveWhen("");
-                            setConfirmingId(s.id);
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                      </>
-                    ) : null}
-                  </div>
+                  {s.status === "requested" || s.status === "confirmed" ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className={cn(
+                          "note-cta h-9 border-0 px-3.5 text-sm font-semibold",
+                          movingId === s.id && "ring-2 ring-accent",
+                        )}
+                        onClick={() => {
+                          setConfirmingId(null);
+                          setMovingId(movingId === s.id ? null : s.id);
+                          setMoveWhen("");
+                        }}
+                      >
+                        New time
+                      </Button>
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        className={cn(
+                          "note-cta h-9 border-0 px-3.5 text-sm font-semibold",
+                          confirmingId === s.id && "ring-2 ring-accent",
+                        )}
+                        onClick={() => {
+                          setMovingId(null);
+                          setMoveWhen("");
+                          setConfirmingId(s.id);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : null}
                 </div>
                 {pendingCancel?.id === s.id ? (
                   <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-bg px-3.5 py-3">

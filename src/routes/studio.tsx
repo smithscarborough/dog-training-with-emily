@@ -377,16 +377,14 @@ function Board({
                 onClick={() => onReply(note.dog_id)}
               >
                 <span className="min-w-0">
-                  <span className="flex items-center gap-2">
-                    <span className="font-semibold text-ink">{note.dog_name}</span>
-                    <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ink">
-                      New
-                    </span>
-                  </span>
+                  <span className="block font-semibold text-ink">{note.dog_name}</span>
                   <span className="mt-0.5 block text-xs text-muted">
                     {note.owner_name} · {formatWhen(note.created_at)}
                   </span>
                   <span className="mt-1.5 block text-sm leading-relaxed text-ink">{note.body}</span>
+                </span>
+                <span className="shrink-0 rounded-full bg-accent px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ink">
+                  New
                 </span>
               </button>
             ))}
@@ -551,10 +549,10 @@ function Board({
               <button
                 key={c.id}
                 type="button"
-                className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-3 text-left hairline transition-colors hover:bg-bg"
+                className="flex w-full items-start justify-between gap-3 rounded-lg px-3 py-3 text-left hairline transition-colors hover:bg-bg"
                 onClick={() => onOpen(c.dog_id)}
               >
-                <span>
+                <span className="min-w-0">
                   <span className="block font-medium">{c.dog_name}</span>
                   <span className="mt-0.5 block text-xs text-muted">
                     {c.owner_name} · {formatWhen(c.updated_at || c.created_at)}
@@ -585,10 +583,10 @@ function BoardSession({
   return (
     <button
       type="button"
-      className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-3 text-left hairline transition-colors hover:bg-bg"
+      className="flex w-full items-start justify-between gap-3 rounded-lg px-3 py-3 text-left hairline transition-colors hover:bg-bg"
       onClick={() => onOpen(session.dog_id)}
     >
-      <span>
+      <span className="min-w-0">
         <span className="block font-medium">{session.dog_name}</span>
         {showClient && session.owner_name ? (
           <span className="mt-0.5 block text-xs text-muted">{session.owner_name}</span>
@@ -1219,7 +1217,7 @@ function ClientDetail({
             checkins.map((c) => (
               <div
                 key={c.id}
-                className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg px-3 py-3 hairline"
+                className="flex items-start justify-between gap-3 rounded-lg px-3 py-3 hairline"
               >
                 <div className="min-w-0">
                   <p className="text-xs text-muted">{formatWhen(c.updated_at || c.created_at)}</p>
@@ -1612,7 +1610,7 @@ function SessionEditor({ session, onChange }: { session: SessionRow; onChange: (
 
   return (
     <li className="rounded-lg bg-bg p-3">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-medium">{sessionTypeById(session.session_type).name}</p>
           <p className="text-xs text-muted">{formatWhen(session.scheduled_at)}</p>
@@ -1622,7 +1620,7 @@ function SessionEditor({ session, onChange }: { session: SessionRow; onChange: (
         </div>
         <Badge
           tone={status === "completed" ? "ok" : statusTone(status)}
-          className={cn("capitalize", status === "completed" && "bg-[#2f8f58] px-3 py-1 font-bold text-white")}
+          className={cn("shrink-0 capitalize", status === "completed" && "bg-[#2f8f58] px-3 py-1 font-bold text-white")}
         >
           {status}
         </Badge>
@@ -2106,7 +2104,7 @@ function SessionLine({ session }: { session: SessionRow }) {
   const place = session.location?.trim();
   return (
     <Card>
-      <CardBody className="flex flex-wrap items-center justify-between gap-3">
+      <CardBody className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-medium">
             {session.dog_name} · {sessionTypeById(session.session_type).name}
@@ -2116,7 +2114,7 @@ function SessionLine({ session }: { session: SessionRow }) {
           </p>
           {place ? <p className="mt-1 text-sm text-ink">{place}</p> : null}
         </div>
-        <Badge tone={statusTone(session.status)}>{session.status}</Badge>
+        <Badge tone={statusTone(session.status)} className="shrink-0">{session.status}</Badge>
       </CardBody>
     </Card>
   );
@@ -2242,17 +2240,17 @@ function Inbox({
           waiting.map((note) => (
             <Card key={note.id}>
               <CardBody className="space-y-4">
-                <button type="button" className="text-left" onClick={() => onOpen(note.dog_id)}>
-                  <p>
+                <button type="button" className="flex w-full items-start justify-between gap-3 text-left" onClick={() => onOpen(note.dog_id)}>
+                  <span className="min-w-0">
                     <span className="font-semibold text-ink">{note.dog_name}</span>
                     <span className="text-faint"> · </span>
                     <span className="font-medium text-ink">{note.owner_name}</span>
-                    <span className="ml-2 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ink">
-                      New
-                    </span>
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted">{formatWhen(note.created_at)}</p>
-                  <p className="mt-2.5 whitespace-pre-wrap text-sm leading-relaxed text-ink">{note.body}</p>
+                    <span className="mt-0.5 block text-xs text-muted">{formatWhen(note.created_at)}</span>
+                    <span className="mt-2.5 block whitespace-pre-wrap text-sm leading-relaxed text-ink">{note.body}</span>
+                  </span>
+                  <span className="shrink-0 rounded-full bg-accent px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ink">
+                    New
+                  </span>
                 </button>
                 <TrainerReply dogId={note.dog_id} onSent={onReplied} />
               </CardBody>
