@@ -336,7 +336,7 @@ function Board({
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       {waiting.length > 0 ? (
-        <Card className="order-0 lg:col-span-2">
+        <Card className="order-4">
           <CardHeader>
             <CardTitle>Needs a reply</CardTitle>
           </CardHeader>
@@ -366,7 +366,7 @@ function Board({
         </Card>
       ) : null}
       {justCancelled.length > 0 ? (
-        <Card className="order-0 lg:col-span-2">
+        <Card className="order-7 lg:col-span-2">
           <CardHeader>
             <CardTitle>Cancelled</CardTitle>
           </CardHeader>
@@ -389,7 +389,7 @@ function Board({
           )}
         </CardBody>
       </Card>
-      <Card className="order-2 lg:order-3">
+      <Card className="order-2">
         <CardHeader>
           <CardTitle>Pending Clients</CardTitle>
         </CardHeader>
@@ -449,7 +449,7 @@ function Board({
           )}
         </CardBody>
       </Card>
-      <Card className="order-3 lg:order-2">
+      <Card className="order-3">
         <CardHeader>
           <CardTitle>Upcoming Sessions</CardTitle>
         </CardHeader>
@@ -461,7 +461,7 @@ function Board({
           )}
         </CardBody>
       </Card>
-      <Card className="order-4">
+      <Card className="order-5">
         <CardHeader>
           <CardTitle>Birthdays</CardTitle>
         </CardHeader>
@@ -509,7 +509,7 @@ function Board({
           )}
         </CardBody>
       </Card>
-      <Card className="order-5">
+      <Card className="order-6">
         <CardHeader>
           <CardTitle>Between sessions</CardTitle>
         </CardHeader>
