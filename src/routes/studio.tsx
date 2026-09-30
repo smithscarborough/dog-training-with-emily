@@ -1019,7 +1019,10 @@ function ClientDetail({
 
       <Card className="max-w-2xl">
         <CardHeader>
-          <CardTitle>With this household</CardTitle>
+          <CardTitle>Notes</CardTitle>
+          <p className="text-sm text-muted">
+            Messages this client sent from their portal, and your replies.
+          </p>
         </CardHeader>
         <CardBody className="space-y-4">
           <NoteThread messages={thread} viewer="trainer" clientName={dog.owner_name} />

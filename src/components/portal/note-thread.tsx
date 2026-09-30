@@ -192,8 +192,8 @@ export function TrainerReply({
       <Textarea
         value={body}
         onChange={(e) => setBody(e.target.value)}
-        placeholder="Reply to this household…"
-        aria-label="Reply to this household"
+        placeholder="Write a reply…"
+        aria-label="Write a reply"
       />
       <Button type="submit" disabled={busy || !body.trim()}>
         {busy ? "Sending…" : "Send reply"}
