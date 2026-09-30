@@ -320,7 +320,7 @@ function HomeTab({
         <CardBody>
           <div className="flex flex-wrap gap-2">
             {goals.length ? goals.map((g) => (
-              <Badge key={g} className={cn("px-3 py-1 font-bold text-ink", goalPill(g))}>
+              <Badge key={g} className={cn("text-ink", goalPill(g))}>
                 {g.replace(/-/g, " ")}
               </Badge>
             )) : <span className="text-sm text-muted">None listed yet.</span>}

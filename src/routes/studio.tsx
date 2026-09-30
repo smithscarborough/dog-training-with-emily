@@ -383,9 +383,7 @@ function Board({
                   </span>
                   <span className="mt-1.5 block text-sm leading-relaxed text-ink">{note.body}</span>
                 </span>
-                <span className="shrink-0 rounded-full bg-accent px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ink">
-                  New
-                </span>
+                <Badge tone="accent" className="shrink-0">New</Badge>
               </button>
             ))}
           </CardBody>
@@ -1620,7 +1618,7 @@ function SessionEditor({ session, onChange }: { session: SessionRow; onChange: (
         </div>
         <Badge
           tone={status === "completed" ? "ok" : statusTone(status)}
-          className={cn("shrink-0 capitalize", status === "completed" && "bg-[#2f8f58] px-3 py-1 font-bold text-white")}
+          className={cn("shrink-0", status === "completed" && "bg-[#2f8f58] text-white")}
         >
           {status}
         </Badge>
@@ -2248,9 +2246,7 @@ function Inbox({
                     <span className="mt-0.5 block text-xs text-muted">{formatWhen(note.created_at)}</span>
                     <span className="mt-2.5 block whitespace-pre-wrap text-sm leading-relaxed text-ink">{note.body}</span>
                   </span>
-                  <span className="shrink-0 rounded-full bg-accent px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ink">
-                    New
-                  </span>
+                  <Badge tone="accent" className="shrink-0">New</Badge>
                 </button>
                 <TrainerReply dogId={note.dog_id} onSent={onReplied} />
               </CardBody>

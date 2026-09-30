@@ -10,17 +10,17 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-wide uppercase",
+        "inline-flex h-6 shrink-0 items-center whitespace-nowrap rounded-full px-2.5 text-[11px] font-bold uppercase leading-none tracking-wide",
         tone === "default" && "bg-surface-2 text-ink-soft",
-        tone === "accent" && "bg-[#43C5B9] px-3 py-1 font-bold text-ink",
-        tone === "solid" && "badge-confirmed px-3 py-1 font-bold text-bg",
-        tone === "done" && "bg-[#45403C] px-3 py-1 font-bold text-bg",
-        tone === "ok" && "bg-ok/40 font-semibold text-ink",
-        tone === "warn" && "bg-[#9b3a2f] px-3 py-1 font-bold text-bg",
-        tone === "muted" && "bg-ink/16 font-semibold text-ink ring-1 ring-ink/30",
-        tone === "stuck" && "badge-stuck px-3 py-1 font-bold text-ink",
-        tone === "practiced" && "badge-practiced px-3 py-1 font-bold text-ink",
-        tone === "skipped" && "badge-skipped px-3 py-1 font-bold text-bg",
+        tone === "accent" && "bg-[#43C5B9] text-ink",
+        tone === "solid" && "badge-confirmed text-bg",
+        tone === "done" && "bg-[#45403C] text-bg",
+        tone === "ok" && "bg-ok/40 text-ink",
+        tone === "warn" && "bg-[#9b3a2f] text-bg",
+        tone === "muted" && "bg-ink/16 text-ink ring-1 ring-ink/25",
+        tone === "stuck" && "badge-stuck text-ink",
+        tone === "practiced" && "badge-practiced text-ink",
+        tone === "skipped" && "badge-skipped text-bg",
         className,
       )}
       {...props}
