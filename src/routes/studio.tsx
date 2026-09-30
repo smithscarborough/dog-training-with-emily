@@ -815,6 +815,81 @@ function FileFact({ label, value, href }: { label: string; value: string; href?:
   );
 }
 
+const CLIENT_SECTIONS = [
+  ["client-visits", "Visits"],
+  ["client-private", "Private notes"],
+  ["client-file", "Credits & file"],
+  ["client-notes", "Notes"],
+  ["client-checkins", "Between sessions"],
+  ["client-plan", "What they see"],
+  ["client-progress", "Progress"],
+] as const;
+
+function scrollClientSection(id: string) {
+  const scroller = document.getElementById("app-scroll");
+  const target = document.getElementById(id);
+  if (!scroller || !target) return;
+  const headerH = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+  const top =
+    target.getBoundingClientRect().top -
+    scroller.getBoundingClientRect().top +
+    scroller.scrollTop -
+    headerH -
+    16;
+  scroller.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+}
+
+function ClientSectionNav() {
+  const [current, setCurrent] = useState<string>(CLIENT_SECTIONS[0][0]);
+
+  useEffect(() => {
+    const scroller = document.getElementById("app-scroll");
+    if (!scroller) return;
+    const nodes = CLIENT_SECTIONS.map(([id]) => document.getElementById(id)).filter(
+      (node): node is HTMLElement => Boolean(node),
+    );
+    if (!nodes.length) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const hit = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (hit?.target.id) setCurrent(hit.target.id);
+      },
+      { root: scroller, rootMargin: "-12% 0px -75% 0px", threshold: 0 },
+    );
+    for (const node of nodes) observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <nav aria-label="On this client" className="order-first lg:sticky lg:top-48 lg:order-none lg:self-start">
+      <p className="mb-2 hidden text-[11px] font-semibold uppercase tracking-[0.14em] text-faint lg:block">
+        On this page
+      </p>
+      <div className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1 lg:mx-0 lg:flex-col lg:gap-0.5 lg:overflow-visible lg:rounded-2xl lg:border lg:border-line lg:bg-surface lg:p-2">
+        {CLIENT_SECTIONS.map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            aria-current={current === id ? "true" : undefined}
+            className={cn(
+              "shrink-0 rounded-full px-3 py-1.5 text-left text-sm transition-colors duration-150 lg:w-full lg:rounded-lg lg:px-2.5",
+              current === id ? "bg-white font-semibold text-ink shadow-[0_0_0_1px_rgba(44,24,16,0.1)]" : "text-muted hover:bg-white/70 hover:text-ink",
+            )}
+            onClick={() => {
+              setCurrent(id);
+              scrollClientSection(id);
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 function ClientDetail({
   dog,
   onRefresh,
@@ -975,8 +1050,49 @@ function ClientDetail({
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_10.5rem] lg:items-start lg:gap-8">
+        <div className="min-w-0 space-y-6 lg:order-first">
+      <Card id="client-visits">
+        <CardHeader>
+          <CardTitle>Visits</CardTitle>
+          <p className="text-sm text-muted">
+            Confirm a request here. When the visit is over, mark it completed and leave the recap. That takes one credit off.
+          </p>
+        </CardHeader>
+        <CardBody>
+          <ul className="space-y-3">
+            {sessions.length === 0 ? (
+              <li className="text-sm text-muted">Nothing booked yet.</li>
+            ) : null}
+            {sessions
+              .slice()
+              .sort((a, b) => {
+                const rank = (row: SessionRow) =>
+                  row.status === "confirmed" || row.status === "requested" ? 0 : row.status === "completed" ? 1 : 2;
+                const byRank = rank(a) - rank(b);
+                if (byRank) return byRank;
+                const at = +new Date(a.scheduled_at) - +new Date(b.scheduled_at);
+                return a.status === "completed" || a.status === "cancelled" ? -at : at;
+              })
+              .map((s) => (
+              <SessionEditor key={s.id} session={s} onChange={() => {
+                void listSessions({ data: { dogId: dog.id } }).then(setSessions);
+              }} />
+            ))}
+          </ul>
+          <div className="mt-6 border-t border-line pt-5">
+            <h3 className="font-display text-lg font-semibold tracking-tight">Book on their behalf</h3>
+          </div>
+          <div className="mt-4">
+            <TrainerBook dog={dog} onBooked={() => {
+              void listSessions({ data: { dogId: dog.id } }).then(setSessions);
+            }} />
+          </div>
+        </CardBody>
+      </Card>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <Card id="client-private">
           <CardHeader>
             <CardTitle>Private notes</CardTitle>
           </CardHeader>
@@ -1005,7 +1121,7 @@ function ClientDetail({
             </Button>
           </CardBody>
         </Card>
-        <Card>
+        <Card id="client-file">
           <CardHeader>
             <CardTitle>Credits & file</CardTitle>
           </CardHeader>
@@ -1092,7 +1208,7 @@ function ClientDetail({
         </CardBody>
       </Card>
 
-      <Card className="max-w-2xl">
+      <Card id="client-checkins" className="max-w-2xl">
         <CardHeader>
           <CardTitle>Between sessions</CardTitle>
         </CardHeader>
@@ -1122,7 +1238,7 @@ function ClientDetail({
 
       <PortalPlan key={dog.id} dog={dog} />
 
-      <Card>
+      <Card id="client-progress">
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <CardTitle>Progress ledger</CardTitle>
@@ -1184,43 +1300,9 @@ function ClientDetail({
           )}
         </CardBody>
       </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Book on their behalf</CardTitle>
-        </CardHeader>
-        <CardBody>
-          <TrainerBook dog={dog} onBooked={() => {
-            void listSessions({ data: { dogId: dog.id } }).then(setSessions);
-          }} />
-          <div className="mt-6 border-t border-line pt-5">
-            <h3 className="font-display text-lg font-semibold tracking-tight">Visits</h3>
-            <p className="mt-1 text-sm text-muted">
-              Confirm a request here. When the visit is over, mark it completed — that takes one credit off.
-            </p>
-          </div>
-          <ul className="mt-4 space-y-3">
-            {sessions.length === 0 ? (
-              <li className="text-sm text-muted">Nothing booked yet.</li>
-            ) : null}
-            {sessions
-              .slice()
-              .sort((a, b) => {
-                const rank = (row: SessionRow) =>
-                  row.status === "confirmed" || row.status === "requested" ? 0 : row.status === "completed" ? 1 : 2;
-                const byRank = rank(a) - rank(b);
-                if (byRank) return byRank;
-                const at = +new Date(a.scheduled_at) - +new Date(b.scheduled_at);
-                return a.status === "completed" || a.status === "cancelled" ? -at : at;
-              })
-              .map((s) => (
-              <SessionEditor key={s.id} session={s} onChange={() => {
-                void listSessions({ data: { dogId: dog.id } }).then(setSessions);
-              }} />
-            ))}
-          </ul>
-        </CardBody>
-      </Card>
+        </div>
+        <ClientSectionNav />
+      </div>
     </div>
   );
 }
@@ -1263,7 +1345,7 @@ function PortalPlan({ dog }: { dog: DogRow }) {
   }
 
   return (
-    <Card>
+    <Card id="client-plan">
       <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <CardTitle>What they see</CardTitle>
