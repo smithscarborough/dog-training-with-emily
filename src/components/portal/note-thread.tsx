@@ -82,7 +82,7 @@ export function NoteThread({
               fromEmily ? "border-l-2 border-accent bg-accent-soft/35" : "bg-pearl",
             )}
           >
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center justify-between gap-3">
               <p className="min-w-0 text-xs text-muted">
                 <span className={cn("font-semibold", fromEmily ? "text-accent-deep" : "text-ink")}>
                   {fromEmily ? "Emily" : viewer === "client" ? "You" : clientName || message.owner_name || "Client"}
@@ -94,15 +94,38 @@ export function NoteThread({
                 ) : null}
               </p>
               {viewer === "client" && !fromEmily && onDelete ? (
-                confirmId === message.id ? (
-                  <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-                    <p className="text-xs font-semibold text-ink">Remove this note?</p>
+                <div className="relative h-8 shrink-0">
+                  <button
+                    type="button"
+                    aria-label="Delete this note"
+                    tabIndex={confirmId === message.id ? -1 : 0}
+                    aria-hidden={confirmId === message.id}
+                    onClick={() => setConfirmId(message.id)}
+                    className={cn(
+                      "note-remove inline-flex h-8 items-center gap-1 rounded-md px-1.5 text-xs font-semibold text-muted transition-opacity duration-150 ease-out hover:bg-white hover:text-ink motion-reduce:transition-none",
+                      confirmId === message.id && "pointer-events-none opacity-0",
+                    )}
+                  >
+                    <svg viewBox="0 0 16 16" className="size-3.5" fill="none" aria-hidden="true">
+                      <path d="M3.2 4.2h9.6M6.2 4.1V3.1c0-.4.3-.7.7-.7h2.2c.4 0 .7.3.7.7v1M4.4 4.2l.5 8.1c0 .4.4.7.8.7h4.6c.4 0 .8-.3.8-.7l.5-8.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Delete
+                  </button>
+                  <div
+                    className={cn(
+                      "absolute right-0 top-0 flex h-8 items-center gap-2 whitespace-nowrap transition-opacity duration-150 ease-out motion-reduce:transition-none",
+                      confirmId === message.id ? "opacity-100" : "pointer-events-none opacity-0",
+                    )}
+                    aria-hidden={confirmId !== message.id}
+                  >
+                    <p className="text-xs font-semibold text-ink">Remove?</p>
                     <Button
                       type="button"
                       size="sm"
                       variant="outline"
                       className="note-cta h-8 border-0 px-3 text-xs font-semibold"
                       disabled={removingId === message.id}
+                      tabIndex={confirmId === message.id ? 0 : -1}
                       onClick={() => setConfirmId(null)}
                     >
                       Keep it
@@ -113,6 +136,7 @@ export function NoteThread({
                       variant="espresso"
                       className="h-8 px-3 text-xs"
                       disabled={removingId === message.id}
+                      tabIndex={confirmId === message.id ? 0 : -1}
                       onClick={() => {
                         if (!onDelete || removingId === message.id) return;
                         setRemovingId(message.id);
@@ -124,19 +148,7 @@ export function NoteThread({
                       {removingId === message.id ? "Removing…" : "Remove"}
                     </Button>
                   </div>
-                ) : (
-                  <button
-                    type="button"
-                    aria-label="Delete this note"
-                    onClick={() => setConfirmId(message.id)}
-                    className="note-remove -mr-1 -mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-1 text-xs font-semibold text-muted transition-colors hover:bg-white hover:text-ink"
-                  >
-                    <svg viewBox="0 0 16 16" className="size-3.5" fill="none" aria-hidden="true">
-                      <path d="M3.2 4.2h9.6M6.2 4.1V3.1c0-.4.3-.7.7-.7h2.2c.4 0 .7.3.7.7v1M4.4 4.2l.5 8.1c0 .4.4.7.8.7h4.6c.4 0 .8-.3.8-.7l.5-8.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    Delete
-                  </button>
-                )
+                </div>
               ) : null}
             </div>
             <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-ink">{message.body}</p>
