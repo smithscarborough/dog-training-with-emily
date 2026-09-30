@@ -57,11 +57,11 @@ const dayPickerClassNames = {
   day: "flex flex-1 items-center justify-center p-0.5",
   day_button: cn(
     "size-9 cursor-pointer rounded-full text-sm text-ink transition-colors",
-    "hover:bg-accent/20",
+    "hover:bg-accent/25 focus-visible:bg-accent/25",
   ),
-  selected: "[&_button]:bg-accent [&_button]:font-semibold [&_button]:text-ink",
+  selected: "[&_button]:bg-accent [&_button]:font-semibold [&_button]:text-ink [&_button]:hover:bg-accent [&_button]:focus-visible:bg-accent",
   today: "[&_button]:font-bold",
-  disabled: "[&_button]:text-faint [&_button]:hover:bg-transparent",
+  disabled: "[&_button]:cursor-default [&_button]:text-faint [&_button]:hover:bg-accent/25 [&_button]:focus-visible:bg-accent/25",
   outside: "[&_button]:text-faint",
 };
 
