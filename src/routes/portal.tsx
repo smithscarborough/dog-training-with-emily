@@ -474,7 +474,7 @@ function CheckinCard({
         <p className="min-h-12 text-sm leading-relaxed text-muted" aria-live="polite">
           {status ? checkinById(status).hint : ""}
         </p>
-        <div className="mx-auto w-full max-w-xl space-y-4">
+        <div className="mx-auto w-full max-w-3xl space-y-4">
         <Field label="Note for Emily (optional)">
           <Textarea
             value={note}
