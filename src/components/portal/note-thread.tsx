@@ -190,6 +190,7 @@ export function TrainerReply({
       }}
     >
       <Textarea
+        grow
         value={body}
         onChange={(e) => setBody(e.target.value)}
         placeholder="Write a reply…"

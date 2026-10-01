@@ -332,53 +332,6 @@ function HomeTab({
   );
 }
 
-function GrowingNote({
-  value,
-  onChange,
-  placeholder,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
-}) {
-  const area = useRef<HTMLTextAreaElement>(null);
-  const [height, setHeight] = useState(152);
-
-  useEffect(() => {
-    const el = area.current;
-    if (!el) return;
-    const native = typeof CSS !== "undefined" && CSS.supports("field-sizing", "content");
-    const measure = () => {
-      if (!native) {
-        el.style.height = "auto";
-        const content = Math.min(Math.max(el.scrollHeight, 152), 352);
-        el.style.height = `${content}px`;
-      }
-      const next = Math.min(Math.max(el.offsetHeight, 152), 352);
-      setHeight((prev) => (Math.abs(prev - next) < 1 ? prev : next));
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [value]);
-
-  return (
-    <div
-      className="overflow-hidden rounded-lg border border-line bg-surface shadow-[inset_0_1px_0_rgba(47,28,18,0.04)] transition-[height,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none focus-within:border-accent focus-within:[box-shadow:0_0_0_3px_color-mix(in_oklab,var(--color-accent)_35%,transparent)]"
-      style={{ height }}
-    >
-      <textarea
-        ref={area}
-        value={value}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-        className="block w-full min-h-[9.5rem] max-h-[22rem] resize-none overflow-y-auto border-0 bg-transparent px-3 py-2.5 text-base leading-relaxed text-ink outline-none placeholder:text-[#a39284] [field-sizing:content] sm:text-sm"
-      />
-    </div>
-  );
-}
-
 function CheckinCard({
   dog,
   lastDone,
@@ -525,10 +478,11 @@ function CheckinCard({
         </p>
         <div className="mx-auto w-full max-w-3xl space-y-4">
         <Field label="Note for Emily (optional)">
-          <GrowingNote
+          <Textarea
+            grow
             value={note}
-            onChange={(next) => {
-              setNote(next);
+            onChange={(e) => {
+              setNote(e.target.value);
               setConfirmClear(false);
             }}
             placeholder="What you tried, what went well, or where it fell apart…"
@@ -1068,6 +1022,7 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
           </Field>
           <Field label="What should we work on?">
             <Textarea
+              grow
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Recall in the yard, loose leash on the block…"
@@ -1676,7 +1631,8 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
               </Field>
               <Field label="Things this dog does not like">
                 <Textarea
-                  className="min-h-20"
+                  grow
+                  growMin={128}
                   value={draft.dislikes}
                   onChange={(e) => patch("dislikes", e.target.value)}
                   onBlur={(e) => patch("dislikes", formatSentenceStart(e.target.value))}
@@ -1684,7 +1640,8 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
               </Field>
               <Field label="Past bad experiences">
                 <Textarea
-                  className="min-h-20"
+                  grow
+                  growMin={128}
                   value={draft.past_experiences}
                   onChange={(e) => patch("past_experiences", e.target.value)}
                   onBlur={(e) => patch("past_experiences", formatSentenceStart(e.target.value))}
@@ -1692,7 +1649,8 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
               </Field>
               <Field label="Physical limitations">
                 <Textarea
-                  className="min-h-20"
+                  grow
+                  growMin={128}
                   value={draft.physical_limitations}
                   onChange={(e) => patch("physical_limitations", e.target.value)}
                   onBlur={(e) => patch("physical_limitations", formatSentenceStart(e.target.value))}

@@ -490,6 +490,7 @@ function Contact() {
           </Field>
           <Field label="What’s going on at home?">
             <Textarea
+              grow
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Leash pulling, doorbell barking, extra energy…"

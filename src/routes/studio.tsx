@@ -1464,7 +1464,10 @@ function SkillEditor({
         ))}
       </div>
       <Textarea
-        className="mt-3 min-h-16"
+        grow
+        growMin={96}
+        growMax={240}
+        className="mt-3"
         placeholder="Note from this session"
         value={c}
         onChange={(e) => setC(e.target.value)}
@@ -1664,13 +1667,13 @@ function SessionEditor({ session, onChange }: { session: SessionRow; onChange: (
           )}
           <div className="grid gap-2 sm:grid-cols-2">
             <Field label="Recap (client can see)">
-              <Textarea value={recap} onChange={(e) => setRecap(e.target.value)} />
+              <Textarea grow value={recap} onChange={(e) => setRecap(e.target.value)} />
             </Field>
             <Field label="Homework (client can see)">
-              <Textarea value={homework} onChange={(e) => setHomework(e.target.value)} />
+              <Textarea grow value={homework} onChange={(e) => setHomework(e.target.value)} />
             </Field>
             <Field label="Private session notes" className="sm:col-span-2">
-              <Textarea value={priv} onChange={(e) => setPriv(e.target.value)} />
+              <Textarea grow growMin={128} value={priv} onChange={(e) => setPriv(e.target.value)} />
             </Field>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -2342,6 +2345,9 @@ function Settings({
         </p>
         <Field label="Message">
           <Textarea
+            grow
+            growMin={112}
+            growMax={200}
             value={banner}
             maxLength={240}
             onChange={(e) => setBanner(e.target.value)}

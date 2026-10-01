@@ -327,6 +327,8 @@ export function IntakeForm({
         </div>
         <Field label="Anything else — in your words">
           <Textarea
+            grow
+            growMin={128}
             value={form.goals_other}
             onChange={(e) => set("goals_other", e.target.value)}
             onBlur={(e) => set("goals_other", formatSentenceStart(e.target.value))}
@@ -420,6 +422,8 @@ export function IntakeForm({
         </div>
         <Field label="Things this dog does not like">
           <Textarea
+            grow
+            growMin={128}
             value={form.dislikes}
             onChange={(e) => set("dislikes", e.target.value)}
             onBlur={(e) => set("dislikes", formatSentenceStart(e.target.value))}
@@ -428,6 +432,8 @@ export function IntakeForm({
         </Field>
         <Field label="Past bad experiences">
           <Textarea
+            grow
+            growMin={128}
             value={form.past_experiences}
             onChange={(e) => set("past_experiences", e.target.value)}
             onBlur={(e) => set("past_experiences", formatSentenceStart(e.target.value))}
@@ -436,6 +442,8 @@ export function IntakeForm({
         </Field>
         <Field label="Physical limitations">
           <Textarea
+            grow
+            growMin={128}
             value={form.physical_limitations}
             onChange={(e) => set("physical_limitations", e.target.value)}
             onBlur={(e) => set("physical_limitations", formatSentenceStart(e.target.value))}

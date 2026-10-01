@@ -87,6 +87,7 @@ function ReplyPage() {
             </label>
             <Textarea
               id="emily-reply"
+              grow
               className="mt-2"
               value={body}
               onChange={(e) => setBody(e.target.value)}
