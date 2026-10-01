@@ -93,7 +93,7 @@ export function NoteThread({
                   <span className="ml-2 font-semibold text-accent-deep">New</span>
                 ) : null}
               </p>
-              {viewer === "client" && !fromEmily && onDelete ? (
+              {viewer === "client" && !fromEmily && !message.removed_at && onDelete ? (
                 <div className="relative h-8 shrink-0">
                   <button
                     type="button"
@@ -151,7 +151,13 @@ export function NoteThread({
                 </div>
               ) : null}
             </div>
-            <FormattedText className="mt-1.5" text={message.body} />
+            {message.removed_at ? (
+              <p className="mt-1.5 text-sm italic text-muted">
+                {viewer === "client" ? "You removed this note." : "This note was removed."}
+              </p>
+            ) : (
+              <FormattedText className="mt-1.5" text={message.body} />
+            )}
           </li>
         );
       })}

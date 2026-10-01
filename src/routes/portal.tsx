@@ -595,8 +595,12 @@ function CheckinCard({
               viewer="client"
               onDelete={(messageId) =>
                 deleteOwnNote({ data: { messageId } })
-                  .then(() => {
-                    toast.success("Removed. If the email already went out, that copy stays in Emily’s inbox.");
+                  .then((result) => {
+                    toast.success(
+                      result.kept
+                        ? "Removed. A placeholder stays so Emily’s reply still lines up."
+                        : "Removed. If the email already went out, that copy stays in Emily’s inbox.",
+                    );
                     loadThread();
                   })
                   .catch((err: unknown) => {

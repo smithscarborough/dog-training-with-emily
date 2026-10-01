@@ -123,6 +123,7 @@ export type MessageRow = {
   read_by_trainer: boolean;
   read_by_client: boolean;
   reply_token: string | null;
+  removed_at: string | null;
   created_at: string;
   dog_name?: string;
   owner_name?: string;
