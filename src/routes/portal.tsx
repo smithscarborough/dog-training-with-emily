@@ -282,7 +282,9 @@ function HomeTab({
   useEffect(() => {
     void listSessions({ data: { dogId: dog.id } }).then(setSessions).catch(() => setSessions([]));
   }, [dog.id]);
-  const upcoming = sessions.find((s) => s.status === "confirmed" || s.status === "requested");
+  const upcoming = sessions
+    .filter((s) => s.status === "confirmed" || s.status === "requested")
+    .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())[0];
   const lastDone = sessions.find((s) => s.status === "completed");
   const goals = (() => {
     try {
@@ -1051,6 +1053,18 @@ function SessionsTab({
     if (hadConsult && sessionType === "consult") setSessionType("hour");
   }, [hadConsult, sessionType]);
 
+  const listed = useMemo(() => {
+    const rank = (status: string) =>
+      status === "requested" || status === "confirmed" ? 0 : status === "completed" ? 1 : 2;
+    return [...sessions].sort((a, b) => {
+      const byStatus = rank(a.status) - rank(b.status);
+      if (byStatus !== 0) return byStatus;
+      const at = new Date(a.scheduled_at).getTime();
+      const bt = new Date(b.scheduled_at).getTime();
+      return rank(a.status) === 0 ? at - bt : bt - at;
+    });
+  }, [sessions]);
+
   const confirming = sessions.find((row) => row.id === confirmingId) ?? null;
 
   return (
@@ -1140,7 +1154,7 @@ function SessionsTab({
         {sessions.length === 0 ? (
           <p className="text-sm text-muted">No sessions yet.</p>
         ) : (
-          sessions.map((s) => (
+          listed.map((s) => (
             <Card
               key={s.id}
               id={`session-${s.id}`}
