@@ -2232,9 +2232,14 @@ function Inbox({
     });
   }, [rows, q]);
   return (
-    <div className="space-y-8">
-      <section className="max-w-2xl space-y-3">
-        <h2 className="font-display text-2xl tracking-tight">From clients</h2>
+    <div className="grid items-start gap-10 xl:grid-cols-2 xl:gap-8">
+      <section className="min-w-0 max-w-2xl space-y-3 xl:max-w-none">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="font-display text-2xl tracking-tight">From clients</h2>
+          {waiting.length > 0 ? (
+            <p className="text-sm tabular-nums text-muted">{waiting.length} waiting</p>
+          ) : null}
+        </div>
         {waiting.length === 0 ? (
           <p className="text-sm text-muted">No notes waiting on a reply.</p>
         ) : (
@@ -2257,47 +2262,60 @@ function Inbox({
           ))
         )}
       </section>
-      <section className="max-w-2xl space-y-3">
-      <h2 className="font-display text-2xl tracking-tight">Website inquiries</h2>
-      <Input
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder="Search name, dog, phone, or email"
-        className="max-w-md"
-      />
-      {!rows.length ? (
-        <p className="text-sm text-muted">No inquiries yet.</p>
-      ) : !filtered.length ? (
-        <p className="text-sm text-muted">Nothing matches that search.</p>
-      ) : (
-        filtered.map((r) => (
-        <Card key={r.id}>
-          <CardBody>
-            <p>
-              <span className="font-semibold text-ink">{r.name}</span>
-              {r.dog_name ? (
-                <>
-                  <span className="text-faint"> · </span>
-                  <span className="font-medium text-ink">{r.dog_name}</span>
-                </>
-              ) : null}
-            </p>
-            <p className="mt-0.5 text-xs text-muted">
-              {r.email ? <span className="font-medium text-ink">{r.email}</span> : null}
-              {r.email && r.phone ? <span className="text-faint"> · </span> : null}
-              {r.phone ? <span>{r.phone}</span> : null}
-              {(r.email || r.phone) ? <span className="text-faint"> · </span> : null}
-              {formatWhen(r.created_at)}
-            </p>
-            {r.message ? (
-              <p className="mt-2.5 whitespace-pre-wrap border-t border-line pt-2.5 text-sm leading-relaxed text-ink">
-                {r.message}
-              </p>
-            ) : null}
-          </CardBody>
-        </Card>
-        ))
-      )}
+      <section className="min-w-0 max-w-2xl xl:sticky xl:top-24 xl:max-w-none xl:max-h-[calc(100dvh-7.5rem)] xl:overflow-y-auto">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="font-display text-2xl tracking-tight">Website inquiries</h2>
+          {rows.length > 0 ? (
+            <p className="text-sm tabular-nums text-muted">{rows.length}</p>
+          ) : null}
+        </div>
+        <Input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search name, dog, phone, or email"
+          className="mt-3"
+        />
+        <div className="mt-3 space-y-3">
+          {!rows.length ? (
+            <p className="text-sm text-muted">No inquiries yet.</p>
+          ) : !filtered.length ? (
+            <p className="text-sm text-muted">Nothing matches that search.</p>
+          ) : (
+            filtered.map((r) => (
+              <Card key={r.id}>
+                <CardBody>
+                  <p>
+                    <span className="font-semibold text-ink">{r.name}</span>
+                    {r.dog_name ? (
+                      <>
+                        <span className="text-faint"> · </span>
+                        <span className="font-medium text-ink">{r.dog_name}</span>
+                      </>
+                    ) : null}
+                  </p>
+                  <p className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-muted">
+                    {r.email ? (
+                      <a className="font-medium text-ink underline-offset-2 hover:underline" href={`mailto:${r.email}`}>
+                        {r.email}
+                      </a>
+                    ) : null}
+                    {r.phone ? (
+                      <a className="underline-offset-2 hover:text-ink hover:underline" href={`tel:${phoneDigits(r.phone)}`}>
+                        {formatUsPhone(r.phone)}
+                      </a>
+                    ) : null}
+                    <span>{formatWhen(r.created_at)}</span>
+                  </p>
+                  {r.message ? (
+                    <p className="mt-2.5 whitespace-pre-wrap border-t border-line pt-2.5 text-sm leading-relaxed text-ink">
+                      {r.message}
+                    </p>
+                  ) : null}
+                </CardBody>
+              </Card>
+            ))
+          )}
+        </div>
       </section>
     </div>
   );
