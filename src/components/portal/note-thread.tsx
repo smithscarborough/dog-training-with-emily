@@ -152,9 +152,7 @@ export function NoteThread({
               ) : null}
             </div>
             {message.removed_at ? (
-              <p className="mt-1.5 text-sm italic text-muted">
-                {viewer === "client" ? "You removed this note." : "This note was removed."}
-              </p>
+              <p className="mt-1.5 text-sm italic text-muted">This note was deleted.</p>
             ) : (
               <FormattedText className="mt-1.5" text={message.body} />
             )}
