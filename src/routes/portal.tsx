@@ -149,6 +149,7 @@ function PortalApp({
   const [dogId, setDogId] = useState(dogs[0]!.id);
   const dog = dogs.find((d) => d.id === dogId) ?? dogs[0]!;
   const [tab, setTab] = useState<"home" | "progress" | "sessions" | "profile">("home");
+  const [focusSessionId, setFocusSessionId] = useState<number | null>(null);
   const [noteUnread, setNoteUnread] = useState(false);
   const tabs = [
     { id: "home" as const, label: "Home" },
@@ -221,13 +222,23 @@ function PortalApp({
               dog={dog}
               watching={tab === "home"}
               onUnread={setNoteUnread}
+              onOpenSession={(id) => {
+                setFocusSessionId(id);
+                setTab("sessions");
+              }}
             />
           </div>
           <div className={tab === "progress" ? "" : "hidden"} hidden={tab !== "progress"}>
             <ProgressTab dog={dog} />
           </div>
           <div className={tab === "sessions" ? "" : "hidden"} hidden={tab !== "sessions"}>
-            <SessionsTab dog={dog} hours={hours} active={tab === "sessions"} />
+            <SessionsTab
+              dog={dog}
+              hours={hours}
+              active={tab === "sessions"}
+              focusId={focusSessionId}
+              onFocused={() => setFocusSessionId(null)}
+            />
           </div>
           <div className={tab === "profile" ? "" : "hidden"} hidden={tab !== "profile"}>
             <ProfileTab dog={dog} onRefresh={onRefresh} />
@@ -260,10 +271,12 @@ function HomeTab({
   dog,
   watching,
   onUnread,
+  onOpenSession,
 }: {
   dog: DogRow;
   watching: boolean;
   onUnread: (unread: boolean) => void;
+  onOpenSession: (sessionId: number) => void;
 }) {
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   useEffect(() => {
@@ -282,7 +295,27 @@ function HomeTab({
   return (
     <div className="grid w-full gap-4 lg:grid-cols-2">
       <CheckinCard dog={dog} lastDone={lastDone ?? null} watching={watching} onUnread={onUnread} />
-      <Card>
+      <Card
+        className={
+          upcoming
+            ? "cursor-pointer transition-shadow duration-150 hover:shadow-[0_12px_28px_-18px_rgba(44,24,16,0.45)]"
+            : undefined
+        }
+        role={upcoming ? "link" : undefined}
+        tabIndex={upcoming ? 0 : undefined}
+        aria-label={upcoming ? "Open this session" : undefined}
+        onClick={upcoming ? () => onOpenSession(upcoming.id) : undefined}
+        onKeyDown={
+          upcoming
+            ? (event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onOpenSession(upcoming.id);
+                }
+              }
+            : undefined
+        }
+      >
         <CardHeader>
           <CardTitle>Next on the calendar</CardTitle>
         </CardHeader>
@@ -866,7 +899,19 @@ function SkillGrid({
   );
 }
 
-function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; active: boolean }) {
+function SessionsTab({
+  dog,
+  hours,
+  active,
+  focusId,
+  onFocused,
+}: {
+  dog: DogRow;
+  hours: HoursDay[];
+  active: boolean;
+  focusId: number | null;
+  onFocused: () => void;
+}) {
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [sessionType, setSessionType] = useState(SESSION_TYPES[0]!.id);
   const [when, setWhen] = useState("");
@@ -877,6 +922,7 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
   const [moveWhen, setMoveWhen] = useState("");
   const [moving, setMoving] = useState(false);
   const [confirmingId, setConfirmingId] = useState<number | null>(null);
+  const [highlightId, setHighlightId] = useState<number | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [pendingCancel, setPendingCancel] = useState<{
     id: number;
@@ -974,6 +1020,21 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
   useEffect(() => {
     void load().catch(() => setSessions([]));
   }, [dog.id]);
+
+  useEffect(() => {
+    if (!active || focusId == null) return;
+    const el = document.getElementById(`session-${focusId}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    setHighlightId(focusId);
+    onFocused();
+  }, [active, focusId, sessions]);
+
+  useEffect(() => {
+    if (highlightId == null) return;
+    const timer = window.setTimeout(() => setHighlightId(null), 1800);
+    return () => window.clearTimeout(timer);
+  }, [highlightId]);
 
   useEffect(() => {
     if (!when) return;
@@ -1082,9 +1143,12 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
           sessions.map((s) => (
             <Card
               key={s.id}
+              id={`session-${s.id}`}
               className={cn(
+                "scroll-mt-28",
                 s.status === "confirmed" && "border-l-[3px] border-l-accent",
                 s.status === "requested" && "border-l-[3px] border-l-ink/40",
+                highlightId === s.id && "ring-2 ring-accent",
               )}
             >
               <CardBody className="space-y-3">
