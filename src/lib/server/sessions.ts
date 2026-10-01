@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
-import { sessionTypeById } from "@/lib/catalog";
+import { consultHasHappened, sessionTypeById } from "@/lib/catalog";
 import type { SessionRow } from "@/lib/types";
 import { assertDogAccess, loadStudio, requireTrainer, stripPrivate } from "./helpers";
 import { isWithinHours, parseHours } from "@/lib/hours";
@@ -59,6 +59,12 @@ export const requestSession = createServerFn({ method: "POST" })
     const isTrainer = studio.owner_user_id === context.userId;
     if (!isTrainer && !isWithinHours(when, parseHours(studio.hours_json), type.minutes)) {
       throw new Error("That time isn’t open. Pick another.");
+    }
+    if (!isTrainer && type.id !== "consult") {
+      const prior = await sql<{ session_type: string; status: string; scheduled_at: string }>`
+        select session_type, status, scheduled_at from sessions where dog_id = ${dog.id}
+      `;
+      if (!consultHasHappened(prior)) throw new Error("The first visit is the consult.");
     }
     const status = isTrainer ? "confirmed" : "requested";
     const inserted = await sql<{ id: number }>`

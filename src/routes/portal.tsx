@@ -13,7 +13,7 @@ import { Field } from "@/components/ui/label";
 import { Input, Textarea } from "@/components/ui/input";
 import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
-import { SESSION_TYPES, CHECKINS, checkinById, dollars, sessionTypeById, phaseFor, portalCatalog } from "@/lib/catalog";
+import { SESSION_TYPES, CHECKINS, checkinById, consultHasHappened, dollars, sessionTypeById, phaseFor, portalCatalog } from "@/lib/catalog";
 import { formatWhen, statusTone, checkinTone } from "@/lib/format";
 import { cancelOwnSession, listSessions, requestSession, rescheduleOwnSession, restoreOwnSession } from "@/lib/server/sessions";
 import { getProgress } from "@/lib/server/progress";
@@ -981,15 +981,12 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
     if (!isWithinHours(picked, hours, sessionTypeById(sessionType).minutes)) setWhen("");
   }, [sessionType, hours, when]);
 
-  const hadConsult = sessions.some((row) => {
-    if (row.session_type !== "consult" || row.status === "cancelled" || row.status === "requested") return false;
-    if (row.status === "completed") return true;
-    return new Date(row.scheduled_at).getTime() <= Date.now();
-  });
-  const typeOptions = SESSION_TYPES.filter((type) => type.id !== "consult" || !hadConsult);
-  const requestType = hadConsult && sessionType === "consult" ? "hour" : sessionType;
+  const hadConsult = consultHasHappened(sessions);
+  const typeOptions = SESSION_TYPES.filter((type) => (hadConsult ? type.id !== "consult" : type.id === "consult"));
+  const requestType = hadConsult ? (sessionType === "consult" ? "hour" : sessionType) : "consult";
 
   useEffect(() => {
+    if (!hadConsult && sessionType !== "consult") setSessionType("consult");
     if (hadConsult && sessionType === "consult") setSessionType("hour");
   }, [hadConsult, sessionType]);
 
@@ -1015,6 +1012,11 @@ function SessionsTab({ dog, hours, active }: { dog: DogRow; hours: HoursDay[]; a
               ))}
             </select>
           </Field>
+          {hadConsult ? null : (
+            <p className="-mt-1 text-sm leading-relaxed text-muted">
+              The first visit is the consult. The longer sessions open after that.
+            </p>
+          )}
           <Field label="Preferred date & time (Houston)" hint="Only open hours are listed.">
             <WhenPicker
               value={when}

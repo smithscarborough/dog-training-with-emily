@@ -136,6 +136,17 @@ export function sessionTypeById(id: string) {
   return SESSION_TYPES.find((s) => s.id === id) ?? SESSION_TYPES[0];
 }
 
+/** A consult counts once it is completed, or its time has passed and it was not cancelled. */
+export function consultHasHappened(
+  rows: { session_type: string; status: string; scheduled_at: string }[],
+) {
+  return rows.some((row) => {
+    if (row.session_type !== "consult" || row.status === "cancelled" || row.status === "requested") return false;
+    if (row.status === "completed") return true;
+    return new Date(row.scheduled_at).getTime() <= Date.now();
+  });
+}
+
 export const GOALS = [
   { id: "obedience", label: "Obedience" },
   { id: "puppy-basics", label: "Puppy basics" },
