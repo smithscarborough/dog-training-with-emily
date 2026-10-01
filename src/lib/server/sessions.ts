@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
-import { consultHasHappened, sessionTypeById } from "@/lib/catalog";
+import { SESSION_TYPES, consultHasHappened, sessionTypeById } from "@/lib/catalog";
 import type { SessionRow } from "@/lib/types";
 import { assertDogAccess, loadStudio, requireTrainer, stripPrivate } from "./helpers";
 import { isWithinHours, parseHours } from "@/lib/hours";
@@ -78,6 +78,32 @@ export const requestSession = createServerFn({ method: "POST" })
     return { id: inserted[0]?.id, status };
   });
 
+export const logPastSession = createServerFn({ method: "POST" })
+  .validator(
+    (data: { dogId: number; sessionType: string; scheduledAt: string; recap: string; homework: string }) => data,
+  )
+  .middleware([authMiddleware])
+  .handler(async ({ context, data }) => {
+    await requireTrainer(context.userId);
+    const dog = await assertDogAccess(context.userId, data.dogId);
+    const type = SESSION_TYPES.find((item) => item.id === data.sessionType);
+    if (!type) throw new Error("Pick a session type.");
+    const when = new Date(data.scheduledAt);
+    if (Number.isNaN(when.getTime())) throw new Error("Pick a date and time.");
+    if (when.getTime() > Date.now()) throw new Error("That time hasn’t happened yet. Book it instead.");
+    const sql = await getSql();
+    await sql`
+      insert into sessions (
+        dog_id, owner_user_id, session_type, scheduled_at, duration_min, status, location,
+        owner_notes, recap, homework
+      ) values (
+        ${dog.id}, ${dog.owner_user_id}, ${type.id}, ${when.toISOString()}, ${type.minutes},
+        'completed', ${dog.address}, '', ${data.recap.trim()}, ${data.homework.trim()}
+      )
+    `;
+    return { ok: true };
+  });
+
 export const setSessionStatus = createServerFn({ method: "POST" })
   .validator((data: { sessionId: number; status: SessionRow["status"] }) => data)
   .middleware([authMiddleware])
@@ -87,11 +113,17 @@ export const setSessionStatus = createServerFn({ method: "POST" })
     const existing = await sql<SessionRow>`select * from sessions where id = ${data.sessionId}`;
     const session = existing[0];
     if (!session) throw new Error("Not found");
-    if (data.status === "completed" && session.status !== "completed") {
+    const credited = await sql<{ credit_applied: boolean }>`
+      select credit_applied from sessions where id = ${session.id}
+    `;
+    const applied = Boolean(credited[0]?.credit_applied);
+    if (data.status === "completed" && session.status !== "completed" && !applied) {
       await sql`update dogs set credits = greatest(credits - 1, 0), updated_at = now() where id = ${session.dog_id}`;
+      await sql`update sessions set credit_applied = true where id = ${session.id}`;
     }
-    if (session.status === "completed" && data.status !== "completed") {
+    if (session.status === "completed" && data.status !== "completed" && applied) {
       await sql`update dogs set credits = credits + 1, updated_at = now() where id = ${session.dog_id}`;
+      await sql`update sessions set credit_applied = false where id = ${session.id}`;
     }
     await sql`update sessions set status = ${data.status}, updated_at = now() where id = ${data.sessionId}`;
     return { ok: true };

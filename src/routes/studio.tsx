@@ -32,6 +32,7 @@ import { becomeTrainer, releaseStudio, updateStudioBanner, updateStudioContact, 
 import { getProgress, updateSkillProgress } from "@/lib/server/progress";
 import {
   listSessions,
+  logPastSession,
   requestSession,
   setSessionStatus,
   writeSessionRecap,
@@ -1083,6 +1084,9 @@ function ClientDetail({
             <TrainerBook dog={dog} onBooked={() => {
               void listSessions({ data: { dogId: dog.id } }).then(setSessions);
             }} />
+            <LogPastVisit dog={dog} onLogged={() => {
+              void listSessions({ data: { dogId: dog.id } }).then(setSessions);
+            }} />
           </div>
         </CardBody>
       </Card>
@@ -1546,6 +1550,103 @@ function TrainerBook({ dog, onBooked }: { dog: DogRow; onBooked: () => void }) {
         }}
       >
         Book
+      </Button>
+    </div>
+  );
+}
+
+function LogPastVisit({ dog, onLogged }: { dog: DogRow; onLogged: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [sessionType, setSessionType] = useState(SESSION_TYPES[0]!.id);
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("10:00");
+  const [recap, setRecap] = useState("");
+  const [homework, setHomework] = useState("");
+  const [busy, setBusy] = useState(false);
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        className="mt-3 text-sm text-muted underline-offset-4 hover:text-ink hover:underline"
+        onClick={() => setOpen(true)}
+      >
+        Log a visit that already happened
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-4 rounded-lg bg-bg p-3">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-semibold text-ink">A visit from before the portal</p>
+        <button
+          type="button"
+          className="text-sm text-muted underline-offset-4 hover:text-ink hover:underline"
+          onClick={() => setOpen(false)}
+        >
+          Close
+        </button>
+      </div>
+      <p className="mt-1 text-xs leading-relaxed text-muted">
+        The client will see it as completed. It does not take a credit.
+      </p>
+      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+        <select
+          className="h-11 rounded-md border border-line bg-surface px-3 text-sm"
+          value={sessionType}
+          onChange={(e) => setSessionType(e.target.value as typeof sessionType)}
+        >
+          {SESSION_TYPES.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </select>
+        <Input type="date" max={today} value={date} onChange={(e) => setDate(e.target.value)} />
+        <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+      </div>
+      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        <Field label="Recap (client can see)">
+          <Textarea grow value={recap} onChange={(e) => setRecap(e.target.value)} />
+        </Field>
+        <Field label="Homework (client can see)">
+          <Textarea grow value={homework} onChange={(e) => setHomework(e.target.value)} />
+        </Field>
+      </div>
+      <Button
+        size="sm"
+        className="mt-3"
+        disabled={busy || !date || !time}
+        onClick={() => {
+          if (busy || !date || !time) return;
+          setBusy(true);
+          void logPastSession({
+            data: {
+              dogId: dog.id,
+              sessionType,
+              scheduledAt: new Date(`${date}T${time}`).toISOString(),
+              recap,
+              homework,
+            },
+          })
+            .then(() => {
+              toast.success("Past visit logged.");
+              setDate("");
+              setRecap("");
+              setHomework("");
+              setOpen(false);
+              onLogged();
+            })
+            .catch((err: unknown) =>
+              toast.error(err instanceof Error ? err.message : "Could not log that visit."),
+            )
+            .finally(() => setBusy(false));
+        }}
+      >
+        {busy ? "Saving…" : "Log visit"}
       </Button>
     </div>
   );
