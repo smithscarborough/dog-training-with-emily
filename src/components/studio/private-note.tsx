@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 function escapeHtml(value: string) {
-  return value.replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">");
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function inlineHtml(value: string) {
@@ -104,6 +104,22 @@ export function htmlToMarkdown(root: HTMLElement) {
     .replace(/\n{3,}/g, "\n\n");
 }
 
+export function FormattedText({ text, className }: { text: string; className?: string }) {
+  if (!text.trim()) return null;
+  return (
+    <div
+      className={cn(
+        "text-sm leading-relaxed text-ink",
+        "[&_ol]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:marker:text-ink",
+        "[&_p+p]:mt-2 [&_strong]:font-bold [&_ul]:my-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:marker:text-ink",
+        "[&_li]:my-0.5",
+        className,
+      )}
+      dangerouslySetInnerHTML={{ __html: markdownToHtml(text) }}
+    />
+  );
+}
+
 function ToolButton({
   label,
   pressed,
@@ -134,12 +150,18 @@ function ToolButton({
   );
 }
 
-export function PrivateNoteEditor({
+export function RichTextField({
   value,
   onChange,
+  placeholder,
+  label,
+  fieldClassName = "min-h-28",
 }: {
   value: string;
   onChange: (value: string) => void;
+  placeholder: string;
+  label: string;
+  fieldClassName?: string;
 }) {
   const field = useRef<HTMLDivElement>(null);
   const applied = useRef<string | null>(null);
@@ -193,8 +215,8 @@ export function PrivateNoteEditor({
     <div
       className={cn(
         "overflow-hidden rounded-lg border border-line bg-surface shadow-[inset_0_1px_0_rgba(47,28,18,0.04)]",
-        "transition-[border-color,box-shadow,transform] duration-150 ease-out",
-        "focus-within:-translate-y-px focus-within:border-accent",
+        "transition-[border-color,box-shadow] duration-150 ease-out",
+        "focus-within:border-accent",
         "focus-within:[box-shadow:0_0_0_3px_color-mix(in_oklab,var(--color-accent)_35%,transparent)]",
       )}
     >
@@ -218,21 +240,22 @@ export function PrivateNoteEditor({
       <div className="relative">
         {value.trim() ? null : (
           <p className="pointer-events-none absolute left-3 top-2.5 text-base text-[#a39284] sm:text-sm">
-            What to remember before the next visit.
+            {placeholder}
           </p>
         )}
         <div
           ref={field}
           role="textbox"
-          aria-label="Private note"
+          aria-label={label}
           aria-multiline="true"
           contentEditable
           suppressContentEditableWarning
           className={cn(
-            "min-h-28 w-full px-3 py-2.5 text-base leading-relaxed text-ink outline-none sm:text-sm",
-            "[&_b]:font-bold [&_ol]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:marker:text-ink",
+            "w-full px-3 py-2.5 text-base leading-relaxed text-ink outline-none sm:text-sm",
+            "[&_ol]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:marker:text-ink",
             "[&_p+p]:mt-2 [&_strong]:font-bold [&_ul]:my-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:marker:text-ink",
             "[&_li]:my-0.5",
+            fieldClassName,
           )}
           onInput={sync}
           onBlur={sync}
@@ -243,14 +266,39 @@ export function PrivateNoteEditor({
             sync();
           }}
           onKeyDown={(event) => {
-            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "b") {
+            const mod = event.metaKey || event.ctrlKey;
+            if (!mod) return;
+            const key = event.key.toLowerCase();
+            if (key === "b") {
               event.preventDefault();
-              document.execCommand("bold");
-              sync();
+              format("bold");
+            } else if (key === "8" && event.shiftKey) {
+              event.preventDefault();
+              format("insertUnorderedList");
+            } else if (key === "7" && event.shiftKey) {
+              event.preventDefault();
+              format("insertOrderedList");
             }
           }}
         />
       </div>
     </div>
+  );
+}
+
+export function PrivateNoteEditor({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <RichTextField
+      value={value}
+      onChange={onChange}
+      placeholder="What to remember before the next visit."
+      label="Private note"
+    />
   );
 }

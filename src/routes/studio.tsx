@@ -2257,7 +2257,7 @@ function Inbox({
           ))
         )}
       </section>
-      <section className="space-y-3">
+      <section className="max-w-2xl space-y-3">
       <h2 className="font-display text-2xl tracking-tight">Website inquiries</h2>
       <Input
         value={q}

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Wordmark } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/input";
+import { FormattedText, RichTextField } from "@/components/studio/private-note";
 import { formatWhen } from "@/lib/format";
 import { getReplyPrompt, replyFromEmail } from "@/lib/server/messages";
 
@@ -79,21 +79,19 @@ function ReplyPage() {
               {prompt.dogName ? ` · ${prompt.dogName}` : ""}
             </h1>
             <p className="mt-2 text-xs text-muted">{formatWhen(prompt.createdAt)}</p>
-            <blockquote className="mt-4 rounded-lg bg-pearl px-3.5 py-3 text-sm leading-relaxed text-ink">
-              {prompt.body}
+            <blockquote className="mt-4 rounded-lg bg-pearl px-3.5 py-3">
+              <FormattedText text={prompt.body} />
             </blockquote>
-            <label className="mt-5 block text-sm font-semibold text-ink" htmlFor="emily-reply">
-              Your reply
-            </label>
-            <Textarea
-              id="emily-reply"
-              grow
-              className="mt-2"
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              placeholder="What you want them to know before the next session…"
-              required
-            />
+            <p className="mt-5 text-sm font-semibold text-ink">Your reply</p>
+            <div className="mt-2">
+              <RichTextField
+                value={body}
+                onChange={setBody}
+                placeholder="What you want them to know before the next session…"
+                label="Your reply"
+                fieldClassName="min-h-[9.5rem] max-h-[22rem] overflow-y-auto"
+              />
+            </div>
             {error ? <p className="mt-2 text-sm text-danger">{error}</p> : null}
             <Button className="mt-4" type="submit" disabled={busy || !body.trim()}>
               {busy ? "Sending…" : "Send to their portal"}

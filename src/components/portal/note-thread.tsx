@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/input";
+import { FormattedText, RichTextField } from "@/components/studio/private-note";
 import { formatWhen } from "@/lib/format";
 import { replyAsTrainer } from "@/lib/server/messages";
 import type { MessageRow } from "@/lib/types";
@@ -151,7 +151,7 @@ export function NoteThread({
                 </div>
               ) : null}
             </div>
-            <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-ink">{message.body}</p>
+            <FormattedText className="mt-1.5" text={message.body} />
           </li>
         );
       })}
@@ -189,12 +189,12 @@ export function TrainerReply({
           .finally(() => setBusy(false));
       }}
     >
-      <Textarea
-        grow
+      <RichTextField
         value={body}
-        onChange={(e) => setBody(e.target.value)}
+        onChange={setBody}
         placeholder="Write a reply…"
-        aria-label="Write a reply"
+        label="Write a reply"
+        fieldClassName="min-h-[9.5rem] max-h-[22rem] overflow-y-auto"
       />
       <Button type="submit" disabled={busy || !body.trim()}>
         {busy ? "Sending…" : "Send reply"}
