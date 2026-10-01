@@ -2205,6 +2205,16 @@ function monthCells(year: number, month: number) {
   return cells;
 }
 
+function inquiryReplyHref(row: InquiryRow) {
+  const first = row.name.trim().split(/\s+/)[0] || "there";
+  const dog = row.dog_name.trim();
+  const subject = dog ? `${dog} — Dog Training with Emily` : "Dog Training with Emily";
+  const body = dog
+    ? `Hi ${first},\n\nThanks for writing about ${dog}.\n\n`
+    : `Hi ${first},\n\nThanks for writing.\n\n`;
+  return `mailto:${row.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
 function Inbox({
   waiting,
   onReplied,
@@ -2310,6 +2320,11 @@ function Inbox({
                     <p className="mt-2.5 whitespace-pre-wrap border-t border-line pt-2.5 text-sm leading-relaxed text-ink">
                       {r.message}
                     </p>
+                  ) : null}
+                  {r.email ? (
+                    <Button asChild size="sm" className="mt-3">
+                      <a href={inquiryReplyHref(r)}>Reply by email</a>
+                    </Button>
                   ) : null}
                 </CardBody>
               </Card>
