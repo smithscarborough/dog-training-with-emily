@@ -2233,7 +2233,7 @@ function Inbox({
   }, [rows, q]);
   return (
     <div className="space-y-8">
-      <section className="space-y-3">
+      <section className="max-w-2xl space-y-3">
         <h2 className="font-display text-2xl tracking-tight">From clients</h2>
         {waiting.length === 0 ? (
           <p className="text-sm text-muted">No notes waiting on a reply.</p>
