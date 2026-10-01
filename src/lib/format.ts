@@ -32,6 +32,20 @@ export function toDatetimeLocalValue(iso?: string) {
   return `${local.getFullYear()}-${pad(local.getMonth() + 1)}-${pad(local.getDate())}T${pad(local.getHours())}:${pad(local.getMinutes())}`;
 }
 
+/** Open visits stay on top, soonest first. Past visits follow by the date they happened, newest first. */
+export function compareSessionList(
+  a: { status: string; scheduled_at: string },
+  b: { status: string; scheduled_at: string },
+) {
+  const open = (status: string) => status === "requested" || status === "confirmed";
+  const aOpen = open(a.status);
+  const bOpen = open(b.status);
+  if (aOpen !== bOpen) return aOpen ? -1 : 1;
+  const at = new Date(a.scheduled_at).getTime();
+  const bt = new Date(b.scheduled_at).getTime();
+  return aOpen ? at - bt : bt - at;
+}
+
 export function statusTone(status: string): "default" | "accent" | "ok" | "warn" | "muted" | "solid" | "done" {
   if (status === "confirmed") return "solid";
   if (status === "completed") return "done";

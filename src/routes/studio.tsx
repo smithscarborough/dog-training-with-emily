@@ -17,7 +17,7 @@ import { Input, Textarea } from "@/components/ui/input";
 import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { PHASES, SESSION_TYPES, SKILLS, TRICKS, GOALS, checkinById, dollars, sessionTypeById, fullCatalogGoalLabels, parseVisibleSkillKeys } from "@/lib/catalog";
-import { formatWhen, statusTone, checkinTone } from "@/lib/format";
+import { compareSessionList, formatWhen, statusTone, checkinTone } from "@/lib/format";
 import { formatUsPhone, phoneDigits } from "@/lib/phone";
 import {
   saveTrainerNotes,
@@ -1063,14 +1063,7 @@ function ClientDetail({
             ) : null}
             {sessions
               .slice()
-              .sort((a, b) => {
-                const rank = (row: SessionRow) =>
-                  row.status === "confirmed" || row.status === "requested" ? 0 : row.status === "completed" ? 1 : 2;
-                const byRank = rank(a) - rank(b);
-                if (byRank) return byRank;
-                const at = +new Date(a.scheduled_at) - +new Date(b.scheduled_at);
-                return a.status === "completed" || a.status === "cancelled" ? -at : at;
-              })
+              .sort(compareSessionList)
               .map((s) => (
               <SessionEditor key={s.id} session={s} onChange={() => {
                 void listSessions({ data: { dogId: dog.id } }).then(setSessions);

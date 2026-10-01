@@ -14,7 +14,7 @@ import { Input, Textarea } from "@/components/ui/input";
 import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { SESSION_TYPES, CHECKINS, checkinById, consultHasHappened, dollars, sessionTypeById, phaseFor, portalCatalog } from "@/lib/catalog";
-import { formatWhen, statusTone, checkinTone } from "@/lib/format";
+import { compareSessionList, formatWhen, statusTone, checkinTone } from "@/lib/format";
 import { cancelOwnSession, listSessions, requestSession, rescheduleOwnSession, restoreOwnSession } from "@/lib/server/sessions";
 import { getProgress } from "@/lib/server/progress";
 import { updateDogPhoto, updateOwnProfile } from "@/lib/server/dogs";
@@ -285,7 +285,9 @@ function HomeTab({
   const upcoming = sessions
     .filter((s) => s.status === "confirmed" || s.status === "requested")
     .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())[0];
-  const lastDone = sessions.find((s) => s.status === "completed");
+  const lastDone = sessions
+    .filter((s) => s.status === "completed")
+    .sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime())[0];
   const goals = (() => {
     try {
       return JSON.parse(dog.goals_json) as string[];
@@ -1053,17 +1055,7 @@ function SessionsTab({
     if (hadConsult && sessionType === "consult") setSessionType("hour");
   }, [hadConsult, sessionType]);
 
-  const listed = useMemo(() => {
-    const rank = (status: string) =>
-      status === "requested" || status === "confirmed" ? 0 : status === "completed" ? 1 : 2;
-    return [...sessions].sort((a, b) => {
-      const byStatus = rank(a.status) - rank(b.status);
-      if (byStatus !== 0) return byStatus;
-      const at = new Date(a.scheduled_at).getTime();
-      const bt = new Date(b.scheduled_at).getTime();
-      return rank(a.status) === 0 ? at - bt : bt - at;
-    });
-  }, [sessions]);
+  const listed = useMemo(() => [...sessions].sort(compareSessionList), [sessions]);
 
   const confirming = sessions.find((row) => row.id === confirmingId) ?? null;
 
