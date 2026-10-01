@@ -48,9 +48,9 @@ const dayPickerClassNames = {
   month_caption: "pointer-events-none relative z-0 flex h-9 items-center justify-center text-sm font-semibold text-ink",
   nav: "absolute inset-x-0 top-0 z-10 flex items-center justify-between",
   button_previous:
-    "inline-flex size-9 cursor-pointer items-center justify-center rounded-full border border-line bg-bg text-ink hover:border-ink/30 hover:bg-accent-soft [&_svg]:size-4 [&_svg]:fill-current",
+    "inline-flex size-9 cursor-pointer items-center justify-center rounded-full border border-line bg-bg text-ink hover:border-ink/30 hover:bg-accent-soft disabled:cursor-default disabled:opacity-40 disabled:hover:bg-bg [&_svg]:size-4 [&_svg]:fill-current",
   button_next:
-    "inline-flex size-9 cursor-pointer items-center justify-center rounded-full border border-line bg-bg text-ink hover:border-ink/30 hover:bg-accent-soft [&_svg]:size-4 [&_svg]:fill-current",
+    "inline-flex size-9 cursor-pointer items-center justify-center rounded-full border border-line bg-bg text-ink hover:border-ink/30 hover:bg-accent-soft disabled:cursor-default disabled:opacity-40 disabled:hover:bg-bg [&_svg]:size-4 [&_svg]:fill-current",
   weekdays: "mt-2 flex",
   weekday: "flex-1 py-1 text-center text-[11px] font-medium text-muted",
   week: "flex",
@@ -71,6 +71,8 @@ function CalendarPopover({
   onClose,
   disabled,
   defaultMonth,
+  years,
+  endMonth,
   children,
 }: {
   selected?: Date;
@@ -78,11 +80,15 @@ function CalendarPopover({
   onClose: () => void;
   disabled?: Matcher | Matcher[];
   defaultMonth?: Date;
+  years?: number[];
+  endMonth?: Date;
   children?: ReactNode;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
+  const initial = defaultMonth ?? selected ?? new Date();
+  const [month, setMonth] = useState(() => new Date(initial.getFullYear(), initial.getMonth(), 1));
 
   useEffect(() => {
     function onPointerDown(event: PointerEvent) {
@@ -96,6 +102,8 @@ function CalendarPopover({
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, []);
 
+  const startMonth = years ? new Date(years[years.length - 1]!, 0, 1) : undefined;
+
   return (
     <div
       ref={panelRef}
@@ -104,10 +112,52 @@ function CalendarPopover({
       <DayPicker
         mode="single"
         selected={selected}
-        defaultMonth={defaultMonth ?? selected}
+        month={years ? month : undefined}
+        onMonthChange={years ? setMonth : undefined}
+        defaultMonth={years ? undefined : defaultMonth ?? selected}
+        startMonth={startMonth}
+        endMonth={years ? endMonth : undefined}
         onSelect={onSelect}
         disabled={disabled}
-        classNames={dayPickerClassNames}
+        classNames={
+          years
+            ? {
+                ...dayPickerClassNames,
+                month_caption: "relative z-0 flex h-9 items-center justify-center",
+                nav: "pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between",
+                button_previous: `${dayPickerClassNames.button_previous} pointer-events-auto`,
+                button_next: `${dayPickerClassNames.button_next} pointer-events-auto`,
+              }
+            : dayPickerClassNames
+        }
+        components={
+          years
+            ? {
+                MonthCaption: ({ calendarMonth, displayIndex: _displayIndex, ...rest }) => (
+                  <div {...rest}>
+                    <span className="text-sm font-semibold text-ink">
+                      {calendarMonth.date.toLocaleString("en-US", { month: "long" })}
+                    </span>
+                    <select
+                      aria-label="Year"
+                      value={calendarMonth.date.getFullYear()}
+                      onChange={(event) => {
+                        const year = Number(event.target.value);
+                        setMonth(new Date(year, calendarMonth.date.getMonth(), 1));
+                      }}
+                      className="ml-2 h-8 cursor-pointer rounded-full border border-line bg-bg px-2.5 text-sm font-semibold text-ink"
+                    >
+                      {years.map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ),
+              }
+            : undefined
+        }
       />
       {children}
     </div>
@@ -286,6 +336,15 @@ function parseDay(value: string): Date | undefined {
   return Number.isNaN(date.getTime()) ? undefined : date;
 }
 
+function birthdayYears(selected: Date | undefined, max: Date | undefined) {
+  const end = (max ?? new Date()).getFullYear();
+  let start = end - 25;
+  if (selected && selected.getFullYear() < start) start = selected.getFullYear();
+  const years: number[] = [];
+  for (let year = end; year >= start; year -= 1) years.push(year);
+  return years;
+}
+
 function dayValue(date: Date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
@@ -304,6 +363,7 @@ export function DateField({
   const [open, setOpen] = useState(false);
   const selected = parseDay(value);
   const maxDate = max ? parseDay(max) : undefined;
+  const years = birthdayYears(selected, maxDate);
   const label = selected
     ? selected.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
     : placeholder;
@@ -322,6 +382,8 @@ export function DateField({
         <CalendarPopover
           selected={selected}
           defaultMonth={selected ?? maxDate}
+          years={years}
+          endMonth={maxDate ? new Date(maxDate.getFullYear(), maxDate.getMonth(), 1) : undefined}
           onClose={() => setOpen(false)}
           onSelect={(day) => {
             if (!day) return;
