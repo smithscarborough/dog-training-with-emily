@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { DayPicker, type Matcher } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { dayIsOpen, formatClock, nextOpenSlot, slotsForDate, type HoursDay } from "@/lib/hours";
@@ -80,26 +80,37 @@ function CalendarPopover({
   defaultMonth?: Date;
   children?: ReactNode;
 }) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+
+  useEffect(() => {
+    function onPointerDown(event: PointerEvent) {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (panelRef.current?.contains(target)) return;
+      if (target instanceof Element && target.closest("[data-calendar-trigger]")) return;
+      closeRef.current();
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, []);
+
   return (
-    <>
-      <button
-        type="button"
-        aria-label="Close calendar"
-        className="fixed inset-0 z-20 cursor-default bg-transparent"
-        onClick={onClose}
+    <div
+      ref={panelRef}
+      className="absolute z-30 mt-2 w-80 max-w-[calc(100vw-2.5rem)] rounded-xl border border-line bg-surface p-3 shadow-[0_12px_28px_-16px_rgba(44,24,16,0.35)]"
+    >
+      <DayPicker
+        mode="single"
+        selected={selected}
+        defaultMonth={defaultMonth ?? selected}
+        onSelect={onSelect}
+        disabled={disabled}
+        classNames={dayPickerClassNames}
       />
-      <div className="absolute z-30 mt-2 w-80 max-w-[calc(100vw-2.5rem)] rounded-xl border border-line bg-surface p-3 shadow-[0_12px_28px_-16px_rgba(44,24,16,0.35)]">
-        <DayPicker
-          mode="single"
-          selected={selected}
-          defaultMonth={defaultMonth ?? selected}
-          onSelect={onSelect}
-          disabled={disabled}
-          classNames={dayPickerClassNames}
-        />
-        {children}
-      </div>
-    </>
+      {children}
+    </div>
   );
 }
 
@@ -185,6 +196,7 @@ export function WhenPicker({
     <div className="relative">
       <button
         type="button"
+        data-calendar-trigger=""
         className={cn(
           "flex h-11 w-full items-center rounded-md border border-line bg-surface px-3 text-left text-base sm:text-sm",
           value ? "text-ink" : "text-[#a39284]",
@@ -300,6 +312,7 @@ export function DateField({
     <div className="relative">
       <button
         type="button"
+        data-calendar-trigger=""
         className="date-trigger flex h-12 w-full items-center rounded-md border border-line bg-surface px-3 text-left text-base text-ink shadow-[inset_0_1px_0_rgba(47,28,18,0.04)]"
         onClick={() => setOpen((current) => !current)}
       >
