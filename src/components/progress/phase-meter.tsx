@@ -50,7 +50,7 @@ export function PhaseLegend() {
     <div className="grid gap-8 sm:grid-cols-2 sm:gap-10">
       {groups.map((group) => (
         <section key={group.title}>
-          <h4 className="text-sm font-semibold tracking-[0.08em] text-accent-deep uppercase sm:text-base">{group.title}</h4>
+          <h4 className="text-sm font-bold tracking-[0.08em] text-accent-deep uppercase sm:text-base">{group.title}</h4>
           <ol className="relative mt-4">
             <span aria-hidden className="absolute top-3 bottom-3 left-[15px] w-px bg-line" />
             {group.items.map((phase) => (
