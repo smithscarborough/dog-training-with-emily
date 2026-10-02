@@ -354,11 +354,13 @@ export function DateField({
   onChange,
   max,
   placeholder = "mm/dd/yyyy",
+  className,
 }: {
   value: string;
   onChange: (value: string) => void;
   max?: string;
   placeholder?: string;
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   const selected = parseDay(value);
@@ -369,11 +371,14 @@ export function DateField({
     : placeholder;
 
   return (
-    <div className="relative">
+    <div className={cn("relative", open && "z-30")}>
       <button
         type="button"
         data-calendar-trigger=""
-        className="date-trigger flex h-12 w-full items-center rounded-md border border-line bg-surface px-3 text-left text-base text-ink shadow-[inset_0_1px_0_rgba(47,28,18,0.04)]"
+        className={cn(
+          "date-trigger flex h-12 w-full items-center rounded-md border border-line bg-surface px-3 text-left text-base text-ink shadow-[inset_0_1px_0_rgba(47,28,18,0.04)]",
+          className,
+        )}
         onClick={() => setOpen((current) => !current)}
       >
         <span className={selected ? "text-ink" : "text-[#a39284]"}>{label}</span>

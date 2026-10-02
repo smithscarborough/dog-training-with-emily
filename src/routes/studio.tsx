@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/ui/label";
-import { WhenPicker } from "@/components/portal/when-picker";
+import { DateField, WhenPicker } from "@/components/portal/when-picker";
 import { Input, Textarea } from "@/components/ui/input";
 import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
@@ -1680,7 +1680,12 @@ function PastVisits({ visits, onChange }: { visits: VisitDraft[]; onChange: (nex
                   ))}
                 </select>
               )}
-              <Input type="date" max={today} value={visit.date} onChange={(e) => patch(visit.key, { date: e.target.value })} />
+              <DateField
+                value={visit.date}
+                max={today}
+                onChange={(value) => patch(visit.key, { date: value })}
+                className="h-11 text-sm"
+              />
               <Input type="time" value={visit.time} onChange={(e) => patch(visit.key, { time: e.target.value })} />
             </div>
             <Field label="Recap, if you want them to see one" className="mt-2">
