@@ -25,6 +25,7 @@ import {
   setDogStatus,
   setDogBirthday,
   setVisibleSkills,
+  setupExistingClient,
   trainerCreateClient,
 } from "@/lib/server/dogs";
 import { listInquiries } from "@/lib/server/inquiries";
@@ -32,7 +33,6 @@ import { becomeTrainer, releaseStudio, updateStudioBanner, updateStudioContact, 
 import { getProgress, updateSkillProgress } from "@/lib/server/progress";
 import {
   listSessions,
-  logPastSession,
   requestSession,
   setSessionStatus,
   writeSessionRecap,
@@ -667,7 +667,9 @@ function Clients({
   onNotesOpened?: () => void;
 }) {
   const [q, setQ] = useState("");
-  const [showNew, setShowNew] = useState(false);
+  const [formMode, setFormMode] = useState<null | "new" | "existing">(null);
+  const [pastVisits, setPastVisits] = useState<VisitDraft[]>(() => [blankVisit("consult")]);
+  const [granted, setGranted] = useState<{ email: string; password: string | null; dogName: string } | null>(null);
   const [recentIds, setRecentIds] = useState<number[]>([]);
   const query = q.trim().toLowerCase();
   const filtered = dogs.filter((d) => {
@@ -689,30 +691,87 @@ function Clients({
     if (selected == null) return;
     setRecentIds(rememberClient(selected));
   }, [selected]);
-  const onboardForm = showNew ? (
-    <Card>
-      <CardHeader>
-        <CardTitle>Onboard</CardTitle>
-      </CardHeader>
-      <CardBody>
-        <IntakeForm
-          submitLabel="Create client"
-          onSubmit={async (data) => {
-            try {
-              const res = await trainerCreateClient({ data });
-              toast.success("Client on file.");
-              setShowNew(false);
-              onRefresh();
-              setSelected(res.id);
-            } catch (err) {
-              toast.error(err instanceof Error ? err.message : "Could not create.");
-              throw err;
-            }
-          }}
-        />
-      </CardBody>
-    </Card>
-  ) : null;
+  const onboardForm =
+    formMode === "new" ? (
+      <Card>
+        <CardHeader>
+          <CardTitle>Onboard</CardTitle>
+        </CardHeader>
+        <CardBody>
+          <IntakeForm
+            submitLabel="Create client"
+            onSubmit={async (data) => {
+              try {
+                const res = await trainerCreateClient({ data });
+                toast.success("Client on file.");
+                setFormMode(null);
+                onRefresh();
+                setSelected(res.id);
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Could not create.");
+                throw err;
+              }
+            }}
+          />
+        </CardBody>
+      </Card>
+    ) : formMode === "existing" ? (
+      <Card>
+        <CardHeader>
+          <CardTitle>A client you already work with</CardTitle>
+          <p className="text-sm text-muted">
+            Their consultation already happened. Add the household and the visits so far. I’ll make a login, and the portal will show that history. These visits do not take credits.
+          </p>
+        </CardHeader>
+        <CardBody>
+          {granted ? (
+            <GrantedLogin
+              email={granted.email}
+              password={granted.password}
+              dogName={granted.dogName}
+              onDone={() => {
+                setGranted(null);
+                setFormMode(null);
+              }}
+            />
+          ) : (
+            <IntakeForm
+              submitLabel="Create their account"
+              extra={
+                <PastVisits
+                  visits={pastVisits}
+                  onChange={setPastVisits}
+                />
+              }
+              onSubmit={async (data) => {
+                try {
+                  const visits = pastVisits.map((visit) => {
+                    if (!visit.date) throw new Error("Add a date for each visit.");
+                    const when = new Date(`${visit.date}T${visit.time || "10:00"}`);
+                    if (Number.isNaN(when.getTime()) || when.getTime() > Date.now()) {
+                      throw new Error("Use a date that has already passed.");
+                    }
+                    return {
+                      sessionType: visit.sessionType,
+                      scheduledAt: when.toISOString(),
+                      recap: visit.recap,
+                    };
+                  });
+                  const res = await setupExistingClient({ data: { intake: data, visits } });
+                  setGranted({ email: res.email, password: res.password, dogName: res.dogName });
+                  setPastVisits([blankVisit("consult")]);
+                  onRefresh();
+                  setSelected(res.id);
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : "Could not set up that client.");
+                  throw err;
+                }
+              }}
+            />
+          )}
+        </CardBody>
+      </Card>
+    ) : null;
 
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
@@ -725,9 +784,27 @@ function Clients({
           autoComplete="off"
           enterKeyHint="search"
         />
-        <Button variant="outline" className="mt-3 w-full" onClick={() => setShowNew((v) => !v)}>
-          {showNew ? "Close form" : "Onboard a client"}
+        <Button
+          variant="outline"
+          className="mt-3 w-full"
+          onClick={() => {
+            setGranted(null);
+            setFormMode((mode) => (mode === "new" ? null : "new"));
+          }}
+        >
+          {formMode === "new" ? "Close form" : "Onboard a client"}
         </Button>
+        <button
+          type="button"
+          className="mt-2 w-full px-1 text-left text-sm text-muted underline-offset-4 hover:text-ink hover:underline"
+          onClick={() => {
+            setGranted(null);
+            setPastVisits([blankVisit("consult")]);
+            setFormMode((mode) => (mode === "existing" ? null : "existing"));
+          }}
+        >
+          {formMode === "existing" ? "Close" : "A client I already work with"}
+        </button>
         {dogs.length === 0 ? (
           <p className="mt-3 text-sm text-muted">No clients yet.</p>
         ) : !query ? (
@@ -1075,9 +1152,6 @@ function ClientDetail({
           </div>
           <div className="mt-4">
             <TrainerBook dog={dog} onBooked={() => {
-              void listSessions({ data: { dogId: dog.id } }).then(setSessions);
-            }} />
-            <LogPastVisit dog={dog} onLogged={() => {
               void listSessions({ data: { dogId: dog.id } }).then(setSessions);
             }} />
           </div>
@@ -1548,98 +1622,125 @@ function TrainerBook({ dog, onBooked }: { dog: DogRow; onBooked: () => void }) {
   );
 }
 
-function LogPastVisit({ dog, onLogged }: { dog: DogRow; onLogged: () => void }) {
-  const [open, setOpen] = useState(false);
-  const [sessionType, setSessionType] = useState(SESSION_TYPES[0]!.id);
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("10:00");
-  const [recap, setRecap] = useState("");
-  const [homework, setHomework] = useState("");
-  const [busy, setBusy] = useState(false);
+function blankVisit(sessionType: "consult" | "hour" | "two_hour"): VisitDraft {
+  return { key: crypto.randomUUID(), sessionType, date: "", time: "10:00", recap: "" };
+}
+
+type VisitDraft = {
+  key: string;
+  sessionType: "consult" | "hour" | "two_hour";
+  date: string;
+  time: string;
+  recap: string;
+};
+
+function PastVisits({ visits, onChange }: { visits: VisitDraft[]; onChange: (next: VisitDraft[]) => void }) {
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-
-  if (!open) {
-    return (
+  function patch(key: string, next: Partial<VisitDraft>) {
+    onChange(visits.map((visit) => (visit.key === key ? { ...visit, ...next } : visit)));
+  }
+  return (
+    <section className="space-y-4">
+      <h2 className="font-display text-2xl text-ink after:mt-2 after:block after:h-0.5 after:w-8 after:bg-accent after:content-['']">
+        Visits so far
+      </h2>
+      <p className="text-sm text-muted">
+        Start with the consultation, then add the sessions after it. Skill scores stay blank until you set them on the client.
+      </p>
+      <div className="space-y-3">
+        {visits.map((visit, index) => (
+          <div key={visit.key} className="rounded-lg bg-bg p-3">
+            <div className="grid gap-2 sm:grid-cols-3">
+              {index === 0 ? (
+                <p className="flex h-11 items-center text-sm font-semibold text-ink">Initial consultation</p>
+              ) : (
+                <select
+                  className="h-11 rounded-md border border-line bg-surface px-3 text-sm"
+                  value={visit.sessionType}
+                  onChange={(e) => patch(visit.key, { sessionType: e.target.value as VisitDraft["sessionType"] })}
+                >
+                  {SESSION_TYPES.filter((type) => type.id !== "consult").map((type) => (
+                    <option key={type.id} value={type.id}>
+                      {type.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+              <Input type="date" max={today} value={visit.date} onChange={(e) => patch(visit.key, { date: e.target.value })} />
+              <Input type="time" value={visit.time} onChange={(e) => patch(visit.key, { time: e.target.value })} />
+            </div>
+            <Field label="Recap, if you want them to see one" className="mt-2">
+              <Textarea grow value={visit.recap} onChange={(e) => patch(visit.key, { recap: e.target.value })} />
+            </Field>
+            {index > 0 ? (
+              <button
+                type="button"
+                className="mt-2 text-sm text-muted underline-offset-4 hover:text-ink hover:underline"
+                onClick={() => onChange(visits.filter((row) => row.key !== visit.key))}
+              >
+                Remove
+              </button>
+            ) : null}
+          </div>
+        ))}
+      </div>
       <button
         type="button"
-        className="mt-3 text-sm text-muted underline-offset-4 hover:text-ink hover:underline"
-        onClick={() => setOpen(true)}
+        className="text-sm font-medium text-accent-deep underline-offset-4 hover:underline"
+        onClick={() => onChange([...visits, blankVisit("hour")])}
       >
-        Log a visit that already happened
+        Add another visit
       </button>
-    );
-  }
+    </section>
+  );
+}
 
+function GrantedLogin({
+  email,
+  password,
+  dogName,
+  onDone,
+}: {
+  email: string;
+  password: string | null;
+  dogName: string;
+  onDone: () => void;
+}) {
   return (
-    <div className="mt-4 rounded-lg bg-bg p-3">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-semibold text-ink">A visit from before the portal</p>
-        <button
-          type="button"
-          className="text-sm text-muted underline-offset-4 hover:text-ink hover:underline"
-          onClick={() => setOpen(false)}
-        >
-          Close
-        </button>
-      </div>
-      <p className="mt-1 text-xs leading-relaxed text-muted">
-        The client will see it as completed. It does not take a credit.
+    <div className="space-y-3">
+      <p className="text-sm text-ink">
+        {dogName} is on file, with those visits marked completed. They sign in on the Log in page.
       </p>
-      <div className="mt-3 grid gap-2 sm:grid-cols-3">
-        <select
-          className="h-11 rounded-md border border-line bg-surface px-3 text-sm"
-          value={sessionType}
-          onChange={(e) => setSessionType(e.target.value as typeof sessionType)}
+      <div className="rounded-lg bg-bg p-3">
+        <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted">Email</p>
+        <p className="mt-1 text-base text-ink">{email}</p>
+        {password ? (
+          <>
+            <p className="mt-3 text-xs font-medium uppercase tracking-[0.12em] text-muted">Password</p>
+            <p className="mt-1 font-mono text-lg text-ink">{password}</p>
+          </>
+        ) : (
+          <p className="mt-3 text-sm text-muted">
+            This email already has a password. The dog is linked to that login. They use the password they already chose.
+          </p>
+        )}
+      </div>
+      {password ? (
+        <Button
+          size="sm"
+          onClick={() => {
+            void navigator.clipboard.writeText(`Email: ${email}\nPassword: ${password}`).then(() => {
+              toast.success("Login copied.");
+            });
+          }}
         >
-          {SESSION_TYPES.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
-        <Input type="date" max={today} value={date} onChange={(e) => setDate(e.target.value)} />
-        <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
-      </div>
-      <div className="mt-2 grid gap-2 sm:grid-cols-2">
-        <Field label="Recap (client can see)">
-          <Textarea grow value={recap} onChange={(e) => setRecap(e.target.value)} />
-        </Field>
-        <Field label="Homework (client can see)">
-          <Textarea grow value={homework} onChange={(e) => setHomework(e.target.value)} />
-        </Field>
-      </div>
-      <Button
-        size="sm"
-        className="mt-3"
-        disabled={busy || !date || !time}
-        onClick={() => {
-          if (busy || !date || !time) return;
-          setBusy(true);
-          void logPastSession({
-            data: {
-              dogId: dog.id,
-              sessionType,
-              scheduledAt: new Date(`${date}T${time}`).toISOString(),
-              recap,
-              homework,
-            },
-          })
-            .then(() => {
-              toast.success("Past visit logged.");
-              setDate("");
-              setRecap("");
-              setHomework("");
-              setOpen(false);
-              onLogged();
-            })
-            .catch((err: unknown) =>
-              toast.error(err instanceof Error ? err.message : "Could not log that visit."),
-            )
-            .finally(() => setBusy(false));
-        }}
-      >
-        {busy ? "Saving…" : "Log visit"}
+          Copy login
+        </Button>
+      ) : null}
+      <p className="text-sm text-muted">Save this password now. It is not shown again. Skill scores are still blank until you set them.</p>
+      <Button size="sm" variant="ghost" onClick={onDone}>
+        Done
       </Button>
     </div>
   );

@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
-import { SESSION_TYPES, consultHasHappened, sessionTypeById } from "@/lib/catalog";
+import { consultHasHappened, sessionTypeById } from "@/lib/catalog";
 import type { SessionRow } from "@/lib/types";
 import { assertDogAccess, loadStudio, requireTrainer, stripPrivate } from "./helpers";
 import { isWithinHours, parseHours } from "@/lib/hours";
@@ -76,32 +76,6 @@ export const requestSession = createServerFn({ method: "POST" })
       ) returning id
     `;
     return { id: inserted[0]?.id, status };
-  });
-
-export const logPastSession = createServerFn({ method: "POST" })
-  .validator(
-    (data: { dogId: number; sessionType: string; scheduledAt: string; recap: string; homework: string }) => data,
-  )
-  .middleware([authMiddleware])
-  .handler(async ({ context, data }) => {
-    await requireTrainer(context.userId);
-    const dog = await assertDogAccess(context.userId, data.dogId);
-    const type = SESSION_TYPES.find((item) => item.id === data.sessionType);
-    if (!type) throw new Error("Pick a session type.");
-    const when = new Date(data.scheduledAt);
-    if (Number.isNaN(when.getTime())) throw new Error("Pick a date and time.");
-    if (when.getTime() > Date.now()) throw new Error("That time hasn’t happened yet. Book it instead.");
-    const sql = await getSql();
-    await sql`
-      insert into sessions (
-        dog_id, owner_user_id, session_type, scheduled_at, duration_min, status, location,
-        owner_notes, recap, homework
-      ) values (
-        ${dog.id}, ${dog.owner_user_id}, ${type.id}, ${when.toISOString()}, ${type.minutes},
-        'completed', ${dog.address}, '', ${data.recap.trim()}, ${data.homework.trim()}
-      )
-    `;
-    return { ok: true };
   });
 
 export const setSessionStatus = createServerFn({ method: "POST" })

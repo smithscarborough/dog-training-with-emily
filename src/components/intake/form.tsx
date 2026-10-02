@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/label";
 import { Input, Textarea } from "@/components/ui/input";
@@ -129,11 +129,13 @@ export function IntakeForm({
   submitLabel,
   onSubmit,
   hours,
+  extra,
 }: {
   initial?: Partial<IntakeInput>;
   submitLabel: string;
   onSubmit: (data: IntakeInput) => Promise<void>;
   hours?: HoursDay[];
+  extra?: ReactNode;
 }) {
   const [form, setForm] = useState<IntakeInput>({ ...empty, ...initial });
   const startingReferral = referralChoice(initial?.referral_source ?? "");
@@ -512,6 +514,8 @@ export function IntakeForm({
           ) : null}
         </fieldset>
       </section>
+
+      {extra}
 
       <div className="relative flex justify-center">
         <Button

@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
+import { hashPassword } from "better-auth/crypto";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
-import { CATALOG } from "@/lib/catalog";
+import { CATALOG, SESSION_TYPES } from "@/lib/catalog";
 import type { DogRow } from "@/lib/types";
 import { assertDogAccess, loadStudio, requireTrainer, stripPrivate } from "./helpers";
 import { seedProgressForDog } from "./progress-seed";
@@ -169,6 +170,105 @@ export const trainerCreateClient = createServerFn({ method: "POST" })
     if (!id) throw new Error("Could not create client.");
     await seedProgressForDog(id);
     return { id };
+  });
+
+type PastVisitInput = { sessionType: string; scheduledAt: string; recap: string };
+
+function temporaryPassword() {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+  const bytes = crypto.getRandomValues(new Uint8Array(10));
+  return Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join("");
+}
+
+export const setupExistingClient = createServerFn({ method: "POST" })
+  .validator((data: { intake: IntakeInput; visits: PastVisitInput[] }) => data)
+  .middleware([authMiddleware])
+  .handler(async ({ context, data }) => {
+    await requireTrainer(context.userId);
+    const intake = cleanIntake(data.intake);
+    await assertPreferred(intake.preferred_at);
+    const studio = await loadStudio();
+    const visits = (data.visits ?? []).map((visit) => {
+      const type = SESSION_TYPES.find((item) => item.id === visit.sessionType);
+      if (!type) throw new Error("Pick a session type.");
+      const when = new Date(visit.scheduledAt);
+      if (Number.isNaN(when.getTime())) throw new Error("Add a date for each visit.");
+      if (when.getTime() > Date.now()) throw new Error("These visits already happened. Use a past date.");
+      return { type, when, recap: (visit.recap ?? "").trim() };
+    });
+    if (!visits.some((visit) => visit.type.id === "consult")) {
+      throw new Error("Include the initial consultation. These clients already had it.");
+    }
+    const email = formatEmail(intake.owner_email);
+    const sql = await getSql();
+    const trainer = await sql<{ email: string | null }>`select email from "user" where id = ${studio.owner_user_id}`;
+    if (trainer[0]?.email && formatEmail(trainer[0].email) === email) {
+      throw new Error("Use the client’s email, not yours.");
+    }
+
+    const existing = await sql<{ id: string }>`select id from "user" where lower(email) = ${email}`;
+    let userId = existing[0]?.id ?? null;
+    let password: string | null = null;
+    let createdUser = false;
+    if (!userId) {
+      userId = crypto.randomUUID();
+      password = temporaryPassword();
+      const hash = await hashPassword(password);
+      const now = new Date().toISOString();
+      await sql`
+        insert into "user" (id, name, email, "emailVerified", image, "createdAt", "updatedAt")
+        values (${userId}, ${intake.owner_name}, ${email}, true, null, ${now}, ${now})
+      `;
+      await sql`
+        insert into "account" (
+          id, "accountId", "providerId", "userId", password, "createdAt", "updatedAt"
+        ) values (
+          ${crypto.randomUUID()}, ${userId}, 'credential', ${userId}, ${hash}, ${now}, ${now}
+        )
+      `;
+      createdUser = true;
+    }
+
+    let dogId = 0;
+    try {
+      const inserted = await sql<{ id: number }>`
+        insert into dogs (
+          owner_user_id, owner_name, owner_email, owner_phone, address,
+          name, breed, age_text, birthday, weight_text, allergies, sex, spayed_neutered,
+          goals_json, goals_other, dislikes, past_experiences, physical_limitations,
+          household, other_pets, kids_in_home, vet_info, preferred_days, referral_source,
+          preferred_at, photo_url, status
+        ) values (
+          ${userId}, ${intake.owner_name}, ${email}, ${intake.owner_phone}, ${intake.address},
+          ${intake.name}, ${intake.breed}, ${intake.age_text}, ${intake.birthday}, ${intake.weight_text}, ${intake.allergies},
+          ${intake.sex}, ${intake.spayed_neutered},
+          ${JSON.stringify(intake.goals)}, ${intake.goals_other}, ${intake.dislikes}, ${intake.past_experiences},
+          ${intake.physical_limitations}, ${intake.household}, ${intake.other_pets}, ${intake.kids_in_home},
+          ${intake.vet_info}, ${intake.preferred_days}, ${intake.referral_source},
+          ${intake.preferred_at}, ${intake.photo_url}, 'active'
+        ) returning id
+      `;
+      dogId = inserted[0]?.id ?? 0;
+      if (!dogId) throw new Error("Could not create client.");
+      for (const visit of visits) {
+        await sql`
+          insert into sessions (
+            dog_id, owner_user_id, session_type, scheduled_at, duration_min, status, location,
+            owner_notes, recap, homework, credit_applied
+          ) values (
+            ${dogId}, ${userId}, ${visit.type.id}, ${visit.when.toISOString()}, ${visit.type.minutes},
+            'completed', ${intake.address}, '', ${visit.recap}, '', false
+          )
+        `;
+      }
+      await seedProgressForDog(dogId);
+    } catch (err) {
+      if (createdUser && userId) await sql`delete from "user" where id = ${userId}`;
+      if (dogId) await sql`delete from dogs where id = ${dogId}`;
+      throw err;
+    }
+
+    return { id: dogId, email, password, dogName: intake.name };
   });
 
 export const getDog = createServerFn({ method: "GET" })
