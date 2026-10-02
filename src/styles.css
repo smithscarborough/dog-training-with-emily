@@ -22,8 +22,8 @@
   --color-danger: #9b3a2f;
   --color-ok: #3d6b45;
 
-  --font-logo: "Fraunces", "Iowan Old Style", Palatino, Georgia, serif;
-  --font-display: "Fraunces", "Iowan Old Style", Palatino, Georgia, serif;
+  --font-logo: "Lora", Georgia, "Iowan Old Style", Palatino, serif;
+  --font-display: "Lora", Georgia, "Iowan Old Style", Palatino, serif;
   --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
   --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
 
