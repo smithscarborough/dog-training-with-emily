@@ -796,14 +796,27 @@ function Clients({
         </Button>
         <button
           type="button"
-          className="mt-2 w-full px-1 text-left text-sm text-muted underline-offset-4 hover:text-ink hover:underline"
+          className={cn(
+            "mt-2 w-full rounded-md border border-line-strong bg-bg px-3 py-2.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_1px_0_rgba(44,24,16,0.04)] transition-[transform,background-color,border-color,box-shadow] duration-150 ease-out",
+            "hover:-translate-y-px hover:border-ink/30 hover:bg-surface",
+            "active:translate-y-px active:shadow-[inset_0_1px_2px_rgba(44,24,16,0.08)]",
+            "focus-visible:outline-none focus-visible:[box-shadow:0_0_0_3px_color-mix(in_oklab,var(--color-accent)_35%,transparent)]",
+            formMode === "existing" && "border-ink/25 bg-surface",
+          )}
           onClick={() => {
             setGranted(null);
             setPastVisits([blankVisit("consult")]);
             setFormMode((mode) => (mode === "existing" ? null : "existing"));
           }}
         >
-          {formMode === "existing" ? "Close" : "A client I already work with"}
+          <span className="block text-sm font-semibold text-ink">
+            {formMode === "existing" ? "Close" : "A client I already work with"}
+          </span>
+          {formMode === "existing" ? null : (
+            <span className="mt-0.5 block text-xs leading-snug text-muted">
+              Their consult already happened. Add the visits and a login.
+            </span>
+          )}
         </button>
         {dogs.length === 0 ? (
           <p className="mt-3 text-sm text-muted">No clients yet.</p>
