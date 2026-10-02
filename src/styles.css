@@ -22,10 +22,10 @@
   --color-danger: #9b3a2f;
   --color-ok: #3d6b45;
 
-  --font-logo: "Nunito", "Segoe UI", system-ui, sans-serif;
-  --font-display: "Nunito", "Segoe UI", system-ui, sans-serif;
-  --font-sans: "Nunito", "Segoe UI", system-ui, sans-serif;
-  --font-body: "Nunito", "Segoe UI", system-ui, sans-serif;
+  --font-logo: "Fraunces", "Iowan Old Style", Palatino, Georgia, serif;
+  --font-display: "Fraunces", "Iowan Old Style", Palatino, Georgia, serif;
+  --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
 
   --radius-xs: 4px;
   --radius-sm: 8px;
@@ -80,7 +80,7 @@
   h4 {
     font-family: var(--font-display);
     text-wrap: balance;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.015em;
     color: var(--color-ink);
     font-weight: 700;
   }
