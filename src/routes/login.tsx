@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { EspressoBanner } from "@/components/layout/espresso-banner";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { GROK_PROVIDERS, authClient, authEnabled, signIn } from "@/lib/auth/client";
 import { QA_ADMIN } from "@/lib/qa-admin";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
-import { becomeTrainer } from "@/lib/server/me";
+import { becomeTrainer, getMe } from "@/lib/server/me";
+import { primeMe } from "@/lib/use-me";
 import { seedDemoIfNeeded } from "@/lib/server/seed-demo-fn";
 
 export const Route = createFileRoute("/login")({
@@ -32,11 +33,12 @@ function PawPrint() {
 
 function LoginPage() {
   const { as } = Route.useSearch();
+  const [handoff, setHandoff] = useState(false);
   useEffect(() => {
     void seedDemoIfNeeded().catch(() => undefined);
   }, []);
   return (
-    <div className="min-h-dvh">
+    <div data-login-root className="min-h-dvh">
       <EspressoBanner kicker="Emily — studio">
         For testing, use <span className="font-semibold text-accent-soft">Sign in as Emily</span>.
         Studio code <span className="font-semibold text-accent-soft">TEDDY</span> still works.
@@ -73,25 +75,39 @@ function LoginPage() {
           <span className="font-semibold text-ink">TEDDY</span>.
         </p>
         <div className="mx-auto mt-10 w-full max-w-md text-left">
-          <LoginAuth preferStudio={as === "trainer"} />
+          <LoginAuth preferStudio={as === "trainer"} handoff={handoff} setHandoff={setHandoff} />
         </div>
       </main>
     </div>
   );
 }
 
-function LoginAuth({ preferStudio }: { preferStudio: boolean }) {
+function LoginAuth({
+  preferStudio,
+  handoff,
+  setHandoff,
+}: {
+  preferStudio: boolean;
+  handoff: boolean;
+  setHandoff: (hold: boolean) => void;
+}) {
   const { user, isPending } = useCurrentUserState();
   const shown = useRef<"in" | "out" | null>(null);
   if (!isPending) shown.current = user ? "in" : "out";
   const state = isPending ? shown.current : user ? "in" : "out";
 
-  if (state === "in") return <AlreadyIn preferStudio={preferStudio} />;
-  if (state === "out") return <AuthCard preferStudio={preferStudio} />;
+  if (state === "in" && !handoff) return <AlreadyIn preferStudio={preferStudio} setHandoff={setHandoff} />;
+  if (state === "out" || handoff) return <AuthCard preferStudio={preferStudio} setHandoff={setHandoff} />;
   return null;
 }
 
-function AlreadyIn({ preferStudio }: { preferStudio: boolean }) {
+function AlreadyIn({
+  preferStudio,
+  setHandoff,
+}: {
+  preferStudio: boolean;
+  setHandoff: (hold: boolean) => void;
+}) {
   useLayoutEffect(() => {
     const scroller = document.getElementById("app-scroll");
     const card = document.getElementById("signed-in-card");
@@ -114,7 +130,7 @@ function AlreadyIn({ preferStudio }: { preferStudio: boolean }) {
           Open your portal, or the studio if you train here.
         </p>
         <div className="flex flex-wrap gap-2">
-          <QaEmilyButton />
+          <QaEmilyButton setHandoff={setHandoff} />
           <Button asChild>
             <Link to={preferStudio ? "/studio" : "/portal"}>
               {preferStudio ? "Open trainer studio" : "Open portal"}
@@ -131,23 +147,26 @@ function AlreadyIn({ preferStudio }: { preferStudio: boolean }) {
   );
 }
 
-function QaEmilyButton() {
+function QaEmilyButton({ setHandoff }: { setHandoff: (hold: boolean) => void }) {
   const [busy, setBusy] = useState(false);
+  const router = useRouter();
 
   async function go() {
     if (!authEnabled) return;
     setBusy(true);
+    setHandoff(true);
     try {
       await seedDemoIfNeeded();
       await authClient.signOut().catch(() => undefined);
-      const { error } = await authClient.signIn.email({
+      const { data, error } = await authClient.signIn.email({
         email: QA_ADMIN.email,
         password: QA_ADMIN.password,
       });
-      if (error) throw new Error(error.message ?? "Could not sign in.");
-      toast.success("Signed in as Emily.");
-      window.location.assign("/studio");
+      if (error || !data?.user) throw new Error(error?.message ?? "Could not sign in.");
+      primeMe(data.user.id, await getMe());
+      await openSignedIn(router, "/studio");
     } catch (err) {
+      setHandoff(false);
       toast.error(err instanceof Error ? err.message : "Could not open the studio.");
     } finally {
       setBusy(false);
@@ -161,7 +180,21 @@ function QaEmilyButton() {
   );
 }
 
-function AuthCard({ preferStudio }: { preferStudio: boolean }) {
+function openSignedIn(router: ReturnType<typeof useRouter>, to: "/studio" | "/portal") {
+  const page = document.querySelector("[data-login-root]");
+  if (page instanceof HTMLElement) page.style.visibility = "hidden";
+  const scroller = document.getElementById("app-scroll");
+  if (scroller) scroller.scrollTop = 0;
+  return router.navigate({ to });
+}
+
+function AuthCard({
+  preferStudio,
+  setHandoff,
+}: {
+  preferStudio: boolean;
+  setHandoff: (hold: boolean) => void;
+}) {
   const [mode, setMode] = useState<"in" | "up">("in");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -169,43 +202,49 @@ function AuthCard({ preferStudio }: { preferStudio: boolean }) {
   const [pin, setPin] = useState(preferStudio ? "TEDDY" : "");
   const [busy, setBusy] = useState(false);
   const [paws, setPaws] = useState(0);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (!authEnabled) return;
     setBusy(true);
+    setHandoff(true);
+    let signedInId = "";
     try {
       if (mode === "up") {
-        const { error } = await authClient.signUp.email({
+        const { data, error } = await authClient.signUp.email({
           email: email.trim(),
           password,
           name: name.trim() || email.split("@")[0]!,
         });
-        if (error) throw new Error(error.message ?? "Could not create account.");
+        if (error || !data?.user) throw new Error(error?.message ?? "Could not create account.");
+        signedInId = data.user.id;
       } else {
-        const { error } = await authClient.signIn.email({
+        const { data, error } = await authClient.signIn.email({
           email: email.trim(),
           password,
         });
-        if (error) throw new Error(error.message ?? "Could not sign in.");
+        if (error || !data?.user) throw new Error(error?.message ?? "Could not sign in.");
+        signedInId = data.user.id;
       }
       const code = pin.trim();
+      let to: "/studio" | "/portal" = "/portal";
       if (code) {
         try {
           await becomeTrainer({ data: { pin: code } });
           toast.success("Studio is yours.");
-          await navigate({ to: "/studio" });
-          return;
+          to = "/studio";
         } catch (err) {
           toast.error(err instanceof Error ? err.message : "Studio code didn’t match.");
-          await navigate({ to: "/studio" });
-          return;
+          to = "/studio";
         }
+      } else {
+        toast.success(mode === "up" ? "Account created." : "Welcome back.");
       }
-      toast.success(mode === "up" ? "Account created." : "Welcome back.");
-      await navigate({ to: "/portal" });
+      primeMe(signedInId, await getMe());
+      await openSignedIn(router, to);
     } catch (err) {
+      setHandoff(false);
       toast.error(err instanceof Error ? err.message : "Sign-in failed.");
     } finally {
       setBusy(false);
@@ -215,7 +254,7 @@ function AuthCard({ preferStudio }: { preferStudio: boolean }) {
   return (
     <Card className="bg-white">
       <CardBody className="space-y-5">
-        <QaEmilyButton />
+        <QaEmilyButton setHandoff={setHandoff} />
         <div className="flex rounded-md bg-ink p-1">
           {(["in", "up"] as const).map((m) => (
             <button
