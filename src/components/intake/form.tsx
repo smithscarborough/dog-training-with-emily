@@ -496,8 +496,12 @@ export function IntakeForm({
             </label>
           ) : null}
           {heard === "Other" ? (
-            <Input
-              className="mt-3"
+            <Textarea
+              grow
+              growMin={48}
+              growMax={240}
+              rows={1}
+              className="mt-3 [&_textarea]:!min-h-0"
               value={heardOther}
               onChange={(e) => {
                 setHeardOther(e.target.value);

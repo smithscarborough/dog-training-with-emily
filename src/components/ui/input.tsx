@@ -61,7 +61,7 @@ function GrowingTextarea({
         ref={area}
         {...props}
         style={{ minHeight: growMin, maxHeight: growMax }}
-        className="block w-full resize-none overflow-y-auto border-0 bg-transparent px-3 py-2.5 text-base leading-relaxed text-ink outline-none placeholder:text-[#a39284] [field-sizing:content] sm:text-sm"
+        className="block w-full resize-none overflow-y-auto border-0 bg-transparent px-3 py-2.5 text-base leading-relaxed text-ink outline-none [overflow-wrap:anywhere] placeholder:text-[#a39284] [field-sizing:content] sm:text-sm"
       />
     </div>
   );
