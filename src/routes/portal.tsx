@@ -283,7 +283,7 @@ function ReferralNotice({ gifts }: { gifts: DogRow["referral_gifts"] }) {
   }, [notes]);
   if (!notes.length) return null;
   return (
-    <div className="rounded-2xl border border-line bg-pearl px-5 py-4">
+    <div className="mx-auto max-w-lg rounded-2xl border border-line bg-pearl px-6 py-5 text-center">
       <p className="text-xs font-bold uppercase tracking-wide text-accent-deep">A free hour</p>
       <ul className="mt-2 space-y-1.5">
         {notes.map((gift) => (
