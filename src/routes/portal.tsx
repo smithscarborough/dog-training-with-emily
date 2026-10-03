@@ -25,6 +25,7 @@ import { notifyEmilyNote, notifyEmilyCancel } from "@/lib/notify-studio";
 import { NoteThread } from "@/components/portal/note-thread";
 import type { CheckinRow, DogRow, ProgressLogRow, ProgressRow, SessionRow, MessageRow } from "@/lib/types";
 import { WhenPicker, DateField } from "@/components/portal/when-picker";
+import { AvailabilityFields } from "@/components/forms/availability";
 import { formatUsPhone } from "@/lib/phone";
 import { formatUsAddress } from "@/lib/address";
 import { formatEmail, formatProperName, formatSentenceStart } from "@/lib/text";
@@ -1066,19 +1067,26 @@ function SessionsTab({
           <CardTitle>Request a session</CardTitle>
         </CardHeader>
         <CardBody className="space-y-3">
-          <Field label="Type">
-            <select
-              className="h-11 w-full rounded-md border border-line bg-surface px-3 text-sm"
-              value={requestType}
-              onChange={(e) => setSessionType(e.target.value as typeof sessionType)}
-            >
-              {typeOptions.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} · {dollars(s.price)}
-                </option>
-              ))}
-            </select>
-          </Field>
+          <fieldset>
+            <legend className="text-sm font-bold text-[#1a0e0a]">Type</legend>
+            <div role="radiogroup" aria-label="Session type" className="mt-2 flex flex-wrap gap-2">
+              {typeOptions.map((s) => {
+                const on = requestType === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    onClick={() => setSessionType(s.id)}
+                    className={cn("chip-3d rounded-full px-3 py-2 text-sm", on && "is-on")}
+                  >
+                    {s.name} · {dollars(s.price)}
+                  </button>
+                );
+              })}
+            </div>
+          </fieldset>
           {hadConsult ? null : (
             <p className="-mt-1 text-sm leading-relaxed text-muted">
               The first visit is the consult. The longer sessions open after that.
@@ -1620,14 +1628,11 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
                   placeholder="None, or ages 4 and 7"
                 />
               </Field>
-              <Field label="Days that usually work">
-                <Input
-                  value={draft.preferred_days}
-                  onChange={(e) => patch("preferred_days", e.target.value)}
-                  onBlur={(e) => patch("preferred_days", formatSentenceStart(e.target.value))}
-                  placeholder="Tue / Thu after 4, weekend morning"
-                />
-              </Field>
+              <AvailabilityFields
+                compact
+                value={draft.preferred_days}
+                onChange={(value) => patch("preferred_days", value)}
+              />
             </>
           ) : (
             <>
