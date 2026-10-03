@@ -38,7 +38,7 @@ import {
   writeSessionRecap,
 } from "@/lib/server/sessions";
 import { listCheckins } from "@/lib/server/checkins";
-import { listMessages, listPendingNotes } from "@/lib/server/messages";
+import { dismissRetractedNotes, listMessages, listPendingNotes } from "@/lib/server/messages";
 import { NoteThread, TrainerReply } from "@/components/portal/note-thread";
 import type { CheckinRow, DogRow, InquiryRow, MessageRow, ProgressRow, SessionRow } from "@/lib/types";
 import { useMe } from "@/lib/use-me";
@@ -204,9 +204,9 @@ function StudioApp({
               )}
             >
               {label}
-              {id === "inbox" && waiting.length > 0 ? (
+              {id === "inbox" && waiting.some((note) => !note.removed_at) ? (
                 <span className="ml-1 inline-flex min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-bold text-ink">
-                  {waiting.length}
+                  {waiting.filter((note) => !note.removed_at).length}
                 </span>
               ) : null}
             </button>
@@ -244,7 +244,12 @@ function StudioApp({
               onRefresh={onRefresh}
               onNotes={refreshWaiting}
               focusNotes={noteFocus != null && noteFocus === selected}
-              onNotesOpened={() => setNoteFocus(null)}
+              onNotesOpened={() => {
+                if (selected != null) {
+                  void dismissRetractedNotes({ data: { dogId: selected } }).then(() => refreshWaiting());
+                }
+                setNoteFocus(null);
+              }}
               focusCheckin={checkinFocus}
               onCheckinOpened={() => setCheckinFocus(null)}
             />
@@ -370,17 +375,19 @@ function Board({
     .sort((a, b) => +new Date(b.updated_at) - +new Date(a.updated_at))
     .slice(0, 6);
   const pending = dogs.filter((d) => d.status === "pending");
+  const replies = waiting.filter((note) => !note.removed_at);
+  const retracted = waiting.filter((note) => note.removed_at);
   const birthdays = upcomingBirthdays(dogs);
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      {waiting.length > 0 ? (
+      {replies.length > 0 || retracted.length > 0 ? (
         <Card className="order-4">
           <CardHeader>
-            <CardTitle>Needs a reply</CardTitle>
+            <CardTitle>{replies.length > 0 ? "Needs a reply" : "Notes"}</CardTitle>
           </CardHeader>
           <CardBody className="space-y-3">
-            {waiting.map((note) => (
+            {replies.map((note) => (
               <button
                 key={note.id}
                 type="button"
@@ -395,6 +402,23 @@ function Board({
                   <span className="mt-1.5 block text-sm leading-relaxed text-ink">{note.body}</span>
                 </span>
                 <Badge tone="accent" className="shrink-0">New</Badge>
+              </button>
+            ))}
+            {retracted.map((note) => (
+              <button
+                key={note.id}
+                type="button"
+                className="flex w-full items-start justify-between gap-3 rounded-lg px-3 py-3 text-left hairline transition-colors hover:bg-bg"
+                onClick={() => onReply(note.dog_id)}
+              >
+                <span className="min-w-0">
+                  <span className="block font-semibold text-ink">{note.dog_name}</span>
+                  <span className="mt-0.5 block text-xs text-muted">
+                    {note.owner_name} · {formatWhen(note.removed_at || note.created_at)}
+                  </span>
+                  <span className="mt-1.5 block text-sm italic leading-relaxed text-muted">They took this note back.</span>
+                </span>
+                <Badge tone="muted" className="shrink-0">Removed</Badge>
               </button>
             ))}
           </CardBody>
@@ -2513,19 +2537,20 @@ function Inbox({
       return digits.length >= 3 && phoneDigits(row.phone).includes(digits);
     });
   }, [rows, q]);
+  const replies = waiting.filter((note) => !note.removed_at);
   return (
     <div className="grid items-start gap-10 xl:grid-cols-2 xl:gap-8">
       <section className="min-w-0 max-w-2xl space-y-3 xl:max-w-none">
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="font-display text-2xl tracking-tight">From clients</h2>
-          {waiting.length > 0 ? (
-            <p className="text-sm tabular-nums text-muted">{waiting.length} waiting</p>
+          {replies.length > 0 ? (
+            <p className="text-sm tabular-nums text-muted">{replies.length} waiting</p>
           ) : null}
         </div>
-        {waiting.length === 0 ? (
+        {replies.length === 0 ? (
           <p className="text-sm text-muted">No notes waiting on a reply.</p>
         ) : (
-          waiting.map((note) => (
+          replies.map((note) => (
             <Card key={note.id}>
               <CardBody className="space-y-4">
                 <button type="button" className="flex w-full items-start justify-between gap-3 text-left" onClick={() => onOpen(note.dog_id)}>

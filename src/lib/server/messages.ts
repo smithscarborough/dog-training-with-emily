@@ -72,23 +72,12 @@ export const deleteOwnNote = createServerFn({ method: "POST" })
     if (!message) throw new Error("Not found");
     if (message.author !== "client") throw new Error("You can only remove your own notes.");
     if (message.removed_at) return { ok: true, kept: true };
-    const replied = await sql<{ id: number }>`
-      select id from messages
-      where dog_id = ${message.dog_id}
-        and author = 'trainer'
-        and created_at >= ${message.created_at}
-      limit 1
+    await sql`
+      update messages
+      set body = '', removed_at = now(), read_by_trainer = false
+      where id = ${message.id}
     `;
-    if (replied[0]) {
-      await sql`
-        update messages
-        set body = '', removed_at = now()
-        where id = ${message.id}
-      `;
-      return { ok: true, kept: true };
-    }
-    await sql`delete from messages where id = ${message.id}`;
-    return { ok: true, kept: false };
+    return { ok: true, kept: true };
   });
 
 export const replyAsTrainer = createServerFn({ method: "POST" })
@@ -141,9 +130,24 @@ export const listPendingNotes = createServerFn({ method: "GET" })
         from messages
         group by dog_id
       ) latest on latest.id = m.id
-      where m.author = 'client' and m.removed_at is null
+      where m.author = 'client'
+        and (m.removed_at is null or m.read_by_trainer = false)
       order by m.created_at desc
     `;
+  });
+
+export const dismissRetractedNotes = createServerFn({ method: "POST" })
+  .validator((data: { dogId: number }) => data)
+  .middleware([authMiddleware])
+  .handler(async ({ context, data }) => {
+    await requireTrainer(context.userId);
+    const sql = await getSql();
+    await sql`
+      update messages
+      set read_by_trainer = true
+      where dog_id = ${data.dogId} and author = 'client' and removed_at is not null
+    `;
+    return { ok: true };
   });
 
 export const getReplyPrompt = createServerFn({ method: "GET" })
