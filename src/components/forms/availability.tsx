@@ -138,7 +138,7 @@ function summary(slots: readonly Slot[], prompt: boolean) {
     .map(([key, days]) => {
       const names = listJoin(pickedInOrder(DAYS, days).map((day) => FULL[day]));
       const times = key ? key.split("|") : [];
-      if (times.length === 0) return prompt ? `Add a time for ${names}.` : `${names}.`;
+      if (times.length === 0) return prompt ? `${names} still need a time.` : `${names}.`;
       return `${names} ${listJoin(times.map((time) => time.toLowerCase()))}.`;
     })
     .join(" ");
@@ -224,12 +224,10 @@ export function AvailabilityFields({
   }
 
   function useSameTimes() {
-    const union = pickedInOrder(
-      TIMES,
-      slots.flatMap((slot) => slot.times),
-    );
+    const shared = TIMES.filter((time) => slots.length > 0 && slots.every((slot) => slot.times.includes(time)));
+    const times = shared.length > 0 ? shared : (slots[0]?.times ?? []);
     setByDay(false);
-    writeSame(selected, union);
+    writeSame(selected, times);
   }
 
   const legend = compact ? "text-sm font-bold text-[#1a0e0a]" : "text-base font-bold text-[#1a0e0a]";
@@ -239,9 +237,7 @@ export function AvailabilityFields({
   return (
     <fieldset>
       <legend className={legend}>Days that usually work</legend>
-      <p className="mt-1 text-xs text-faint">
-        Optional. For visits after the consult. A day can have its own time.
-      </p>
+      <p className="mt-1 text-xs text-faint">Optional. For visits after the consult.</p>
       <div className="mt-4">
         <p className="text-sm font-bold text-[#1a0e0a]">Days</p>
         <div
@@ -261,6 +257,30 @@ export function AvailabilityFields({
           ))}
         </div>
       </div>
+
+      {selected.length > 1 ? (
+        <div className="mt-5">
+          <p className="text-sm font-bold text-[#1a0e0a]">Do the times match?</p>
+          <div role="radiogroup" aria-label="Do the times match?" className="mt-2 grid gap-2 sm:grid-cols-2">
+            <ChipToggle
+              role="radio"
+              pressed={!byDay}
+              onToggle={useSameTimes}
+              className="inline-flex w-full items-center justify-center px-3 text-sm"
+            >
+              Same every day
+            </ChipToggle>
+            <ChipToggle
+              role="radio"
+              pressed={byDay}
+              onToggle={useDifferentTimes}
+              className="inline-flex w-full items-center justify-center px-3 text-sm"
+            >
+              Different each day
+            </ChipToggle>
+          </div>
+        </div>
+      ) : null}
 
       {byDay && slots.length > 0 ? (
         <div className="mt-4">
@@ -285,17 +305,10 @@ export function AvailabilityFields({
               </div>
             ))}
           </div>
-          <button
-            type="button"
-            className="mt-4 text-sm font-semibold text-accent-deep underline-offset-4 hover:underline"
-            onClick={useSameTimes}
-          >
-            Use the same times every day
-          </button>
         </div>
       ) : selected.length > 0 || sharedTimes.length > 0 ? (
         <div className="mt-4">
-          <p className="text-sm font-bold text-[#1a0e0a]">Time of day</p>
+          <p className="text-sm font-bold text-[#1a0e0a]">{selected.length > 1 ? "Time for those days" : "Time of day"}</p>
           <div role="group" aria-label="Times of day that usually work" className="mt-2 flex flex-wrap gap-x-2 gap-y-3">
             {TIMES.map((time) => (
               <ChipToggle key={time} pressed={sharedTimes.includes(time)} onToggle={() => toggleSharedTime(time)}>
@@ -305,21 +318,16 @@ export function AvailabilityFields({
           </div>
           <p className="mt-2 text-xs text-faint">
             Morning is before noon. Afternoon is noon to 4.
-            {selected.length > 0 ? " These apply to every day you picked." : ""}
+            {selected.length > 1 ? " Used on every day you picked." : ""}
           </p>
-          {selected.length > 1 ? (
-            <button
-              type="button"
-              className="mt-3 text-sm font-semibold text-accent-deep underline-offset-4 hover:underline"
-              onClick={useDifferentTimes}
-            >
-              Different times on some days
-            </button>
-          ) : null}
         </div>
-      ) : null}
+      ) : (
+        <p className="mt-3 text-xs text-faint">Tap the days you can do.</p>
+      )}
 
-      {showSummary ? <p className="mt-4 text-sm leading-relaxed text-ink">{summary(slots, byDay)}</p> : null}
+      {showSummary && (byDay || slots.some((slot) => slot.times.length > 0)) ? (
+        <p className="mt-4 text-sm leading-relaxed text-ink">{summary(slots, byDay)}</p>
+      ) : null}
 
       {note ? (
         <label className="mt-4 flex max-w-lg flex-col gap-2">
