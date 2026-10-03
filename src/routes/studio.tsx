@@ -1104,6 +1104,8 @@ function ClientDetail({
   const [thread, setThread] = useState<MessageRow[]>([]);
   const [status, setStatus] = useState(dog.status);
   const [statusBusy, setStatusBusy] = useState(false);
+  const owner = dog.owner_name.trim() || "This client";
+  const ownerPos = /s$/i.test(owner) ? `${owner}'` : `${owner}'s`;
 
   useEffect(() => {
     setStatus(dog.status);
@@ -1451,10 +1453,10 @@ function ClientDetail({
               Update credits
             </Button>
             <div className="space-y-3 border-t border-line pt-4">
-              <p className="text-sm font-bold text-[#1a0e0a]">Their code</p>
+              <p className="text-sm font-bold text-[#1a0e0a]">{ownerPos} referral code</p>
               <p className="font-display text-2xl tracking-wide">{dog.referral_code || "—"}</p>
               <p className="text-sm leading-relaxed text-muted">
-                This is the code they give a friend. You don’t type it anywhere. After that friend’s consult, a free hour is added to this account.
+                {owner} gives this code to a friend. You don’t type it anywhere. After that friend’s consult, a free hour is added to this account.
               </p>
               {(dog.referral_gifts ?? []).length ? (
                 <ul className="space-y-1 text-sm text-ink">
@@ -1465,7 +1467,7 @@ function ClientDetail({
               ) : null}
             </div>
             <div className="space-y-3 border-t border-line pt-4">
-              <p className="text-sm font-bold text-[#1a0e0a]">Someone they already sent</p>
+              <p className="text-sm font-bold text-[#1a0e0a]">Someone {owner} already sent</p>
               <p className="text-sm leading-relaxed text-muted">
                 Pick them from your clients. The dog and email are there so two people with the same name stay separate. If they aren’t a client yet, type their full name.
               </p>
@@ -1518,11 +1520,11 @@ function ClientDetail({
               </Button>
             </div>
             <div className="space-y-3 border-t border-line pt-4">
-              <p className="text-sm font-bold text-[#1a0e0a]">Who sent them</p>
+              <p className="text-sm font-bold text-[#1a0e0a]">Who sent {owner}</p>
               <p className="text-sm leading-relaxed text-muted">
-                If another client sent them, paste that client’s code. The free hour is added to that client when you mark this consult completed.
+                If another client sent {owner}, paste that client’s code. The free hour is added to that client when you mark this consult completed.
               </p>
-              <Field label="Code they used">
+              <Field label={`Code ${owner} used`}>
                 <Input
                   value={incomingCode}
                   onChange={(e) => setIncomingCode(e.target.value.toUpperCase())}
@@ -1533,7 +1535,7 @@ function ClientDetail({
               <p className="text-sm leading-relaxed text-muted">
                 {dog.thanked_referrer_code
                   ? `Thank-you hour already given to ${dog.thanked_referrer_code}.`
-                  : "Leave this blank if nobody sent them."}
+                  : `Leave this blank if nobody sent ${owner}.`}
               </p>
               <Button
                 size="sm"
