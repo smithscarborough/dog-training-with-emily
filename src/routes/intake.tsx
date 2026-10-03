@@ -48,19 +48,19 @@ function IntakePage() {
                 <p className="text-sm font-semibold text-ink">Your referral code</p>
                 <p className="mt-1 font-display text-4xl tracking-wide text-ink">{code}</p>
                 <p className="mt-2 text-sm leading-relaxed text-muted">
-                  Share it with a friend. After their consult, a free hour is added to your account. It’s also in the portal once you log in.
+                  A friend enters this code when booking a consult. After that consult, one free hour is added to your account. The same code is in your portal once you log in.
                 </p>
                 <button
                   type="button"
                   className="mt-3 text-sm font-semibold text-accent-deep underline-offset-4 hover:underline"
                   onClick={() => {
                     void navigator.clipboard?.writeText(code).then(
-                      () => toast.success("Code copied."),
+                      () => toast.success("Referral code copied."),
                       () => toast.error("Could not copy."),
                     );
                   }}
                 >
-                  Copy code
+                  Copy referral code
                 </button>
               </div>
             ) : null}
@@ -104,7 +104,6 @@ function IntakePage() {
                   owner_email: user?.primaryEmail ?? "",
                 }}
                 hours={hours}
-                showReferral
                 submitLabel="Submit"
                 onSubmit={async (data) => {
                   try {

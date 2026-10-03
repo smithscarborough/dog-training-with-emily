@@ -130,14 +130,12 @@ export function IntakeForm({
   onSubmit,
   hours,
   extra,
-  showReferral = false,
 }: {
   initial?: Partial<IntakeInput>;
   submitLabel: string;
   onSubmit: (data: IntakeInput) => Promise<void>;
   hours?: HoursDay[];
   extra?: ReactNode;
-  showReferral?: boolean;
 }) {
   const [form, setForm] = useState<IntakeInput>({ ...empty, ...initial });
   const startingReferral = referralChoice(initial?.referral_source ?? "");
@@ -517,14 +515,6 @@ export function IntakeForm({
             />
           ) : null}
         </fieldset>
-        {showReferral ? (
-          <div className="rounded-xl border border-line bg-surface px-4 py-4 sm:px-5">
-            <p className="text-sm font-semibold text-ink">Refer a friend</p>
-            <p className="mt-1 text-sm leading-relaxed text-muted">
-              You’ll get a code to share with a friend. After their consult, a free hour is added to your account.
-            </p>
-          </div>
-        ) : null}
       </section>
 
       {extra}
