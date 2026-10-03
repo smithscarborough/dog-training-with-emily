@@ -2217,7 +2217,7 @@ function SessionEditor({
         </div>
       ) : null}
 
-      {status === "cancelled" ? (
+      {status === "cancelled" && new Date(session.scheduled_at).getTime() > Date.now() ? (
         <div className="mt-3">
           <Button size="sm" variant="outline" disabled={busy} onClick={() => changeStatus("confirmed", "Back on the calendar.")}>
             Put back on the calendar
