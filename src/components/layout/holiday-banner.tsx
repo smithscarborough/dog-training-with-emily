@@ -3,200 +3,178 @@ import type { Holiday, HolidayId } from "@/lib/holidays";
 const CREAM = "#f4efe4";
 const INK = "#24140e";
 
-const THEME: Record<HolidayId, { bg: string; fg: string }> = {
-  "new-year": { bg: "#24140e", fg: CREAM },
-  valentine: { bg: "#7A3144", fg: CREAM },
-  patrick: { bg: "#12382C", fg: "#F3F7F2" },
-  easter: { bg: "#E5F0E6", fg: INK },
-  mothers: { bg: "#F6EBE8", fg: INK },
-  memorial: { bg: "#1E2A3A", fg: CREAM },
-  fathers: { bg: "#3C3028", fg: CREAM },
-  july4: { bg: "#1A2740", fg: CREAM },
-  halloween: { bg: "#1C1410", fg: CREAM },
-  thanksgiving: { bg: "#7A4A2A", fg: CREAM },
-  christmas: { bg: "#14352A", fg: CREAM },
+const TEXT: Record<HolidayId, string> = {
+  "new-year": CREAM,
+  valentine: CREAM,
+  patrick: "#F3F7F2",
+  easter: INK,
+  mothers: INK,
+  memorial: "#1B365D",
+  fathers: CREAM,
+  july4: CREAM,
+  halloween: CREAM,
+  thanksgiving: CREAM,
+  christmas: CREAM,
 };
 
 export function HolidayBanner({ holiday }: { holiday: Holiday }) {
-  const theme = THEME[holiday.id];
   return (
-    <aside
-      className={`holiday-banner is-${holiday.id}`}
-      style={{ background: theme.bg, color: theme.fg, ["--holiday-bg" as string]: theme.bg }}
-      aria-label={holiday.name}
-    >
-      <svg className="holiday-banner-svg" viewBox="0 0 1440 48" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-        <defs>
-          <pattern id={`hol-${holiday.id}`} width={tileWidth(holiday.id)} height="48" patternUnits="userSpaceOnUse">
-            <Tile id={holiday.id} />
-          </pattern>
-        </defs>
-        <rect width="1440" height="48" fill={`url(#hol-${holiday.id})`} />
-      </svg>
-      <p className="relative z-[1] mx-auto max-w-3xl px-6 py-3 text-center text-sm leading-relaxed sm:text-base">{holiday.line}</p>
+    <aside className={`holiday-banner is-${holiday.id}`} style={{ color: TEXT[holiday.id] }} aria-label={holiday.name}>
+      {holiday.id === "july4" ? <JulyStars /> : null}
+      <p className="relative z-[1] mx-auto flex max-w-3xl items-center justify-center gap-2.5 px-6 py-2.5 text-center text-sm leading-none sm:gap-3 sm:py-3 sm:text-base">
+        <Insignia id={holiday.id} />
+        <span>{holiday.line}</span>
+      </p>
     </aside>
   );
 }
 
-function tileWidth(id: HolidayId) {
-  if (id === "fathers") return 28;
-  if (id === "christmas") return 36;
-  if (id === "easter") return 132;
-  if (id === "memorial") return 180;
-  if (id === "july4") return 64;
-  return 96;
-}
-
-function star(cx: number, cy: number, r: number, fill: string) {
-  const points = Array.from({ length: 8 }, (_, i) => {
-    const angle = (Math.PI / 4) * i - Math.PI / 2;
-    const radius = i % 2 === 0 ? r : r * 0.4;
-    return `${cx + Math.cos(angle) * radius},${cy + Math.sin(angle) * radius}`;
-  }).join(" ");
-  return <polygon points={points} fill={fill} />;
-}
-
-function Tile({ id }: { id: HolidayId }) {
-  if (id === "new-year") {
-    return (
-      <>
-        {star(18, 16, 5, "#D4B483")}
-        {star(62, 34, 3.2, "#F4EFE4")}
-        <circle cx="78" cy="14" r="1.3" fill="#D4B483" />
-      </>
-    );
-  }
-  if (id === "valentine") {
-    return (
-      <>
-        <Heart x={22} y={24} s={0.55} fill="#F4EFE4" />
-        <Heart x={70} y={24} s={0.38} fill="#C46B7C" />
-      </>
-    );
-  }
-  if (id === "patrick") {
-    return (
-      <>
-        <Clover x={24} y={24} />
-        <Clover x={72} y={24} small />
-      </>
-    );
-  }
-  if (id === "easter") {
-    return (
-      <>
-        <Egg x={22} fill="#F7FBF6" mark="#7FA184" />
-        <Egg x={66} fill="#F3D6C8" mark="#7A3144" />
-        <Egg x={110} fill="#F7FBF6" mark="#24140e" />
-      </>
-    );
-  }
-  if (id === "mothers") {
-    return (
-      <>
-        <Blossom x={24} y={24} />
-        <Blossom x={72} y={24} small />
-      </>
-    );
-  }
-  if (id === "memorial") {
-    return star(24, 24, 6, "#E7E2D4");
-  }
-  if (id === "fathers") {
-    return (
-      <>
-        <line x1="6" y1="0" x2="6" y2="48" stroke="#F4EFE4" strokeWidth="1" opacity="0.28" />
-        <line x1="16" y1="0" x2="16" y2="48" stroke="#F4EFE4" strokeWidth="2.4" opacity="0.16" />
-      </>
-    );
-  }
-  if (id === "july4") {
-    return (
-      <>
-        <path d="M18 0l8 12H10Z" fill="#F4EFE4" />
-        <path d="M46 0l8 12H38Z" fill="#8C3E3A" />
-        {star(32, 32, 4.5, "#F4EFE4")}
-      </>
-    );
-  }
-  if (id === "halloween") {
-    return (
-      <>
-        <path fill="#E4C27A" d="M22 14a10 10 0 1 0 0 20 7.5 7.5 0 1 1 0-20Z" />
-        <Bat x={68} y={24} />
-      </>
-    );
-  }
-  if (id === "thanksgiving") {
-    return (
-      <>
-        <Leaf x={20} y={24} />
-        <Leaf x={68} y={24} />
-      </>
-    );
-  }
+function Insignia({ id }: { id: HolidayId }) {
   return (
-    <>
-      <path d="M18 24l6-10 6 10-6 10Z" fill="#F4EFE4" opacity="0.9" />
-      <circle cx="8" cy="24" r="2.2" fill="#C45C5C" />
-      <circle cx="34" cy="12" r="1.6" fill="#C45C5C" />
-      <circle cx="34" cy="36" r="1.6" fill="#F4EFE4" />
-    </>
+    <svg className="holiday-insignia" viewBox="0 0 64 64" aria-hidden="true">
+      {id === "new-year" ? <NewYearStar /> : null}
+      {id === "valentine" ? <Heart /> : null}
+      {id === "patrick" ? <Shamrock /> : null}
+      {id === "easter" ? <Egg /> : null}
+      {id === "mothers" ? <Rose /> : null}
+      {id === "memorial" ? <Ribbon /> : null}
+      {id === "fathers" ? <Tie /> : null}
+      {id === "july4" ? <PointStar fill="#F4EFE4" /> : null}
+      {id === "halloween" ? <Pumpkin /> : null}
+      {id === "thanksgiving" ? <Wheat /> : null}
+      {id === "christmas" ? <Holly /> : null}
+    </svg>
   );
 }
 
-function Heart({ x, y, s, fill }: { x: number; y: number; s: number; fill: string }) {
-  return <path fill={fill} transform={`translate(${x} ${y}) scale(${s})`} d="M0 6C0 6-12-1-12-10a7 7 0 0 1 12 2 7 7 0 0 1 12-2C12-1 0 6 0 6Z" />;
-}
-
-function Clover({ x, y, small }: { x: number; y: number; small?: boolean }) {
-  const r = small ? 4 : 5.5;
+function NewYearStar() {
   return (
-    <g transform={`translate(${x} ${y})`} fill="#3D9A6E">
-      <circle cx="0" cy={-r} r={r} />
-      <circle cx={-r} cy={r * 0.35} r={r} />
-      <circle cx={r} cy={r * 0.35} r={r} />
-    </g>
-  );
-}
-
-function Egg({ x, fill, mark }: { x: number; fill: string; mark: string }) {
-  return (
-    <g transform={`translate(${x} 24)`}>
-      <ellipse cx="0" cy="0" rx="10" ry="14" fill={fill} />
-      <path d="M-9 1h18v4H-9Z" fill={mark} />
-    </g>
-  );
-}
-
-function Blossom({ x, y, small }: { x: number; y: number; small?: boolean }) {
-  const r = small ? 3.2 : 4.4;
-  return (
-    <g transform={`translate(${x} ${y})`} fill="#C48B96">
-      <circle cx="0" cy={-r} r={r} />
-      <circle cx={r} cy="0" r={r} />
-      <circle cx="0" cy={r} r={r} />
-      <circle cx={-r} cy="0" r={r} />
-      <circle cx="0" cy="0" r={small ? 1.6 : 2} fill="#8E5360" />
-    </g>
-  );
-}
-
-function Bat({ x, y }: { x: number; y: number }) {
-  return (
-    <path
-      fill="#F4EFE4"
-      transform={`translate(${x} ${y}) scale(0.7)`}
-      d="M0 2C4-1 7 1 10 0c1 4 4 5 7 4-2 1-3 4-2 6-3-2-5-2-8 0-3-2-5-2-8 0 1-2 0-5-2-6 3 1 6 0 7-4C-3 1-4-1 0 2Z"
+    <polygon
+      fill="#D4B483"
+      points="32,4 36.5,22 54,14 42,30 60,32 42,34 54,50 36.5,42 32,60 27.5,42 10,50 22,34 4,32 22,30 10,14 27.5,22"
     />
   );
 }
 
-function Leaf({ x, y }: { x: number; y: number }) {
+function PointStar({ fill, x = 32, y = 32, r = 22 }: { fill: string; x?: number; y?: number; r?: number }) {
+  const points = Array.from({ length: 10 }, (_, i) => {
+    const angle = (Math.PI / 5) * i - Math.PI / 2;
+    const radius = i % 2 === 0 ? r : r * 0.4;
+    return `${x + Math.cos(angle) * radius},${y + Math.sin(angle) * radius}`;
+  }).join(" ");
+  return <polygon points={points} fill={fill} />;
+}
+
+function Heart() {
+  return <path fill="#F4EFE4" d="M32 54C24 46 8 36 8 22 8 14 14 8 22 8c5 0 8 3 10 7 2-4 5-7 10-7 8 0 14 6 14 14C56 36 40 46 32 54Z" />;
+}
+
+function Shamrock() {
   return (
-    <g transform={`translate(${x} ${y})`}>
-      <path d="M0 14C12 8 16-2 14-12 6-4 2 6 0 14Z" fill="#F4EFE4" />
-      <path d="M2 10C8 4 12-2 12-8" stroke="#7A4A2A" strokeWidth="0.8" fill="none" />
-    </g>
+    <>
+      <path
+        fill="#E4C56A"
+        d="M32 28c0-10-8-16-8-10s8 6 8 10c0-10 8-16 8-10s-8 6-8 10c-10-2-16 6-10 12s10 2 10-4c0 6 4 10 10 4s0-14-10-12Z"
+      />
+      <path d="M32 36v16" stroke="#E4C56A" strokeWidth="3" strokeLinecap="round" />
+    </>
+  );
+}
+
+function Egg() {
+  return (
+    <>
+      <ellipse cx="32" cy="34" rx="16" ry="22" fill="#F7FBF6" stroke={INK} strokeWidth="1.6" />
+      <path d="M17 34h30c-.4 5-3 9-7 12H24c-4-3-6.6-7-7-12Z" fill="#7FA184" />
+      <circle cx="26" cy="22" r="1.7" fill="#7FA184" />
+      <circle cx="32" cy="19" r="1.7" fill="#7FA184" />
+      <circle cx="38" cy="22" r="1.7" fill="#7FA184" />
+    </>
+  );
+}
+
+function Rose() {
+  return (
+    <>
+      <path d="M32 36c2 10 8 16 14 18" fill="none" stroke="#6B5344" strokeWidth="2" strokeLinecap="round" />
+      <ellipse cx="40" cy="46" rx="7" ry="3.2" fill="#6B8F72" transform="rotate(28 40 46)" />
+      <circle cx="32" cy="24" r="7" fill="#8E5360" />
+      <circle cx="24" cy="28" r="6.5" fill="#A86B76" />
+      <circle cx="40" cy="28" r="6.5" fill="#A86B76" />
+      <circle cx="32" cy="32" r="6" fill="#C48B96" />
+      <circle cx="32" cy="27" r="3" fill="#F6EBE8" />
+    </>
+  );
+}
+
+function Ribbon() {
+  return (
+    <>
+      <path d="M26 34C18 44 14 52 12 60" stroke="#A61D2E" strokeWidth="11" fill="none" strokeLinecap="round" />
+      <path d="M26 34C18 44 14 52 12 60" stroke="#fff" strokeWidth="4.5" fill="none" strokeLinecap="round" />
+      <path d="M26 34C18 44 14 52 12 60" stroke="#A61D2E" strokeWidth="1.7" fill="none" strokeLinecap="round" />
+      <path d="M38 34C46 44 52 52 56 60" stroke="#A61D2E" strokeWidth="11" fill="none" strokeLinecap="round" />
+      <path d="M38 34C46 44 52 52 56 60" stroke="#fff" strokeWidth="4.5" fill="none" strokeLinecap="round" />
+      <path d="M38 34C46 44 52 52 56 60" stroke="#A61D2E" strokeWidth="1.7" fill="none" strokeLinecap="round" />
+      <path d="M32 36C20 32 14 24 17 14 19 6 28 6 32 14 36 6 45 6 47 14 50 24 44 32 32 36Z" fill="none" stroke="#A61D2E" strokeWidth="8" strokeLinejoin="round" />
+      <path d="M32 34C22 31 18 24 20 16 22 10 28 11 32 16 36 11 42 10 44 16 46 24 42 31 32 34Z" fill="none" stroke="#fff" strokeWidth="2.6" />
+      <path d="M30 12c2 2 3 2 5 0" stroke="#7E1524" strokeWidth="2" strokeLinecap="round" />
+      <path d="M16 56 48 32" stroke="#1B365D" strokeWidth="11" strokeLinecap="butt" />
+      <PointStar fill="#fff" x={24} y={50} r={2.6} />
+      <PointStar fill="#fff" x={32} y={44} r={2.6} />
+      <PointStar fill="#fff" x={40} y={38} r={2.6} />
+      <PointStar fill="#fff" x={27} y={43} r={2} />
+      <PointStar fill="#fff" x={36} y={36} r={2} />
+    </>
+  );
+}
+
+function Tie() {
+  return <path fill="#1B365D" d="M26 8h12l3 8H23l3-8Zm-3 8h18l-4 12L32 58 27 28l-4-12Z" />;
+}
+
+function Pumpkin() {
+  return (
+    <>
+      <ellipse cx="32" cy="36" rx="18" ry="14" fill="#E08A3C" />
+      <ellipse cx="22" cy="37" rx="8" ry="13" fill="#C56E28" />
+      <ellipse cx="42" cy="37" rx="8" ry="13" fill="#C56E28" />
+      <path d="M30 22c4-8 10-10 12-6-4 1-8 6-8 10" fill="#5C3A16" />
+    </>
+  );
+}
+
+function Wheat() {
+  return (
+    <>
+      <path d="M32 58V16M24 58V24M40 58V24" stroke="#F4EFE4" strokeWidth="1.6" strokeLinecap="round" />
+      {[0, 1, 2, 3].map((i) => (
+        <ellipse key={i} cx={i % 2 ? 27 : 37} cy={20 + i * 8} rx="4" ry="2.2" fill="#F4EFE4" transform={`rotate(${i % 2 ? -30 : 30} ${i % 2 ? 27 : 37} ${20 + i * 8})`} />
+      ))}
+    </>
+  );
+}
+
+function Holly() {
+  return (
+    <>
+      <path fill="#8FBF9A" d="M32 40c-2-12 6-22 16-26-8 2-14 10-16 20 6-4 12-4 16 0-8 1-14 4-16 6Z" />
+      <path fill="#8FBF9A" d="M32 40c2-12-6-22-16-26 8 2 14 10 16 20-6-4-12-4-16 0 8 1 14 4 16 6Z" />
+      <path fill="#7EAF8C" d="M32 42c-10 1-16 8-18 14 8-2 14-6 16-12 1 6 6 12 12 15-1-8-4-14-10-17Z" />
+      <circle cx="26" cy="30" r="3.2" fill="#C45C5C" />
+      <circle cx="38" cy="28" r="3.2" fill="#C45C5C" />
+      <circle cx="32" cy="22" r="2.6" fill="#C45C5C" />
+    </>
+  );
+}
+
+function JulyStars() {
+  const spots = [48, 96, 144, 192, 1296, 1344, 1392];
+  return (
+    <svg className="holiday-banner-svg" viewBox="0 0 1440 48" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      {spots.map((x) => (
+        <PointStar key={x} fill="#F4EFE4" x={x} y={24} r={5} />
+      ))}
+    </svg>
   );
 }
