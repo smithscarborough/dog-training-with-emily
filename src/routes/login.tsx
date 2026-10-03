@@ -181,6 +181,7 @@ function AuthCard({
   const [busy, setBusy] = useState(false);
   const [paws, setPaws] = useState(0);
   const [signupNote, setSignupNote] = useState<null | "unknown" | "exists" | "invalid">(null);
+  const [noteFlash, setNoteFlash] = useState(0);
   const router = useRouter();
 
   async function onSubmit(e: FormEvent) {
@@ -193,6 +194,7 @@ function AuthCard({
         const gate = await checkClientSignup({ data: { email: email.trim() } });
         if (gate.status !== "ok") {
           setSignupNote(gate.status);
+          setNoteFlash((n) => n + 1);
           return;
         }
         setSignupNote(null);
@@ -282,7 +284,7 @@ function AuthCard({
                 />
               </Field>
               {signupNote === "unknown" ? (
-                <p role="alert" className="rounded-lg border border-line bg-bg px-4 py-3 text-center text-sm leading-relaxed text-ink">
+                <p key={noteFlash} role="alert" className="visit-focus is-on rounded-lg border border-line bg-bg px-4 py-3 text-center text-sm leading-relaxed text-ink">
                   Looks like we don’t have this email yet.
                   <span className="mt-1 block">
                     Please{" "}
@@ -294,7 +296,7 @@ function AuthCard({
                 </p>
               ) : null}
               {signupNote === "exists" ? (
-                <p role="alert" className="rounded-lg border border-line bg-bg px-4 py-3 text-center text-sm leading-relaxed text-ink">
+                <p key={noteFlash} role="alert" className="visit-focus is-on rounded-lg border border-line bg-bg px-4 py-3 text-center text-sm leading-relaxed text-ink">
                   You already have a login.{" "}
                   <button
                     type="button"
