@@ -283,17 +283,20 @@ function joinNames(names: string[]) {
 function referralNoticeCopy(notes: DogRow["referral_gifts"]) {
   const names = notes.map((gift) => gift.referred_name.split(" · ")[0]?.trim() || "A friend");
   const n = notes.length;
-  const title = n === 1 ? "A free hour" : `${spellCount(n)} free hours`;
   const named = joinNames(names);
+  const added =
+    n === 1
+      ? "One free hour with Emily has been added to your account."
+      : `${spellCount(n)} free hours with Emily have been added to your account.`;
   const fromConsults = notes.every((gift) => gift.from_consult);
   const detail = fromConsults
     ? n === 1
-      ? `${names[0]}’s consult is done. One free hour is on your account.`
-      : `${named}’s consults are done. ${spellCount(n)} free hours are on your account.`
+      ? `${names[0]}’s consult is done. ${added}`
+      : `${named}’s consults are done. ${added}`
     : n === 1
-      ? `One free hour is on your account, for referring ${names[0]}.`
-      : `${spellCount(n)} free hours are on your account, for referring ${named}.`;
-  return { title, detail };
+      ? `${added} This is for referring ${names[0]}.`
+      : `${added} This is for referring ${named}.`;
+  return { detail };
 }
 
 const REFERRAL_PAWS = [
@@ -355,8 +358,8 @@ function ReferralNotice({ gifts }: { gifts: DogRow["referral_gifts"] }) {
     <>
       <ReferralCelebrate />
       <div className="referral-note mx-auto max-w-lg rounded-2xl border border-line bg-pearl px-6 py-6 text-center">
-        <p className="font-display text-3xl tracking-tight text-ink">{copy.title}</p>
-        <p className="mt-2 text-sm leading-relaxed text-muted">{copy.detail}</p>
+        <p className="font-display text-3xl tracking-tight text-ink">Thank you!</p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">{copy.detail}</p>
       </div>
     </>
   );
