@@ -375,13 +375,26 @@ function HomeTab({
             </button>
           ) : null}
           {(dog.referral_gifts ?? []).length ? (
-            <ul className="mt-4 space-y-1 text-sm text-ink">
-              {(dog.referral_gifts ?? []).map((gift) => (
-                <li key={`${gift.created_at}-${gift.referred_name}`}>
-                  Referred {gift.referred_name.replace(" · ", " and ")}.
-                </li>
-              ))}
-            </ul>
+            <div className="mt-5 border-t border-line pt-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-muted">Referred</p>
+              <ul className="mt-1">
+                {(dog.referral_gifts ?? []).map((gift) => {
+                  const [person, dogName] = gift.referred_name.split(" · ");
+                  return (
+                    <li
+                      key={`${gift.created_at}-${gift.referred_name}`}
+                      className="flex items-center justify-between gap-3 border-b border-line py-2.5 last:border-b-0"
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-semibold text-ink">{person}</span>
+                        {dogName ? <span className="block truncate text-xs text-muted">{dogName}</span> : null}
+                      </span>
+                      <span className="shrink-0 text-xs font-semibold text-accent-deep">+1 hour</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           ) : null}
         </CardBody>
       </Card>
