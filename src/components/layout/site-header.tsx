@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Wordmark } from "@/components/brand/logo";
 import { BlobNav } from "@/components/layout/blob-nav";
 import { Button } from "@/components/ui/button";
-import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
+import { SignedIn, UserButton } from "@/lib/auth/gates";
+import { useFrozenSignedOutHeader } from "@/lib/auth/header-hold";
+import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { goToHomeSection, scrollHome, syncScrollPadding } from "@/lib/scroll-to-section";
 import { cn } from "@/lib/utils";
 import { useMe } from "@/lib/use-me";
@@ -18,6 +20,12 @@ export function SiteHeader(_props?: { solid?: boolean }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { me, user } = useMe();
+  const { user: sessionUser, isPending } = useCurrentUserState();
+  const frozenOut = useFrozenSignedOutHeader();
+  const authMode = useRef<"in" | "out" | "pending">("pending");
+  if (sessionUser) authMode.current = "in";
+  else if (!isPending) authMode.current = "out";
+  const signedOut = frozenOut || authMode.current === "out";
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -62,22 +70,32 @@ export function SiteHeader(_props?: { solid?: boolean }) {
         </Link>
         <BlobNav links={LINKS} />
         <div className="relative z-20 flex items-center gap-2">
-          <SignedOut>
-            <Button asChild className="note-cta hidden sm:inline-flex shrink-0">
-              <Link to="/login">Log in</Link>
-            </Button>
-            <Button asChild className="book-cta shrink-0">
-              <Link to="/intake">
-                <span className="sm:hidden">Book</span>
-                <span className="hidden sm:inline">Book a consult</span>
-              </Link>
-            </Button>
-          </SignedOut>
-          <SignedIn>
-            <div className="hidden md:block">
+          <div className="grid items-center [&>*]:col-start-1 [&>*]:row-start-1">
+            <div
+              className={cn(
+                "flex items-center gap-2 transition-opacity duration-200",
+                signedOut ? "opacity-100" : "pointer-events-none opacity-0 max-md:hidden",
+              )}
+            >
+              <Button asChild className="note-cta hidden sm:inline-flex shrink-0">
+                <Link to="/login">Log in</Link>
+              </Button>
+              <Button asChild className="book-cta shrink-0">
+                <Link to="/intake">
+                  <span className="sm:hidden">Book</span>
+                  <span className="hidden sm:inline">Book a consult</span>
+                </Link>
+              </Button>
+            </div>
+            <div
+              className={cn(
+                "hidden justify-self-end transition-opacity duration-200 md:block",
+                signedOut ? "pointer-events-none opacity-0" : "opacity-100",
+              )}
+            >
               <UserButton nameTo={me?.isTrainer ? "/studio" : "/portal"} />
             </div>
-          </SignedIn>
+          </div>
           <button
             type="button"
             className="inline-flex size-16 shrink-0 items-center justify-center rounded-md md:hidden active:scale-[0.96]"
@@ -95,15 +113,15 @@ export function SiteHeader(_props?: { solid?: boolean }) {
       </div>
       <div className={open ? "menu-panel is-open md:hidden" : "menu-panel md:hidden"}>
         <div>
-          <SignedIn>
-            <div className="border-t border-ink/15 bg-bg px-4 pt-2">
-              <UserButton
-                variant="menu"
-                nameTo={me?.isTrainer ? "/studio" : "/portal"}
-                onNavigate={() => setOpen(false)}
-              />
-            </div>
-          </SignedIn>
+            <SignedIn>
+              <div className="border-t border-ink/15 bg-bg px-4 pt-2">
+                <UserButton
+                  variant="menu"
+                  nameTo={me?.isTrainer ? "/studio" : "/portal"}
+                  onNavigate={() => setOpen(false)}
+                />
+              </div>
+            </SignedIn>
           <nav className="flex flex-col border-t border-ink/15 bg-bg px-4 py-4 text-center">
             {LINKS.map((l) => (
               <a
@@ -128,7 +146,7 @@ export function SiteHeader(_props?: { solid?: boolean }) {
             >
               Book a consult
             </Link>
-            <SignedOut>
+            {signedOut ? (
               <Link
                 to="/login"
                 className="rounded-md px-3 py-3.5 text-base text-ink hover:bg-surface-2"
@@ -136,7 +154,7 @@ export function SiteHeader(_props?: { solid?: boolean }) {
               >
                 Log in
               </Link>
-            </SignedOut>
+            ) : null}
           </nav>
         </div>
       </div>

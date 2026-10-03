@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { GROK_PROVIDERS, authClient, authEnabled, signIn } from "@/lib/auth/client";
 import { QA_ADMIN } from "@/lib/qa-admin";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { freezeSignedOutHeader } from "@/lib/auth/header-hold";
 import { becomeTrainer, getMe } from "@/lib/server/me";
 import { primeMe } from "@/lib/use-me";
 import { seedDemoIfNeeded } from "@/lib/server/seed-demo-fn";
@@ -155,6 +156,7 @@ function QaEmilyButton({ setHandoff }: { setHandoff: (hold: boolean) => void }) 
     if (!authEnabled) return;
     setBusy(true);
     setHandoff(true);
+    freezeSignedOutHeader(true);
     try {
       await seedDemoIfNeeded();
       await authClient.signOut().catch(() => undefined);
@@ -166,6 +168,7 @@ function QaEmilyButton({ setHandoff }: { setHandoff: (hold: boolean) => void }) 
       primeMe(data.user.id, await getMe());
       await openSignedIn(router, "/studio");
     } catch (err) {
+      freezeSignedOutHeader(false);
       setHandoff(false);
       toast.error(err instanceof Error ? err.message : "Could not open the studio.");
     } finally {
@@ -185,6 +188,7 @@ function openSignedIn(router: ReturnType<typeof useRouter>, to: "/studio" | "/po
   if (page instanceof HTMLElement) page.style.visibility = "hidden";
   const scroller = document.getElementById("app-scroll");
   if (scroller) scroller.scrollTop = 0;
+  freezeSignedOutHeader(false);
   return router.navigate({ to });
 }
 
@@ -209,6 +213,7 @@ function AuthCard({
     if (!authEnabled) return;
     setBusy(true);
     setHandoff(true);
+    freezeSignedOutHeader(true);
     let signedInId = "";
     try {
       if (mode === "up") {
@@ -244,6 +249,7 @@ function AuthCard({
       primeMe(signedInId, await getMe());
       await openSignedIn(router, to);
     } catch (err) {
+      freezeSignedOutHeader(false);
       setHandoff(false);
       toast.error(err instanceof Error ? err.message : "Sign-in failed.");
     } finally {
