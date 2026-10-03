@@ -47,7 +47,10 @@ function LoginPage() {
         </p>
         <p className="mx-auto mt-3 max-w-sm text-muted leading-relaxed">
           New here?{" "}
-          <Link to="/intake" className="text-ink underline underline-offset-4">
+          <Link
+            to="/intake"
+            className="text-ink underline underline-offset-4 transition-colors duration-200 hover:text-accent-deep"
+          >
             Book a consult
           </Link>
           . You don’t need an account yet.
@@ -288,7 +291,7 @@ function AuthCard({
                   Looks like we don’t have this email yet.
                   <span className="mt-1 block">
                     Please{" "}
-                    <Link to="/intake" className="font-semibold underline underline-offset-4">
+                    <Link to="/intake" className="font-semibold underline underline-offset-4 transition-colors duration-200 hover:text-accent-deep">
                       book a consult
                     </Link>
                     , then come back to create your login.
