@@ -5,6 +5,7 @@ import { consultHasHappened, sessionTypeById } from "@/lib/catalog";
 import type { SessionRow } from "@/lib/types";
 import { assertDogAccess, loadStudio, requireTrainer, stripPrivate } from "./helpers";
 import { isWithinHours, parseHours } from "@/lib/hours";
+import { grantReferralHour, revokeReferralHour } from "./referrals";
 
 export const listSessions = createServerFn({ method: "GET" })
   .validator((data: { dogId?: number } | undefined) => data ?? {})
@@ -101,16 +102,23 @@ export const setSessionStatus = createServerFn({ method: "POST" })
       select credit_applied from sessions where id = ${session.id}
     `;
     const applied = Boolean(credited[0]?.credit_applied);
+    let thanked: string | null = null;
     if (data.status === "completed" && session.status !== "completed" && !applied) {
       await sql`update dogs set credits = greatest(credits - 1, 0), updated_at = now() where id = ${session.dog_id}`;
       await sql`update sessions set credit_applied = true where id = ${session.id}`;
+    }
+    if (data.status === "completed" && session.status !== "completed" && session.session_type === "consult") {
+      thanked = await grantReferralHour(sql, session.dog_id);
     }
     if (session.status === "completed" && data.status !== "completed" && applied) {
       await sql`update dogs set credits = credits + 1, updated_at = now() where id = ${session.dog_id}`;
       await sql`update sessions set credit_applied = false where id = ${session.id}`;
     }
+    if (session.status === "completed" && data.status !== "completed" && session.session_type === "consult") {
+      await revokeReferralHour(sql, session.dog_id);
+    }
     await sql`update sessions set status = ${data.status}, updated_at = now() where id = ${data.sessionId}`;
-    return { ok: true };
+    return { ok: true, thanked };
   });
 
 export const writeSessionRecap = createServerFn({ method: "POST" })

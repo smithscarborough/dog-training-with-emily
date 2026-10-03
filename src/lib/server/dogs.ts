@@ -10,6 +10,7 @@ import { normalizeUsPhone } from "@/lib/phone";
 import { formatUsAddress } from "@/lib/address";
 import { formatEmail, formatProperName, formatSentenceStart } from "@/lib/text";
 import { isWithinHours, parseHours } from "@/lib/hours";
+import { assignReferralCode, grantReferralHour, normalizeReferralCode } from "./referrals";
 
 export type IntakeInput = {
   owner_name: string;
@@ -35,6 +36,7 @@ export type IntakeInput = {
   vet_info: string;
   preferred_days: string;
   referral_source: string;
+  referred_by_code: string;
   preferred_at: string;
   photo_url: string | null;
 };
@@ -89,6 +91,7 @@ function cleanIntake(data: IntakeInput): IntakeInput {
     vet_info: trim(data.vet_info),
     preferred_days: trim(data.preferred_days),
     referral_source: trim(data.referral_source),
+    referred_by_code: normalizeReferralCode(data.referred_by_code ?? ""),
     preferred_at: data.preferred_at?.trim() ?? "",
     photo_url: data.photo_url?.trim() ? data.photo_url.trim() : null,
   };
@@ -124,7 +127,7 @@ export const submitPublicIntake = createServerFn({ method: "POST" })
         owner_user_id, owner_name, owner_email, owner_phone, address,
         name, breed, age_text, birthday, weight_text, allergies, sex, spayed_neutered,
         goals_json, goals_other, dislikes, past_experiences, physical_limitations,
-        household, other_pets, kids_in_home, vet_info, preferred_days, referral_source,
+        household, other_pets, kids_in_home, vet_info, preferred_days, referral_source, referred_by_code,
         preferred_at, photo_url, status
       ) values (
         ${ownerId}, ${data.owner_name}, ${data.owner_email}, ${data.owner_phone}, ${data.address},
@@ -132,12 +135,13 @@ export const submitPublicIntake = createServerFn({ method: "POST" })
         ${data.sex}, ${data.spayed_neutered},
         ${JSON.stringify(data.goals)}, ${data.goals_other}, ${data.dislikes}, ${data.past_experiences},
         ${data.physical_limitations}, ${data.household}, ${data.other_pets}, ${data.kids_in_home},
-        ${data.vet_info}, ${data.preferred_days}, ${data.referral_source},
+        ${data.vet_info}, ${data.preferred_days}, ${data.referral_source}, ${data.referred_by_code},
         ${data.preferred_at}, ${data.photo_url}, 'pending'
       ) returning id
     `;
     const id = inserted[0]?.id;
     if (!id) throw new Error("Could not save intake.");
+    await assignReferralCode(sql, id, data.owner_name);
     await seedProgressForDog(id);
     return { id };
   });
@@ -172,7 +176,7 @@ export const trainerCreateClient = createServerFn({ method: "POST" })
         owner_user_id, owner_name, owner_email, owner_phone, address,
         name, breed, age_text, birthday, weight_text, allergies, sex, spayed_neutered,
         goals_json, goals_other, dislikes, past_experiences, physical_limitations,
-        household, other_pets, kids_in_home, vet_info, preferred_days, referral_source,
+        household, other_pets, kids_in_home, vet_info, preferred_days, referral_source, referred_by_code,
         preferred_at, photo_url, status
       ) values (
         null, ${data.owner_name}, ${data.owner_email}, ${data.owner_phone}, ${data.address},
@@ -180,12 +184,13 @@ export const trainerCreateClient = createServerFn({ method: "POST" })
         ${data.sex}, ${data.spayed_neutered},
         ${JSON.stringify(data.goals)}, ${data.goals_other}, ${data.dislikes}, ${data.past_experiences},
         ${data.physical_limitations}, ${data.household}, ${data.other_pets}, ${data.kids_in_home},
-        ${data.vet_info}, ${data.preferred_days}, ${data.referral_source},
+        ${data.vet_info}, ${data.preferred_days}, ${data.referral_source}, ${data.referred_by_code},
         ${data.preferred_at}, ${data.photo_url}, 'active'
       ) returning id
     `;
     const id = inserted[0]?.id;
     if (!id) throw new Error("Could not create client.");
+    await assignReferralCode(sql, id, data.owner_name);
     await seedProgressForDog(id);
     return { id };
   });
@@ -254,7 +259,7 @@ export const setupExistingClient = createServerFn({ method: "POST" })
           owner_user_id, owner_name, owner_email, owner_phone, address,
           name, breed, age_text, birthday, weight_text, allergies, sex, spayed_neutered,
           goals_json, goals_other, dislikes, past_experiences, physical_limitations,
-          household, other_pets, kids_in_home, vet_info, preferred_days, referral_source,
+          household, other_pets, kids_in_home, vet_info, preferred_days, referral_source, referred_by_code,
           preferred_at, photo_url, status
         ) values (
           ${userId}, ${intake.owner_name}, ${email}, ${intake.owner_phone}, ${intake.address},
@@ -262,12 +267,13 @@ export const setupExistingClient = createServerFn({ method: "POST" })
           ${intake.sex}, ${intake.spayed_neutered},
           ${JSON.stringify(intake.goals)}, ${intake.goals_other}, ${intake.dislikes}, ${intake.past_experiences},
           ${intake.physical_limitations}, ${intake.household}, ${intake.other_pets}, ${intake.kids_in_home},
-          ${intake.vet_info}, ${intake.preferred_days}, ${intake.referral_source},
+          ${intake.vet_info}, ${intake.preferred_days}, ${intake.referral_source}, ${intake.referred_by_code},
           ${intake.preferred_at}, ${intake.photo_url}, 'active'
         ) returning id
       `;
       dogId = inserted[0]?.id ?? 0;
       if (!dogId) throw new Error("Could not create client.");
+      await assignReferralCode(sql, dogId, intake.owner_name);
       for (const visit of visits) {
         await sql`
           insert into sessions (
@@ -280,6 +286,7 @@ export const setupExistingClient = createServerFn({ method: "POST" })
         `;
       }
       await seedProgressForDog(dogId);
+      if (visits.some((visit) => visit.type.id === "consult")) await grantReferralHour(sql, dogId);
     } catch (err) {
       if (createdUser && userId) await sql`delete from "user" where id = ${userId}`;
       if (dogId) await sql`delete from dogs where id = ${dogId}`;

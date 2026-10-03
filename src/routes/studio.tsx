@@ -39,6 +39,7 @@ import {
   writeSessionRecap,
 } from "@/lib/server/sessions";
 import { listCheckins } from "@/lib/server/checkins";
+import { giveThankYouHour, setReferredByCode } from "@/lib/server/referrals";
 import { dismissRetractedNotes, listMessages, listPendingNotes } from "@/lib/server/messages";
 import { NoteThread, TrainerReply } from "@/components/portal/note-thread";
 import type { CheckinRow, DogRow, InquiryRow, MessageRow, ProgressRow, SessionRow } from "@/lib/types";
@@ -1085,6 +1086,8 @@ function ClientDetail({
   const [notes, setNotes] = useState(dog.trainer_private_notes);
   const [savedNote, setSavedNote] = useState(dog.trainer_private_notes);
   const [credits, setCredits] = useState(String(dog.credits));
+  const [giftName, setGiftName] = useState("");
+  const [incomingCode, setIncomingCode] = useState(dog.referred_by_code || "");
   const [birthday, setBirthday] = useState(dog.birthday || "");
   const [current, setCurrent] = useState<ProgressRow[]>([]);
   const [filter, setFilter] = useState<"working" | "all">("working");
@@ -1107,6 +1110,8 @@ function ClientDetail({
     setNotes(dog.trainer_private_notes);
     setSavedNote(dog.trainer_private_notes);
     setCredits(String(dog.credits));
+    setGiftName("");
+    setIncomingCode(dog.referred_by_code || "");
     setBirthday(dog.birthday || "");
     void getProgress({ data: { dogId: dog.id } })
       .then((r) => setCurrent(r.current))
@@ -1440,6 +1445,71 @@ function ClientDetail({
             >
               Update credits
             </Button>
+            <div className="space-y-3 border-t border-line pt-3">
+              <p className="text-sm font-bold text-[#1a0e0a]">Their code</p>
+              <p className="mt-1 font-display text-2xl tracking-wide">{dog.referral_code || "—"}</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted">
+                A neighbor types this on the consult form. A free hour lands here when that consult is completed.
+              </p>
+              {(dog.referral_gifts ?? []).length ? (
+                <ul className="mt-2 space-y-1 text-sm text-ink">
+                  {(dog.referral_gifts ?? []).map((gift) => (
+                    <li key={`${gift.created_at}-${gift.referred_name}`}>{gift.referred_name} · thank-you hour</li>
+                  ))}
+                </ul>
+              ) : null}
+              <Field label="Who they already sent">
+                <Input value={giftName} onChange={(e) => setGiftName(e.target.value)} placeholder="Maria" />
+              </Field>
+              <Button
+                size="sm"
+                disabled={!giftName.trim()}
+                onClick={() => {
+                  const name = giftName.trim();
+                  void giveThankYouHour({ data: { dogId: dog.id, name } })
+                    .then(() => {
+                      setGiftName("");
+                      toast.success("Thank-you hour added.");
+                      onRefresh();
+                    })
+                    .catch((err: unknown) => toast.error(err instanceof Error ? err.message : "Could not add the hour."));
+                }}
+              >
+                Give a thank-you hour
+              </Button>
+              <p className="text-xs leading-relaxed text-muted">
+                For a referral that already happened, before the code was used.
+              </p>
+            </div>
+            <div className="space-y-3 border-t border-line pt-3">
+              <Field label="Code they used">
+                <Input
+                  value={incomingCode}
+                  onChange={(e) => setIncomingCode(e.target.value.toUpperCase())}
+                  placeholder="LUIS"
+                  className="uppercase"
+                />
+              </Field>
+              <p className="text-xs leading-relaxed text-muted">
+                {dog.thanked_referrer_code
+                  ? `Thank-you hour already given to ${dog.thanked_referrer_code}.`
+                  : "If they were sent by a client, save the code. The hour is added once the consult is completed."}
+              </p>
+              <Button
+                size="sm"
+                disabled={incomingCode.trim().toUpperCase() === (dog.referred_by_code || "")}
+                onClick={() => {
+                  void setReferredByCode({ data: { dogId: dog.id, code: incomingCode } })
+                    .then((result) => {
+                      toast.success(result.thanked ? `${result.thanked} got a thank-you hour.` : "Code saved.");
+                      onRefresh();
+                    })
+                    .catch((err: unknown) => toast.error(err instanceof Error ? err.message : "Could not save."));
+                }}
+              >
+                Save code
+              </Button>
+            </div>
             <Field label="Birthday">
               <Input
                 type="date"
@@ -2008,8 +2078,8 @@ function SessionEditor({
     setBusy(true);
     setStatus(next);
     void setSessionStatus({ data: { sessionId: session.id, status: next } })
-      .then(() => {
-        toast.success(done);
+      .then((result) => {
+        toast.success(done + (result.thanked ? ` ${result.thanked} got a thank-you hour.` : ""));
         onChange();
       })
       .catch((err: unknown) => {
@@ -2031,10 +2101,14 @@ function SessionEditor({
       },
     })
       .then(() => setSessionStatus({ data: { sessionId: session.id, status: "completed" } }))
-      .then(() => {
+      .then((result) => {
         setStatus("completed");
         setClosing(false);
-        toast.success("Visit completed. One credit came off.");
+        toast.success(
+          result.thanked
+            ? `Visit completed. ${result.thanked} got a thank-you hour.`
+            : "Visit completed. One credit came off.",
+        );
         onChange();
       })
       .catch((err: unknown) => {

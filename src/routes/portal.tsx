@@ -347,8 +347,40 @@ function HomeTab({
         <CardBody>
           <p className="font-display text-4xl tabular-nums">{dog.credits}</p>
           <p className="mt-2 text-sm text-muted">
-            Held on your account after a series is purchased. One credit comes off when a session is completed.
+            A session already paid for, or a thank-you hour. One comes off when a visit is completed.
           </p>
+        </CardBody>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Send a neighbor</CardTitle>
+        </CardHeader>
+        <CardBody>
+          <p className="font-display text-4xl tracking-wide">{dog.referral_code}</p>
+          <p className="mt-2 text-sm leading-relaxed text-muted">
+            Have them type this code on the consult form. After their consult, a free hour is added here.
+          </p>
+          {dog.referral_code ? (
+            <button
+              type="button"
+              className="mt-3 text-sm font-semibold text-accent-deep underline-offset-4 hover:underline"
+              onClick={() => {
+                void navigator.clipboard?.writeText(dog.referral_code).then(
+                  () => toast.success("Code copied."),
+                  () => toast.error("Could not copy."),
+                );
+              }}
+            >
+              Copy code
+            </button>
+          ) : null}
+          {(dog.referral_gifts ?? []).length ? (
+            <ul className="mt-4 space-y-1 text-sm text-ink">
+              {(dog.referral_gifts ?? []).map((gift) => (
+                <li key={`${gift.created_at}-${gift.referred_name}`}>A free hour for sending {gift.referred_name}.</li>
+              ))}
+            </ul>
+          ) : null}
         </CardBody>
       </Card>
       <Card className="lg:col-span-2">

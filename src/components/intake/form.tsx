@@ -8,6 +8,7 @@ import type { IntakeInput } from "@/lib/server/dogs";
 import { formatUsPhone } from "@/lib/phone";
 import { formatUsAddress } from "@/lib/address";
 import { formatEmail, formatProperName, formatSentenceStart } from "@/lib/text";
+import { normalizeReferralCode } from "@/lib/server/referrals";
 import { DateField, WhenPicker } from "@/components/portal/when-picker";
 import { hoursSummary, type HoursDay } from "@/lib/hours";
 
@@ -35,6 +36,7 @@ const empty: IntakeInput = {
   vet_info: "",
   preferred_days: "",
   referral_source: "",
+  referred_by_code: "",
   preferred_at: "",
   photo_url: null,
 };
@@ -179,6 +181,8 @@ export function IntakeForm({
     };
     if (heard === FRIEND) next.referral_source = friendSource(friend);
     else if (heard === "Other") next.referral_source = other.trim();
+    else next.referral_source = heard;
+    next.referred_by_code = heard === FRIEND ? normalizeReferralCode(form.referred_by_code) : "";
     setHeardFriend(friend);
     setHeardOther(other);
     setForm(next);
@@ -455,6 +459,7 @@ export function IntakeForm({
             })}
           </div>
           {heard === FRIEND ? (
+            <>
             <label className="mt-3 flex max-w-sm flex-col gap-2">
               <span className="text-sm font-bold text-[#1a0e0a]">Who should I thank?</span>
               <Input
@@ -473,6 +478,20 @@ export function IntakeForm({
                 aria-label="Name of the friend or neighbor"
               />
             </label>
+            <label className="mt-3 flex max-w-sm flex-col gap-2">
+              <span className="text-sm font-bold text-[#1a0e0a]">Their code, if they have one</span>
+              <Input
+                value={form.referred_by_code}
+                onChange={(e) => set("referred_by_code", e.target.value.toUpperCase())}
+                onBlur={(e) => set("referred_by_code", normalizeReferralCode(e.target.value))}
+                placeholder="LUIS"
+                autoComplete="off"
+                aria-label="Referral code"
+                className="uppercase"
+              />
+              <span className="text-xs text-faint">Optional. After your consult, a free hour is added to their account.</span>
+            </label>
+            </>
           ) : null}
           {heard === "Other" ? (
             <Textarea

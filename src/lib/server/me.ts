@@ -6,6 +6,7 @@ import { linkDogsByEmail, loadStudio, stripPrivate, userEmail } from "./helpers"
 import { ensureDemoSeed } from "./seed-demo";
 import { normalizeHours, serializeHours } from "@/lib/hours";
 import { normalizeUsPhone } from "@/lib/phone";
+import { attachReferrals } from "./referrals";
 
 export const getMe = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
@@ -19,6 +20,7 @@ export const getMe = createServerFn({ method: "GET" })
     const dogs = isTrainer
       ? await sql<DogRow>`select * from dogs order by created_at desc`
       : await sql<DogRow>`select * from dogs where owner_user_id = ${context.userId} order by created_at desc`;
+    await attachReferrals(sql, dogs);
     return {
       userId: context.userId,
       email,
