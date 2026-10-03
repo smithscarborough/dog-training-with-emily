@@ -859,23 +859,7 @@
 
 .holiday-banner {
   position: relative;
-  display: flex;
-  min-height: 104px;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
-  padding: 22px 28px;
-}
-.holiday-banner p {
-  position: relative;
-  z-index: 1;
-  max-width: 34rem;
-  margin: 0;
-  text-align: center;
-  font-size: 0.95rem;
-  font-weight: 500;
-  line-height: 1.45;
-  text-wrap: balance;
 }
 .holiday-banner-svg {
   position: absolute;
@@ -883,44 +867,17 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
-  mask-image: linear-gradient(90deg, #000 0%, #000 18%, transparent 34%, transparent 66%, #000 82%, #000 100%);
 }
-.holiday-twinkle {
-  animation: holiday-twinkle 4.8s ease-in-out infinite;
+.holiday-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent 0%, var(--holiday-bg) 16%, var(--holiday-bg) 84%, transparent 100%);
+  opacity: 0.55;
 }
-.holiday-drift {
-  animation: holiday-drift 8s ease-in-out infinite;
-}
-@keyframes holiday-twinkle {
-  0%,
-  100% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-@keyframes holiday-drift {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(8px, -5px);
-  }
-}
-@media (min-width: 640px) {
-  .holiday-banner {
-    min-height: 112px;
-  }
-  .holiday-banner p {
-    font-size: 1.05rem;
-  }
-}
-@media (max-width: 639px) {
-  .holiday-banner-svg {
-    mask-image: linear-gradient(90deg, #000 0%, transparent 26%, transparent 74%, #000 100%);
-  }
+.holiday-banner.is-memorial {
+  box-shadow: inset 0 -2px 0 #8c3e3a;
 }
 .holiday-preview {
   position: fixed;
@@ -1002,9 +959,7 @@
   }
   .photo-upload-ring,
   .photo-upload-veil::after,
-  .photo-upload-dots i,
-  .holiday-twinkle,
-  .holiday-drift {
+  .photo-upload-dots i {
     animation: none;
   }
 }
