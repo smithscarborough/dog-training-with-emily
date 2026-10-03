@@ -1,4 +1,4 @@
-/** US phone as 713-555-0148. Drops a leading 1. Extra digits are ignored. */
+/** US phone as 713-555-1234. Drops a leading 1. Extra digits are ignored. */
 export function phoneDigits(value: string): string {
   let digits = value.replace(/\D/g, "");
   if (digits.length === 11 && digits.startsWith("1")) digits = digits.slice(1);
@@ -20,7 +20,7 @@ export function normalizeUsPhone(value: string, required: boolean): string {
     return "";
   }
   if (digits.length !== 10) {
-    throw new Error("Enter a 10-digit phone number, like 713-555-0148.");
+    throw new Error("Enter a 10-digit phone number, like 713-555-1234.");
   }
   return formatted;
 }

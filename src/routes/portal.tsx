@@ -1588,7 +1588,7 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
                   inputMode="tel"
                   value={draft.owner_phone}
                   onChange={(e) => patch("owner_phone", formatUsPhone(e.target.value))}
-                  placeholder="713-555-0148"
+                  placeholder="713-555-1234"
                 />
               </Field>
               <Field label="Email" required hint="How Emily reaches you. This does not change your login.">

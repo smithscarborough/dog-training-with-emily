@@ -230,7 +230,7 @@ export function IntakeForm({
               autoComplete="tel"
               value={form.owner_phone}
               onChange={(e) => set("owner_phone", formatUsPhone(e.target.value))}
-              placeholder="713-555-0148"
+              placeholder="713-555-1234"
               required
             />
           </Field>

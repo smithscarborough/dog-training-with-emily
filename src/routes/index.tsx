@@ -476,7 +476,7 @@ function Contact() {
               autoComplete="tel"
               value={phone}
               onChange={(e) => setPhone(formatUsPhone(e.target.value))}
-              placeholder="713-555-0148"
+              placeholder="713-555-1234"
             />
           </Field>
           <Field label="What’s going on at home?">
