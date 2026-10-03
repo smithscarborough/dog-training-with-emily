@@ -473,13 +473,13 @@ export function IntakeForm({
                   setHeardFriend(name);
                   set("referral_source", friendSource(name));
                 }}
-                placeholder="Jordan Miller"
+                placeholder="Friend or neighbor's name"
                 autoComplete="off"
                 aria-label="Name of the friend or neighbor"
               />
             </label>
             <label className="mt-3 flex max-w-sm flex-col gap-2">
-              <span className="text-sm font-bold text-[#1a0e0a]">Their code, if they have one</span>
+              <span className="text-sm font-bold text-[#1a0e0a]">Their referral code, if they have one</span>
               <Input
                 value={form.referred_by_code}
                 onChange={(e) => set("referred_by_code", e.target.value.toUpperCase())}
