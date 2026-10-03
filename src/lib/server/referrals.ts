@@ -164,19 +164,38 @@ export async function attachReferrals(sql: Sql, dogs: DogRow[]) {
 }
 
 export const giveThankYouHour = createServerFn({ method: "POST" })
-  .validator((data: { dogId: number; name: string }) => data)
+  .validator((data: { dogId: number; name?: string; referredDogId?: number | null }) => ({
+    dogId: data.dogId,
+    name: data.name ?? "",
+    referredDogId: data.referredDogId ?? null,
+  }))
   .middleware([authMiddleware])
   .handler(async ({ context, data }) => {
     await requireTrainer(context.userId);
-    const name = data.name.trim().replace(/\s+/g, " ").slice(0, 80);
-    if (!name) throw new Error("Add the person’s name.");
     const sql = await getSql();
     const dogs = await sql<{ id: number }>`select id from dogs where id = ${data.dogId}`;
     if (!dogs[0]) throw new Error("Not found");
+    const referredDogId =
+      data.referredDogId && data.referredDogId !== data.dogId ? data.referredDogId : null;
+    let name = data.name.trim().replace(/\s+/g, " ").slice(0, 80);
+    if (referredDogId) {
+      const people = await sql<{ owner_name: string; name: string }>`
+        select owner_name, name from dogs where id = ${referredDogId}
+      `;
+      const person = people[0];
+      if (!person) throw new Error("That client isn't on file.");
+      const already = await sql<{ id: number }>`
+        select id from referral_gifts where referred_dog_id = ${referredDogId} limit 1
+      `;
+      if (already.length) throw new Error("That person already earned someone a thank-you hour.");
+      name = `${person.owner_name} · ${person.name}`.slice(0, 80);
+    } else if (!name) {
+      throw new Error("Add the person’s name.");
+    }
     await sql`update dogs set credits = credits + 1, updated_at = now() where id = ${data.dogId}`;
     await sql`
       insert into referral_gifts (referrer_dog_id, referred_dog_id, referred_name)
-      values (${data.dogId}, null, ${name})
+      values (${data.dogId}, ${referredDogId}, ${name})
     `;
     return { ok: true };
   });

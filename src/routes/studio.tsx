@@ -928,6 +928,7 @@ function Clients({
       {dog ? (
         <ClientDetail
           dog={dog}
+          dogs={dogs}
           onRefresh={onRefresh}
           onNotes={onNotes}
           leading={onboardForm}
@@ -1062,6 +1063,7 @@ function ClientSectionNav({ initial = "client-visits" }: { initial?: string }) {
 
 function ClientDetail({
   dog,
+  dogs,
   onRefresh,
   onNotes,
   leading,
@@ -1073,6 +1075,7 @@ function ClientDetail({
   onSessionOpened,
 }: {
   dog: DogRow;
+  dogs: DogRow[];
   onRefresh: () => void;
   onNotes: () => void;
   leading?: ReactNode;
@@ -1086,6 +1089,7 @@ function ClientDetail({
   const [notes, setNotes] = useState(dog.trainer_private_notes);
   const [savedNote, setSavedNote] = useState(dog.trainer_private_notes);
   const [credits, setCredits] = useState(String(dog.credits));
+  const [giftPick, setGiftPick] = useState("");
   const [giftName, setGiftName] = useState("");
   const [incomingCode, setIncomingCode] = useState(dog.referred_by_code || "");
   const [birthday, setBirthday] = useState(dog.birthday || "");
@@ -1110,6 +1114,7 @@ function ClientDetail({
     setNotes(dog.trainer_private_notes);
     setSavedNote(dog.trainer_private_notes);
     setCredits(String(dog.credits));
+    setGiftPick("");
     setGiftName("");
     setIncomingCode(dog.referred_by_code || "");
     setBirthday(dog.birthday || "");
@@ -1462,18 +1467,46 @@ function ClientDetail({
             <div className="space-y-3 border-t border-line pt-4">
               <p className="text-sm font-bold text-[#1a0e0a]">Someone they already sent</p>
               <p className="text-sm leading-relaxed text-muted">
-                Use this only if they referred someone before the code existed. Type that person’s name, then add the hour.
+                Pick them from your clients. The dog and email are there so two people with the same name stay separate. If they aren’t a client yet, type their full name.
               </p>
-              <Field label="Their name">
-                <Input value={giftName} onChange={(e) => setGiftName(e.target.value)} placeholder="Maria Alvarez" />
+              <Field label="Who was it?">
+                <select
+                  className="h-11 w-full rounded-md border border-line bg-surface px-3 text-sm"
+                  value={giftPick}
+                  onChange={(e) => {
+                    setGiftPick(e.target.value);
+                    if (e.target.value !== "other") setGiftName("");
+                  }}
+                >
+                  <option value="">Choose a client</option>
+                  {dogs
+                    .filter((other) => other.id !== dog.id)
+                    .slice()
+                    .sort((a, b) => a.owner_name.localeCompare(b.owner_name) || a.name.localeCompare(b.name))
+                    .map((other) => (
+                      <option key={other.id} value={String(other.id)}>
+                        {other.owner_name} · {other.name}
+                        {other.owner_email ? ` · ${other.owner_email}` : ""}
+                      </option>
+                    ))}
+                  <option value="other">Not a client yet</option>
+                </select>
               </Field>
+              {giftPick === "other" ? (
+                <Field label="Their full name">
+                  <Input value={giftName} onChange={(e) => setGiftName(e.target.value)} placeholder="Jordan Miller" />
+                </Field>
+              ) : null}
               <Button
                 size="sm"
-                disabled={!giftName.trim()}
+                disabled={giftPick === "other" ? !giftName.trim() : !giftPick}
                 onClick={() => {
-                  const name = giftName.trim();
-                  void giveThankYouHour({ data: { dogId: dog.id, name } })
+                  const referredDogId = giftPick === "other" ? null : Number(giftPick);
+                  void giveThankYouHour({
+                    data: { dogId: dog.id, name: giftName.trim(), referredDogId },
+                  })
                     .then(() => {
+                      setGiftPick("");
                       setGiftName("");
                       toast.success("Thank-you hour added.");
                       onRefresh();
