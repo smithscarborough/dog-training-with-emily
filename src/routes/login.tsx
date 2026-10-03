@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { EspressoBanner } from "@/components/layout/espresso-banner";
@@ -8,7 +8,7 @@ import { Field } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { GROK_PROVIDERS, authClient, authEnabled, signIn } from "@/lib/auth/client";
 import { QA_ADMIN } from "@/lib/qa-admin";
-import { SignInGate } from "@/lib/auth/gates";
+import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { becomeTrainer } from "@/lib/server/me";
 import { seedDemoIfNeeded } from "@/lib/server/seed-demo-fn";
 
@@ -73,18 +73,41 @@ function LoginPage() {
           <span className="font-semibold text-ink">TEDDY</span>.
         </p>
         <div className="mx-auto mt-10 w-full max-w-md text-left">
-          <SignInGate fallback={<AuthCard preferStudio={as === "trainer"} />}>
-            <AlreadyIn preferStudio={as === "trainer"} />
-          </SignInGate>
+          <LoginAuth preferStudio={as === "trainer"} />
         </div>
       </main>
     </div>
   );
 }
 
+function LoginAuth({ preferStudio }: { preferStudio: boolean }) {
+  const { user, isPending } = useCurrentUserState();
+  const shown = useRef<"in" | "out" | null>(null);
+  if (!isPending) shown.current = user ? "in" : "out";
+  const state = isPending ? shown.current : user ? "in" : "out";
+
+  if (state === "in") return <AlreadyIn preferStudio={preferStudio} />;
+  if (state === "out") return <AuthCard preferStudio={preferStudio} />;
+  return null;
+}
+
 function AlreadyIn({ preferStudio }: { preferStudio: boolean }) {
+  useLayoutEffect(() => {
+    const scroller = document.getElementById("app-scroll");
+    const card = document.getElementById("signed-in-card");
+    if (!scroller || !card) return;
+    const headerH = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+    const top =
+      card.getBoundingClientRect().top -
+      scroller.getBoundingClientRect().top +
+      scroller.scrollTop -
+      headerH -
+      24;
+    scroller.scrollTop = Math.max(0, top);
+  }, []);
+
   return (
-    <Card>
+    <Card id="signed-in-card">
       <CardBody className="space-y-4">
         <h2 className="font-display text-2xl">You’re signed in.</h2>
         <p className="text-sm text-muted">
@@ -110,7 +133,6 @@ function AlreadyIn({ preferStudio }: { preferStudio: boolean }) {
 
 function QaEmilyButton() {
   const [busy, setBusy] = useState(false);
-  const navigate = useNavigate();
 
   async function go() {
     if (!authEnabled) return;
@@ -124,7 +146,7 @@ function QaEmilyButton() {
       });
       if (error) throw new Error(error.message ?? "Could not sign in.");
       toast.success("Signed in as Emily.");
-      await navigate({ to: "/studio" });
+      window.location.assign("/studio");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not open the studio.");
     } finally {
