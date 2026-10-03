@@ -13,6 +13,7 @@ import { getMe } from "@/lib/server/me";
 import { checkClientSignup } from "@/lib/server/dogs";
 import { primeMe } from "@/lib/use-me";
 import { seedDemoIfNeeded } from "@/lib/server/seed-demo-fn";
+import { formatEmail, formatProperName } from "@/lib/text";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -192,9 +193,13 @@ function AuthCard({
     if (!authEnabled) return;
     setBusy(true);
     let signedInId = "";
+    const cleanEmail = formatEmail(email);
+    const cleanName = formatProperName(name);
+    setEmail(cleanEmail);
+    if (mode === "up") setName(cleanName);
     try {
       if (mode === "up") {
-        const gate = await checkClientSignup({ data: { email: email.trim() } });
+        const gate = await checkClientSignup({ data: { email: cleanEmail } });
         if (gate.status !== "ok") {
           setSignupNote(gate.status);
           setNoteFlash((n) => n + 1);
@@ -205,9 +210,9 @@ function AuthCard({
         setHandoff(true);
         freezeSignedOutHeader(true);
         const { data, error } = await authClient.signUp.email({
-          email: email.trim(),
+          email: cleanEmail,
           password,
-          name: name.trim() || email.split("@")[0]!,
+          name: cleanName || cleanEmail.split("@")[0]!,
         });
         if (error || !data?.user) throw new Error(error?.message ?? "Could not create account.");
         signedInId = data.user.id;
@@ -217,7 +222,7 @@ function AuthCard({
         setHandoff(true);
         freezeSignedOutHeader(true);
         const { data, error } = await authClient.signIn.email({
-          email: email.trim(),
+          email: cleanEmail,
           password,
         });
         if (error || !data?.user) throw new Error(error?.message ?? "Could not sign in.");
@@ -261,7 +266,13 @@ function AuthCard({
               ) : null}
               {mode === "up" ? (
                 <Field label="Your name">
-                  <Input value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
+                  <Input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    onBlur={(e) => setName(formatProperName(e.target.value))}
+                    required
+                    autoComplete="name"
+                  />
                 </Field>
               ) : null}
               <Field label="Email">
@@ -272,6 +283,7 @@ function AuthCard({
                     setEmail(e.target.value);
                     setSignupNote(null);
                   }}
+                  onBlur={(e) => setEmail(formatEmail(e.target.value))}
                   required
                   autoComplete="email"
                 />
