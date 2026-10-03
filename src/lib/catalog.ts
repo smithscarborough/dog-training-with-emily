@@ -136,6 +136,13 @@ export function sessionTypeById(id: string) {
   return SESSION_TYPES.find((s) => s.id === id) ?? SESSION_TYPES[0];
 }
 
+/** One credit is one training hour. A consult is its own visit and does not use a credit. */
+export function creditsForSession(id: string) {
+  if (id === "hour") return 1;
+  if (id === "two_hour") return 2;
+  return 0;
+}
+
 /** A consult counts once it is completed, or its time has passed and it was not cancelled. */
 export function consultHasHappened(
   rows: { session_type: string; status: string; scheduled_at: string }[],

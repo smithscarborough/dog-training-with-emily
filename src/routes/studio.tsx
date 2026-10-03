@@ -1435,7 +1435,7 @@ function ClientDetail({
               <Input value={credits} onChange={(e) => setCredits(e.target.value)} />
             </Field>
             <p className="text-xs leading-relaxed text-muted">
-              Set this when a series is purchased. One credit comes off when you mark a session completed. The client can see the count, but cannot change it.
+              Set this when hours are purchased. A 1-hour session uses one. A 2-hour session uses two. A consult does not. The client can see the count, but cannot change it.
             </p>
             <Button
               size="sm"

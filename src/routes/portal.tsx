@@ -347,7 +347,7 @@ function HomeTab({
         <CardBody>
           <p className="font-display text-4xl tabular-nums">{dog.credits}</p>
           <p className="mt-2 text-sm text-muted">
-            Hours left. One is used when a visit is completed.
+            One credit is one training hour. A 1-hour session uses one, and a 2-hour session uses two. A consult does not.
           </p>
         </CardBody>
       </Card>
