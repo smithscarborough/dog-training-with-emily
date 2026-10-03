@@ -369,10 +369,19 @@ export function IntakeForm({
               ) : null}
             </Field>
           ) : null}
-          <div className="sm:col-span-2">
-            <AvailabilityFields value={form.preferred_days} onChange={(value) => set("preferred_days", value)} />
-          </div>
         </div>
+      </section>
+
+      <section className="space-y-5">
+        <h2 className={heading}>Visits after the consult</h2>
+        <p className="text-sm text-muted">
+          Optional. Skip this if you’re not sure yet. These days are for training visits, not the consult above.
+        </p>
+        <AvailabilityFields
+          framed={false}
+          value={form.preferred_days}
+          onChange={(value) => set("preferred_days", value)}
+        />
       </section>
 
       <section className="space-y-5">

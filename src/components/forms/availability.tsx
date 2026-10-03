@@ -156,10 +156,12 @@ export function AvailabilityFields({
   value,
   onChange,
   compact = false,
+  framed = true,
 }: {
   value: string;
   onChange: (next: string) => void;
   compact?: boolean;
+  framed?: boolean;
 }) {
   const parsed = parseAvailability(value);
   const [byDay, setByDay] = useState(() => parsed.kind === "byDay");
@@ -236,8 +238,8 @@ export function AvailabilityFields({
 
   return (
     <fieldset>
-      <legend className={legend}>Days that usually work</legend>
-      <p className="mt-1 text-xs text-faint">Optional. For visits after the consult.</p>
+      <legend className={framed ? legend : "sr-only"}>Days that usually work</legend>
+      {framed ? <p className="mt-1 text-xs text-faint">Optional. For visits after the consult.</p> : null}
       <div className="mt-4">
         <p className="text-sm font-bold text-[#1a0e0a]">Days</p>
         <div
