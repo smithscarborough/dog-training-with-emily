@@ -6,42 +6,78 @@ import { requireTrainer } from "./helpers";
 
 export type ReferralGift = { referred_name: string; created_at: string };
 
-export function referralCodeBase(name: string) {
-  const first = name.trim().split(/\s+/)[0] ?? "";
-  const base = first
+function letters(value: string) {
+  return value
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-zA-Z]/g, "")
     .toUpperCase();
-  return (base || "FRIEND").slice(0, 12);
+}
+
+export function referralCodeStem(ownerName: string, dogName = "") {
+  const parts = ownerName.trim().split(/\s+/).filter(Boolean);
+  const first = letters(parts[0] ?? "").slice(0, 12) || "FRIEND";
+  const last = parts.length > 1 ? letters(parts[parts.length - 1]).slice(0, 1) : "";
+  if (last) return `${first}${last}`.slice(0, 16);
+  const dog = letters(dogName).slice(0, 6);
+  if (dog) return `${first}${dog}`.slice(0, 16);
+  return first;
 }
 
 export function normalizeReferralCode(value: string) {
-  return value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
+  return value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 16);
 }
 
-export async function assignReferralCode(sql: Sql, dogId: number, ownerName: string) {
-  const base = referralCodeBase(ownerName);
+async function codeIsInUse(sql: Sql, dog: DogRow) {
+  const gifts = await sql<{ id: number }>`
+    select id from referral_gifts where referrer_dog_id = ${dog.id} limit 1
+  `;
+  if (gifts.length) return true;
+  if (!dog.referral_code) return false;
+  const used = await sql<{ id: number }>`
+    select id from dogs where referred_by_code = ${dog.referral_code} and id <> ${dog.id} limit 1
+  `;
+  return used.length > 0;
+}
+
+export async function assignReferralCode(
+  sql: Sql,
+  dogId: number,
+  ownerName: string,
+  dogName = "",
+  replace = false,
+) {
+  const stem = referralCodeStem(ownerName, dogName);
   for (let n = 0; n < 30; n++) {
-    const code = n === 0 ? base : `${base.slice(0, 10)}${n + 1}`;
-    const taken = await sql<{ id: number }>`select id from dogs where referral_code = ${code} limit 1`;
-    if (taken.length) continue;
-    const updated = await sql<{ referral_code: string }>`
-      update dogs set referral_code = ${code}
-      where id = ${dogId} and referral_code = ''
-      returning referral_code
+    const code = (n === 0 ? stem : `${stem.slice(0, 14)}${n + 1}`).slice(0, 16);
+    const taken = await sql<{ id: number }>`
+      select id from dogs where referral_code = ${code} and id <> ${dogId} limit 1
     `;
+    if (taken.length) continue;
+    const updated = replace
+      ? await sql<{ referral_code: string }>`
+          update dogs set referral_code = ${code} where id = ${dogId} returning referral_code
+        `
+      : await sql<{ referral_code: string }>`
+          update dogs set referral_code = ${code}
+          where id = ${dogId} and referral_code = ''
+          returning referral_code
+        `;
     if (updated[0]) return updated[0].referral_code;
     const current = await sql<{ referral_code: string }>`select referral_code from dogs where id = ${dogId}`;
-    if (current[0]?.referral_code) return current[0].referral_code;
+    return current[0]?.referral_code ?? "";
   }
   return "";
 }
 
 export async function ensureReferralCodes(sql: Sql, dogs: DogRow[]) {
   for (const dog of dogs) {
-    if (dog.referral_code) continue;
-    dog.referral_code = await assignReferralCode(sql, dog.id, dog.owner_name);
+    const stem = referralCodeStem(dog.owner_name, dog.name);
+    const code = dog.referral_code ?? "";
+    const already = code === stem || (code.startsWith(stem) && /\d$/.test(code));
+    if (already) continue;
+    if (code && (await codeIsInUse(sql, dog))) continue;
+    dog.referral_code = await assignReferralCode(sql, dog.id, dog.owner_name, dog.name, Boolean(code));
   }
 }
 

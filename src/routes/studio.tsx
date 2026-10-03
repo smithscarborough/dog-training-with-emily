@@ -1449,7 +1449,7 @@ function ClientDetail({
               <p className="text-sm font-bold text-[#1a0e0a]">Their code</p>
               <p className="mt-1 font-display text-2xl tracking-wide">{dog.referral_code || "—"}</p>
               <p className="mt-1 text-xs leading-relaxed text-muted">
-                A neighbor types this on the consult form. A free hour lands here when that consult is completed.
+                A neighbor types this on the consult form. It is a first name and last initial, so another client with the same name is not credited. A free hour lands here when that consult is completed.
               </p>
               {(dog.referral_gifts ?? []).length ? (
                 <ul className="mt-2 space-y-1 text-sm text-ink">

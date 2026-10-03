@@ -141,7 +141,7 @@ export const submitPublicIntake = createServerFn({ method: "POST" })
     `;
     const id = inserted[0]?.id;
     if (!id) throw new Error("Could not save intake.");
-    await assignReferralCode(sql, id, data.owner_name);
+    await assignReferralCode(sql, id, data.owner_name, data.name);
     await seedProgressForDog(id);
     return { id };
   });
@@ -190,7 +190,7 @@ export const trainerCreateClient = createServerFn({ method: "POST" })
     `;
     const id = inserted[0]?.id;
     if (!id) throw new Error("Could not create client.");
-    await assignReferralCode(sql, id, data.owner_name);
+    await assignReferralCode(sql, id, data.owner_name, data.name);
     await seedProgressForDog(id);
     return { id };
   });
@@ -273,7 +273,7 @@ export const setupExistingClient = createServerFn({ method: "POST" })
       `;
       dogId = inserted[0]?.id ?? 0;
       if (!dogId) throw new Error("Could not create client.");
-      await assignReferralCode(sql, dogId, intake.owner_name);
+      await assignReferralCode(sql, dogId, intake.owner_name, intake.name);
       for (const visit of visits) {
         await sql`
           insert into sessions (

@@ -484,7 +484,7 @@ export function IntakeForm({
                 value={form.referred_by_code}
                 onChange={(e) => set("referred_by_code", e.target.value.toUpperCase())}
                 onBlur={(e) => set("referred_by_code", normalizeReferralCode(e.target.value))}
-                placeholder="LUIS"
+                placeholder="JORDANM"
                 autoComplete="off"
                 aria-label="Referral code"
                 className="uppercase"

@@ -358,7 +358,7 @@ function HomeTab({
         <CardBody>
           <p className="font-display text-4xl tracking-wide">{dog.referral_code}</p>
           <p className="mt-2 text-sm leading-relaxed text-muted">
-            Have them type this code on the consult form. After their consult, a free hour is added here.
+            Have them type this whole code on the consult form. After their consult, a free hour is added here.
           </p>
           {dog.referral_code ? (
             <button
