@@ -26,7 +26,6 @@ import { notifyEmilyNote, notifyEmilyCancel } from "@/lib/notify-studio";
 import { NoteThread } from "@/components/portal/note-thread";
 import type { CheckinRow, DogRow, ProgressLogRow, ProgressRow, SessionRow, MessageRow } from "@/lib/types";
 import { WhenPicker, DateField } from "@/components/portal/when-picker";
-import { AvailabilityFields, availabilityLabel } from "@/components/forms/availability";
 import { formatUsPhone } from "@/lib/phone";
 import { formatUsAddress } from "@/lib/address";
 import { formatEmail, formatProperName, formatSentenceStart } from "@/lib/text";
@@ -1612,11 +1611,6 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
                   placeholder="None, or ages 4 and 7"
                 />
               </Field>
-              <AvailabilityFields
-                compact
-                value={draft.preferred_days}
-                onChange={(value) => patch("preferred_days", value)}
-              />
             </>
           ) : (
             <>
@@ -1627,7 +1621,6 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
               <Row k="Household" v={dog.household} />
               <Row k="Other pets" v={dog.other_pets} />
               <Row k="Kids" v={dog.kids_in_home} />
-              <Row k="Days that work" v={availabilityLabel(dog.preferred_days)} />
             </>
           )}
         </CardBody>

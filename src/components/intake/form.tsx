@@ -9,7 +9,6 @@ import { formatUsPhone } from "@/lib/phone";
 import { formatUsAddress } from "@/lib/address";
 import { formatEmail, formatProperName, formatSentenceStart } from "@/lib/text";
 import { DateField, WhenPicker } from "@/components/portal/when-picker";
-import { AvailabilityFields } from "@/components/forms/availability";
 import { hoursSummary, type HoursDay } from "@/lib/hours";
 
 const empty: IntakeInput = {
@@ -370,18 +369,6 @@ export function IntakeForm({
             </Field>
           ) : null}
         </div>
-      </section>
-
-      <section className="space-y-5">
-        <h2 className={heading}>Visits after the consult</h2>
-        <p className="text-sm text-muted">
-          Optional. Skip this if you’re not sure yet. These days are for training visits, not the consult above.
-        </p>
-        <AvailabilityFields
-          framed={false}
-          value={form.preferred_days}
-          onChange={(value) => set("preferred_days", value)}
-        />
       </section>
 
       <section className="space-y-5">
