@@ -436,14 +436,8 @@ function Contact() {
     setBusy(true);
     try {
       await createInquiry({ data: { name, email, phone, dogName, message } });
-      const mail = await notifyStudioInbox({ name, email, phone, dogName, message });
-      if (mail === "confirm") {
-        toast.message("Saved. Check Gmail for a one-time “confirm this form” email, then submit once more.");
-      } else if (mail === "failed") {
-        toast.success("Saved in Studio. Email to Gmail didn’t go through this time.");
-      } else {
-        toast.success("Message received. I’ll write back shortly.");
-      }
+      await notifyStudioInbox({ name, email, phone, dogName, message });
+      toast.success("Message received. I’ll write back shortly.");
       setName("");
       setDogName("");
       setEmail("");

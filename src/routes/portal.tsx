@@ -555,12 +555,10 @@ function CheckinCard({
                     note: written,
                     replyUrl: `${window.location.origin}/reply/${saved.token}`,
                   });
-                  if (mail === "failed") {
-                    toast.success("Saved in the portal. The email to Emily didn’t go through this time.");
-                  } else if (mail === "confirm") {
-                    toast.message("Saved. Emily may need to confirm the form email once in Gmail.");
+                  if (mail === "sent") {
+                    toast.success("Sent. Emily will see this before the next session, and her reply shows up here.");
                   } else {
-                    toast.success("Sent. Emily gets this by email, and her reply shows up here.");
+                    toast.success("Sent. Emily will see this before the next session.");
                   }
                 })
                 .catch((err: unknown) =>
@@ -952,13 +950,7 @@ function SessionsTab({
       sessionName: sessionTypeById(pending.sessionType).name,
       whenLabel: formatWhen(pending.scheduledAt),
     }).then((mail) => {
-      if (mail === "failed") {
-        toast.success("Cancelled in the portal. The email to Emily didn’t go through this time.");
-      } else if (mail === "confirm") {
-        toast.message("Cancelled. Emily may need to confirm the form email once in Gmail.");
-      } else {
-        toast.success("Cancelled. Emily gets an email, and it shows on her board.");
-      }
+      toast.success(mail === "sent" ? "Cancelled. Emily will see this." : "Cancelled.");
     });
   }
 
@@ -968,7 +960,7 @@ function SessionsTab({
     setPendingCancel(null);
     void restoreOwnSession({ data: { sessionId: pending.id, status: pending.previous } })
       .then(() => {
-        toast.success("Restored. Emily was not emailed.");
+        toast.success("Restored.");
         return load();
       })
       .catch((err: unknown) =>
