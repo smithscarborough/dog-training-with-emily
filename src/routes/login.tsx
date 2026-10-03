@@ -283,11 +283,14 @@ function AuthCard({
               </Field>
               {signupNote === "unknown" ? (
                 <p role="alert" className="rounded-lg border border-line bg-bg px-4 py-3 text-center text-sm leading-relaxed text-ink">
-                  We don’t have this email yet.{" "}
-                  <Link to="/intake" className="font-semibold underline underline-offset-4">
-                    Book a consult
-                  </Link>
-                  , then come back to create your login.
+                  Looks like we don’t have this email yet.
+                  <span className="mt-1 block">
+                    Please{" "}
+                    <Link to="/intake" className="font-semibold underline underline-offset-4">
+                      book a consult
+                    </Link>
+                    , then come back to create your login.
+                  </span>
                 </p>
               ) : null}
               {signupNote === "exists" ? (
