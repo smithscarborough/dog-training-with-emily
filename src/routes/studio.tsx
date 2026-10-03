@@ -151,6 +151,7 @@ function StudioApp({
   const [waiting, setWaiting] = useState<MessageRow[]>([]);
   const [noteFocus, setNoteFocus] = useState<number | null>(null);
   const [checkinFocus, setCheckinFocus] = useState<number | null>(null);
+  const [sessionFocus, setSessionFocus] = useState<number | null>(null);
   const pending = dogs.filter((d) => d.status === "pending");
   const active = dogs.filter((d) => d.status === "active");
 
@@ -224,6 +225,14 @@ function StudioApp({
                 setSelected(id);
                 setTab("clients");
               }}
+              onOpenSession={(dogId, sessionId) => {
+                holdStudioView();
+                setSelected(dogId);
+                setSessionFocus(sessionId);
+                setCheckinFocus(null);
+                setNoteFocus(null);
+                setTab("clients");
+              }}
               onCheckin={(dogId, checkinId) => {
                 holdStudioView();
                 setSelected(dogId);
@@ -255,6 +264,11 @@ function StudioApp({
               onCheckinOpened={() => {
                 showStudioView();
                 setCheckinFocus(null);
+              }}
+              focusSession={sessionFocus}
+              onSessionOpened={() => {
+                showStudioView();
+                setSessionFocus(null);
               }}
             />
           ) : null}
@@ -349,12 +363,14 @@ function Board({
   dogs,
   waiting,
   onOpen,
+  onOpenSession,
   onReply,
   onCheckin,
 }: {
   dogs: DogRow[];
   waiting: MessageRow[];
   onOpen: (id: number) => void;
+  onOpenSession: (dogId: number, sessionId: number) => void;
   onReply: (id: number) => void;
   onCheckin: (dogId: number, checkinId: number) => void;
 }) {
@@ -435,7 +451,7 @@ function Board({
           </CardHeader>
           <CardBody className="space-y-3">
             {justCancelled.map((s) => (
-              <BoardSession key={s.id} session={s} onOpen={onOpen} />
+              <BoardSession key={s.id} session={s} onOpen={onOpen} onOpenSession={onOpenSession} />
             ))}
           </CardBody>
         </Card>
@@ -448,7 +464,7 @@ function Board({
           {toConfirm.length === 0 ? (
             <p className="text-sm text-muted">No pending sessions.</p>
           ) : (
-            toConfirm.map((s) => <BoardSession key={s.id} session={s} onOpen={onOpen} showClient />)
+            toConfirm.map((s) => <BoardSession key={s.id} session={s} onOpen={onOpen} onOpenSession={onOpenSession} showClient />)
           )}
         </CardBody>
       </Card>
@@ -520,7 +536,7 @@ function Board({
           {comingUp.length === 0 ? (
             <p className="text-sm text-muted">Nothing confirmed on the calendar yet.</p>
           ) : (
-            comingUp.map((s) => <BoardSession key={s.id} session={s} onOpen={onOpen} />)
+            comingUp.map((s) => <BoardSession key={s.id} session={s} onOpen={onOpen} onOpenSession={onOpenSession} />)
           )}
         </CardBody>
       </Card>
@@ -613,17 +629,21 @@ function Board({
 function BoardSession({
   session,
   onOpen,
+  onOpenSession,
   showClient = false,
 }: {
   session: SessionRow;
   onOpen: (id: number) => void;
+  onOpenSession?: (dogId: number, sessionId: number) => void;
   showClient?: boolean;
 }) {
   return (
     <button
       type="button"
       className="flex w-full items-start justify-between gap-3 rounded-lg px-3 py-3 text-left hairline transition-colors hover:bg-bg"
-      onClick={() => onOpen(session.dog_id)}
+      onClick={() =>
+        onOpenSession ? onOpenSession(session.dog_id, session.id) : onOpen(session.dog_id)
+      }
     >
       <span className="min-w-0">
         <span className="block font-medium">{session.dog_name}</span>
@@ -699,6 +719,8 @@ function Clients({
   onNotesOpened,
   focusCheckin = null,
   onCheckinOpened,
+  focusSession = null,
+  onSessionOpened,
 }: {
   dogs: DogRow[];
   selected: number | null;
@@ -709,6 +731,8 @@ function Clients({
   onNotesOpened?: () => void;
   focusCheckin?: number | null;
   onCheckinOpened?: () => void;
+  focusSession?: number | null;
+  onSessionOpened?: () => void;
 }) {
   const [q, setQ] = useState("");
   const [formMode, setFormMode] = useState<null | "new" | "existing">(null);
@@ -912,6 +936,8 @@ function Clients({
           onNotesOpened={onNotesOpened}
           focusCheckin={focusCheckin}
           onCheckinOpened={onCheckinOpened}
+          focusSession={focusSession}
+          onSessionOpened={onSessionOpened}
         />
       ) : (
         <div className="space-y-6">
@@ -1044,6 +1070,8 @@ function ClientDetail({
   onNotesOpened,
   focusCheckin = null,
   onCheckinOpened,
+  focusSession = null,
+  onSessionOpened,
 }: {
   dog: DogRow;
   onRefresh: () => void;
@@ -1053,6 +1081,8 @@ function ClientDetail({
   onNotesOpened?: () => void;
   focusCheckin?: number | null;
   onCheckinOpened?: () => void;
+  focusSession?: number | null;
+  onSessionOpened?: () => void;
 }) {
   const [notes, setNotes] = useState(dog.trainer_private_notes);
   const [savedNote, setSavedNote] = useState(dog.trainer_private_notes);
@@ -1065,6 +1095,7 @@ function ClientDetail({
   const [checkinsReady, setCheckinsReady] = useState(false);
   const [readyFor, setReadyFor] = useState<number | null>(null);
   const [litCheckin, setLitCheckin] = useState<number | null>(null);
+  const [litSession, setLitSession] = useState<number | null>(null);
   const [thread, setThread] = useState<MessageRow[]>([]);
   const [status, setStatus] = useState(dog.status);
   const [statusBusy, setStatusBusy] = useState(false);
@@ -1189,6 +1220,43 @@ function ClientDetail({
     return () => window.clearTimeout(timer);
   }, [litCheckin]);
 
+  const sessionOpened = useRef(onSessionOpened);
+  sessionOpened.current = onSessionOpened;
+
+  useLayoutEffect(() => {
+    if (focusSession == null || readyFor !== dog.id) return;
+    const scroller = document.getElementById("app-scroll");
+    const target = document.getElementById(`session-${focusSession}`) ?? document.getElementById("client-visits");
+    if (!scroller || !target) {
+      showStudioView();
+      sessionOpened.current?.();
+      return;
+    }
+    const headerH = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+    const top =
+      target.getBoundingClientRect().top -
+      scroller.getBoundingClientRect().top +
+      scroller.scrollTop -
+      headerH -
+      16;
+    scroller.scrollTo({ top: Math.max(0, top) });
+    showStudioView();
+    setLitSession(focusSession);
+    sessionOpened.current?.();
+  }, [focusSession, readyFor, dog.id, sessions.length]);
+
+  useEffect(() => {
+    if (focusSession == null) return;
+    const timer = window.setTimeout(showStudioView, 4000);
+    return () => window.clearTimeout(timer);
+  }, [focusSession]);
+
+  useEffect(() => {
+    if (litSession == null) return;
+    const timer = window.setTimeout(() => setLitSession(null), 2500);
+    return () => window.clearTimeout(timer);
+  }, [litSession]);
+
   const byKey = useMemo(
     () => Object.fromEntries(current.map((p) => [p.skill_key, p])),
     [current],
@@ -1296,9 +1364,14 @@ function ClientDetail({
               .slice()
               .sort(compareSessionList)
               .map((s) => (
-              <SessionEditor key={s.id} session={s} onChange={() => {
-                void listSessions({ data: { dogId: dog.id } }).then(setSessions);
-              }} />
+              <SessionEditor
+                key={s.id}
+                session={s}
+                lit={litSession === s.id}
+                onChange={() => {
+                  void listSessions({ data: { dogId: dog.id } }).then(setSessions);
+                }}
+              />
             ))}
           </ul>
           <div className="mt-6 border-t border-line pt-5">
@@ -1911,7 +1984,15 @@ function GrantedLogin({
   );
 }
 
-function SessionEditor({ session, onChange }: { session: SessionRow; onChange: () => void }) {
+function SessionEditor({
+  session,
+  onChange,
+  lit = false,
+}: {
+  session: SessionRow;
+  onChange: () => void;
+  lit?: boolean;
+}) {
   const [recap, setRecap] = useState(session.recap);
   const [homework, setHomework] = useState(session.homework);
   const [priv, setPriv] = useState(session.trainer_private_notes);
@@ -1970,7 +2051,10 @@ function SessionEditor({ session, onChange }: { session: SessionRow; onChange: (
   const showCloseout = status === "completed" || closing;
 
   return (
-    <li className="rounded-lg bg-bg p-3">
+    <li
+      id={`session-${session.id}`}
+      className={cn("rounded-lg bg-bg p-3", lit && "ring-2 ring-accent")}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-medium">{sessionTypeById(session.session_type).name}</p>
