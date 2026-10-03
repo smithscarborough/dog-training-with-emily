@@ -39,20 +39,19 @@ function LoginPage() {
   }, []);
   return (
     <div data-login-root className="min-h-dvh">
-      <main className="mx-auto w-full max-w-lg px-5 py-12 text-center sm:px-6 lg:py-16">
-        <p className="text-sm text-muted">Login</p>
-        <h1 className="mt-2 font-display text-4xl tracking-tight">Sign in.</h1>
-        <p className="mx-auto mt-4 max-w-md text-muted leading-relaxed">
-          Sign in with the email from your consult, or continue with Google or X.
+      <main className="mx-auto w-full max-w-lg px-5 py-10 text-center sm:px-6 lg:py-14">
+        <h1 className="font-display text-4xl tracking-tight">Sign in.</h1>
+        <p className="mx-auto mt-4 max-w-sm text-muted leading-relaxed">
+          Welcome back. Use the email from your consult.
         </p>
-        <p className="mx-auto mt-4 max-w-md text-muted leading-relaxed">
+        <p className="mx-auto mt-3 max-w-sm text-muted leading-relaxed">
           New here?{" "}
           <Link to="/intake" className="text-ink underline underline-offset-4">
             Book a consult
-          </Link>{" "}
-          first. You can create a login later.
+          </Link>
+          . You don’t need an account yet.
         </p>
-        <div className="mx-auto mt-10 w-full max-w-md text-left">
+        <div className="mx-auto mt-8 w-full max-w-md text-left">
           <LoginAuth preferStudio={as === "trainer"} handoff={handoff} setHandoff={setHandoff} />
         </div>
       </main>
