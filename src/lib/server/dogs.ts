@@ -142,6 +142,24 @@ export const submitPublicIntake = createServerFn({ method: "POST" })
     return { id };
   });
 
+export const checkClientSignup = createServerFn({ method: "POST" })
+  .validator((data: { email: string }) => ({ email: formatEmail(data.email ?? "") }))
+  .handler(async ({ data }): Promise<{ status: "ok" | "unknown" | "exists" | "invalid" }> => {
+    const email = data.email;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { status: "invalid" };
+    const sql = await getSql();
+    const dogs = await sql<{ id: number }>`
+      select id from dogs
+      where lower(owner_email) = ${email}
+        and status <> 'archived'
+      limit 1
+    `;
+    if (!dogs[0]) return { status: "unknown" };
+    const users = await sql<{ id: string }>`select id from "user" where lower(email) = ${email} limit 1`;
+    if (users[0]) return { status: "exists" };
+    return { status: "ok" };
+  });
+
 export const trainerCreateClient = createServerFn({ method: "POST" })
   .validator((data: IntakeInput) => cleanIntake(data))
   .middleware([authMiddleware])

@@ -10,6 +10,7 @@ import { QA_ADMIN } from "@/lib/qa-admin";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { freezeSignedOutHeader } from "@/lib/auth/header-hold";
 import { getMe } from "@/lib/server/me";
+import { checkClientSignup } from "@/lib/server/dogs";
 import { primeMe } from "@/lib/use-me";
 import { seedDemoIfNeeded } from "@/lib/server/seed-demo-fn";
 
@@ -179,17 +180,25 @@ function AuthCard({
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [paws, setPaws] = useState(0);
+  const [signupNote, setSignupNote] = useState<null | "unknown" | "exists" | "invalid">(null);
   const router = useRouter();
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (!authEnabled) return;
     setBusy(true);
-    setHandoff(true);
-    freezeSignedOutHeader(true);
     let signedInId = "";
     try {
       if (mode === "up") {
+        const gate = await checkClientSignup({ data: { email: email.trim() } });
+        if (gate.status !== "ok") {
+          setSignupNote(gate.status);
+          return;
+        }
+        setSignupNote(null);
+        setPaws((n) => n + 1);
+        setHandoff(true);
+        freezeSignedOutHeader(true);
         const { data, error } = await authClient.signUp.email({
           email: email.trim(),
           password,
@@ -198,6 +207,10 @@ function AuthCard({
         if (error || !data?.user) throw new Error(error?.message ?? "Could not create account.");
         signedInId = data.user.id;
       } else {
+        setSignupNote(null);
+        setPaws((n) => n + 1);
+        setHandoff(true);
+        freezeSignedOutHeader(true);
         const { data, error } = await authClient.signIn.email({
           email: email.trim(),
           password,
@@ -239,6 +252,9 @@ function AuthCard({
           <>
             <form className="space-y-5 [&_label>span:first-child]:text-base [&_input]:h-12 [&_input]:text-base" onSubmit={(e) => void onSubmit(e)}>
               {mode === "up" ? (
+                <p className="text-sm leading-relaxed text-muted">Use the email from your consult.</p>
+              ) : null}
+              {mode === "up" ? (
                 <Field label="Your name">
                   <Input value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
                 </Field>
@@ -247,7 +263,10 @@ function AuthCard({
                 <Input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setSignupNote(null);
+                  }}
                   required
                   autoComplete="email"
                 />
@@ -262,12 +281,41 @@ function AuthCard({
                   autoComplete={mode === "up" ? "new-password" : "current-password"}
                 />
               </Field>
+              {signupNote === "unknown" ? (
+                <p role="alert" className="rounded-lg border border-line bg-bg px-3 py-3 text-sm leading-relaxed text-ink">
+                  This email isn’t on file yet.{" "}
+                  <Link to="/intake" className="font-semibold underline underline-offset-4">
+                    Book a consult
+                  </Link>{" "}
+                  first. You can create a login after that.
+                </p>
+              ) : null}
+              {signupNote === "exists" ? (
+                <p role="alert" className="rounded-lg border border-line bg-bg px-3 py-3 text-sm leading-relaxed text-ink">
+                  You already have a login.{" "}
+                  <button
+                    type="button"
+                    className="font-semibold underline underline-offset-4"
+                    onClick={() => {
+                      setMode("in");
+                      setSignupNote(null);
+                    }}
+                  >
+                    Sign in
+                  </button>{" "}
+                  instead.
+                </p>
+              ) : null}
+              {signupNote === "invalid" ? (
+                <p role="alert" className="text-sm text-ink">
+                  Enter the email from your consult.
+                </p>
+              ) : null}
               <div className="relative">
                 <Button
                   type="submit"
                   className="book-cta w-full"
                   disabled={busy}
-                  onClick={() => setPaws((n) => n + 1)}
                 >
                   {busy ? "Please wait…" : mode === "up" ? "Create account" : "Sign in"}
                 </Button>
