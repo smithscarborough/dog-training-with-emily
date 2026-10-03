@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { ChipToggle } from "@/components/ui/chip-toggle";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 const TIMES = ["Morning", "Afternoon", "After 4"] as const;
@@ -64,40 +64,22 @@ export function AvailabilityFields({
       <p className="mt-1 text-xs text-faint">Optional. For visits after the consult. Tap any that fit.</p>
       <div className="mt-4">
         <p className="text-sm font-bold text-[#1a0e0a]">Days</p>
-        <div role="group" aria-label="Days that usually work" className="mt-2 flex flex-wrap gap-2">
-          {DAYS.map((day) => {
-            const on = days.includes(day);
-            return (
-              <button
-                key={day}
-                type="button"
-                aria-pressed={on}
-                onClick={() => toggle("days", day)}
-                className={cn("chip-3d rounded-full px-3 py-2 text-sm", on && "is-on")}
-              >
-                {day}
-              </button>
-            );
-          })}
+        <div role="group" aria-label="Days that usually work" className="mt-2 flex flex-wrap gap-x-2 gap-y-3">
+          {DAYS.map((day) => (
+            <ChipToggle key={day} pressed={days.includes(day)} onToggle={() => toggle("days", day)}>
+              {day}
+            </ChipToggle>
+          ))}
         </div>
       </div>
       <div className="mt-4">
         <p className="text-sm font-bold text-[#1a0e0a]">Time of day</p>
-        <div role="group" aria-label="Times of day that usually work" className="mt-2 flex flex-wrap gap-2">
-          {TIMES.map((time) => {
-            const on = times.includes(time);
-            return (
-              <button
-                key={time}
-                type="button"
-                aria-pressed={on}
-                onClick={() => toggle("times", time)}
-                className={cn("chip-3d rounded-full px-3 py-2 text-sm", on && "is-on")}
-              >
-                {time}
-              </button>
-            );
-          })}
+        <div role="group" aria-label="Times of day that usually work" className="mt-2 flex flex-wrap gap-x-2 gap-y-3">
+          {TIMES.map((time) => (
+            <ChipToggle key={time} pressed={times.includes(time)} onToggle={() => toggle("times", time)}>
+              {time}
+            </ChipToggle>
+          ))}
         </div>
         <p className="mt-2 text-xs text-faint">Morning is before noon. Afternoon is noon to 4.</p>
       </div>

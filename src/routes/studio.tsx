@@ -10,6 +10,7 @@ import { IntakeForm } from "@/components/intake/form";
 import { PhaseMeter } from "@/components/progress/phase-meter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ChipToggle } from "@/components/ui/chip-toggle";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/ui/label";
 import { DateField, WhenPicker } from "@/components/portal/when-picker";
@@ -1687,22 +1688,18 @@ function PortalPlan({ dog }: { dog: DogRow }) {
                   <p className="text-xs font-bold uppercase tracking-wide text-accent-deep">
                     {kind === "trick" ? "Tricks" : "Skills"}
                   </p>
-                  <div className="mt-2.5 flex flex-wrap gap-2">
-                    {items.map((item) => {
-                      const on = keys.includes(item.key);
-                      return (
-                        <button
-                          key={item.key}
-                          type="button"
-                          aria-pressed={on}
-                          disabled={busy}
-                          onClick={() => toggle(item.key)}
-                          className={cn("chip-3d rounded-full px-3 py-2 text-sm disabled:opacity-60", on && "is-on")}
-                        >
-                          {item.name}
-                        </button>
-                      );
-                    })}
+                  <div className="mt-2.5 flex flex-wrap gap-x-2 gap-y-3">
+                    {items.map((item) => (
+                      <ChipToggle
+                        key={item.key}
+                        pressed={keys.includes(item.key)}
+                        disabled={busy}
+                        onToggle={() => toggle(item.key)}
+                        className="disabled:opacity-60"
+                      >
+                        {item.name}
+                      </ChipToggle>
+                    ))}
                   </div>
                 </div>
               );
@@ -2375,7 +2372,7 @@ function Calendar({
     <div className="space-y-4">
       <HoursCard hoursJson={hoursJson} onRefresh={onRefresh} />
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-x-2 gap-y-3">
           {(
             [
               ["all", "All", "is-on"],
@@ -2385,14 +2382,14 @@ function Calendar({
               ["cancelled", "Cancelled", "is-cancelled"],
             ] as const
           ).map(([id, label, on]) => (
-            <button
+            <ChipToggle
               key={id}
-              type="button"
-              onClick={() => setStatus(id)}
-              className={cn("chip-3d rounded-full px-3 py-1.5 text-sm", status === id && on)}
+              pressed={status === id}
+              onToggle={() => setStatus(id)}
+              className={cn("py-1.5", status === id && on)}
             >
               {label}
-            </button>
+            </ChipToggle>
           ))}
         </div>
         <div className="inline-flex rounded-full bg-ink p-1">

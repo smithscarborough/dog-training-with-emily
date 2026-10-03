@@ -8,6 +8,7 @@ import { EspressoBanner } from "@/components/layout/espresso-banner";
 import { PhaseLegend, PhaseMeter } from "@/components/progress/phase-meter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ChipToggle } from "@/components/ui/chip-toggle";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/ui/label";
 import { Input, Textarea } from "@/components/ui/input";
@@ -470,7 +471,7 @@ function CheckinCard({
           Emily will review prior to the next session and adapt training as needed.
         </p>
         <p className="text-sm font-bold text-ink">Choose one</p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-x-2 gap-y-3">
           {CHECKINS.map((c) =>
             c.id === "practiced" ? (
               <span key={c.id} className="practice-pop">
@@ -481,33 +482,29 @@ function CheckinCard({
                     ))}
                   </span>
                 ) : null}
-                <button
-                  type="button"
-                  onClick={() => {
+                <ChipToggle
+                  pressed={status === c.id}
+                  onToggle={() => {
                     setStatus(c.id);
                     setConfirmClear(false);
                     popConfetti();
                   }}
-                  className={cn(
-                    "relative z-10 rounded-full px-3 py-2 text-sm chip-3d",
-                    status === c.id && "is-on",
-                  )}
+                  className="relative z-10"
                 >
                   {c.label}
-                </button>
+                </ChipToggle>
               </span>
             ) : (
-              <button
+              <ChipToggle
                 key={c.id}
-                type="button"
-                onClick={() => {
+                pressed={status === c.id}
+                onToggle={() => {
                   setStatus(c.id);
                   setConfirmClear(false);
                 }}
-                className={cn("rounded-full px-3 py-2 text-sm chip-3d", status === c.id && "is-on")}
               >
                 {c.label}
-              </button>
+              </ChipToggle>
             ),
           )}
         </div>
@@ -707,7 +704,7 @@ function ProgressTab({ dog }: { dog: DogRow }) {
         </p>
       ) : (
         <>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-x-2 gap-y-3">
             {(
               [
                 ["active", `In progress (${activeCount})`],
@@ -715,14 +712,9 @@ function ProgressTab({ dog }: { dog: DogRow }) {
                 ["idle", "Not started"],
               ] as const
             ).map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setFilter(id)}
-                className={cn("chip-3d rounded-full px-3 py-2 text-sm", filter === id && "is-on")}
-              >
+              <ChipToggle key={id} pressed={filter === id} onToggle={() => setFilter(id)}>
                 {label}
-              </button>
+              </ChipToggle>
             ))}
           </div>
           <SkillGrid title="Tricks" items={filtered(tricks)} byKey={byKey} log={log} open={open} setOpen={setOpen} quietIdle={filter === "all"} />
@@ -1069,22 +1061,17 @@ function SessionsTab({
             <>
           <fieldset>
             <legend className="text-sm font-bold text-[#1a0e0a]">Type</legend>
-            <div role="radiogroup" aria-label="Session type" className="mt-2 flex flex-wrap gap-2">
-              {typeOptions.map((s) => {
-                const on = requestType === s.id;
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={on}
-                    onClick={() => setSessionType(s.id)}
-                    className={cn("chip-3d rounded-full px-3 py-2 text-sm", on && "is-on")}
-                  >
-                    {s.name} · {dollars(s.price)}
-                  </button>
-                );
-              })}
+            <div role="radiogroup" aria-label="Session type" className="mt-2 flex flex-wrap gap-x-2 gap-y-3">
+              {typeOptions.map((s) => (
+                <ChipToggle
+                  key={s.id}
+                  role="radio"
+                  pressed={requestType === s.id}
+                  onToggle={() => setSessionType(s.id)}
+                >
+                  {s.name} · {dollars(s.price)}
+                </ChipToggle>
+              ))}
             </div>
           </fieldset>
           {hadConsult ? null : (
@@ -1463,22 +1450,17 @@ function Chips({
   return (
     <fieldset>
       <legend className="text-sm font-bold text-[#1a0e0a]">{label}</legend>
-      <div role="radiogroup" aria-label={label} className="mt-2 flex flex-wrap gap-2">
-        {options.map((option) => {
-          const on = value === option;
-          return (
-            <button
-              key={option}
-              type="button"
-              role="radio"
-              aria-checked={on}
-              onClick={() => onChange(on ? "" : option)}
-              className={cn("chip-3d rounded-full px-3 py-2 text-sm", on && "is-on")}
-            >
-              {option}
-            </button>
-          );
-        })}
+      <div role="radiogroup" aria-label={label} className="mt-2 flex flex-wrap gap-x-2 gap-y-3">
+        {options.map((option) => (
+          <ChipToggle
+            key={option}
+            role="radio"
+            pressed={value === option}
+            onToggle={() => onChange(value === option ? "" : option)}
+          >
+            {option}
+          </ChipToggle>
+        ))}
       </div>
     </fieldset>
   );

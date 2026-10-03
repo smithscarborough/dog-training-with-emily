@@ -1,5 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { ChipToggle } from "@/components/ui/chip-toggle";
 import { Field } from "@/components/ui/label";
 import { Input, Textarea } from "@/components/ui/input";
 import { GOALS } from "@/lib/catalog";
@@ -7,7 +8,6 @@ import type { IntakeInput } from "@/lib/server/dogs";
 import { formatUsPhone } from "@/lib/phone";
 import { formatUsAddress } from "@/lib/address";
 import { formatEmail, formatProperName, formatSentenceStart } from "@/lib/text";
-import { cn } from "@/lib/utils";
 import { DateField, WhenPicker } from "@/components/portal/when-picker";
 import { AvailabilityFields } from "@/components/forms/availability";
 import { hoursSummary, type HoursDay } from "@/lib/hours";
@@ -86,20 +86,18 @@ function ChoiceGroup({
   return (
     <fieldset className={className}>
       <legend className="text-base font-bold text-[#1a0e0a]">{label}</legend>
-      <div role="radiogroup" aria-label={label} className="mt-2 flex flex-wrap gap-2">
+      <div role="radiogroup" aria-label={label} className="mt-2 flex flex-wrap gap-x-2 gap-y-3">
         {options.map((option) => {
           const on = value === option;
           return (
-            <button
+            <ChipToggle
               key={option}
-              type="button"
               role="radio"
-              aria-checked={on}
-              onClick={() => onChange(on ? "" : option)}
-              className={cn("chip-3d rounded-full px-3 py-2 text-sm", on && "is-on")}
+              pressed={on}
+              onToggle={() => onChange(on ? "" : option)}
             >
               {option}
-            </button>
+            </ChipToggle>
           );
         })}
       </div>
@@ -310,21 +308,17 @@ export function IntakeForm({
       <section className="space-y-5">
         <h2 className={heading}>What should change</h2>
         <p className="text-sm text-muted">Tap everything that fits.</p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-x-2 gap-y-3">
           {GOALS.map((g) => {
             const on = form.goals.includes(g.id);
             return (
-              <button
+              <ChipToggle
                 key={g.id}
-                type="button"
-                aria-pressed={on}
-                onClick={() =>
-                  set("goals", on ? form.goals.filter((id) => id !== g.id) : [...form.goals, g.id])
-                }
-                className={cn("chip-3d rounded-full px-3 py-2 text-sm", on ? "is-on" : "")}
+                pressed={on}
+                onToggle={() => set("goals", on ? form.goals.filter((id) => id !== g.id) : [...form.goals, g.id])}
               >
                 {g.label}
-              </button>
+              </ChipToggle>
             );
           })}
         </div>
@@ -454,20 +448,13 @@ export function IntakeForm({
         <h2 className={heading}>How you found me</h2>
         <fieldset>
           <legend className="sr-only">How did you hear about Dog Training with Emily?</legend>
-          <div role="radiogroup" aria-label="How did you hear about Dog Training with Emily?" className="flex flex-wrap gap-2">
+          <div role="radiogroup" aria-label="How did you hear about Dog Training with Emily?" className="flex flex-wrap gap-x-2 gap-y-3">
             {[...REFERRALS, "Other"].map((option) => {
               const on = heard === option;
               return (
-                <button
-                  key={option}
-                  type="button"
-                  role="radio"
-                  aria-checked={on}
-                  onClick={() => pickReferral(option)}
-                  className={cn("chip-3d rounded-full px-3 py-2 text-sm", on && "is-on")}
-                >
+                <ChipToggle key={option} role="radio" pressed={on} onToggle={() => pickReferral(option)}>
                   {option}
-                </button>
+                </ChipToggle>
               );
             })}
           </div>
