@@ -165,7 +165,7 @@ function StudioApp({
   }, []);
 
   return (
-    <div className="flex min-h-full flex-col">
+    <div data-studio-root className="flex min-h-full flex-col">
       <EspressoBanner kicker="Studio">
         Clients, progress, sessions, and inbox — owners never see this side.
       </EspressoBanner>
@@ -225,6 +225,7 @@ function StudioApp({
                 setTab("clients");
               }}
               onCheckin={(dogId, checkinId) => {
+                holdStudio();
                 setSelected(dogId);
                 setCheckinFocus(checkinId);
                 setTab("clients");
@@ -251,7 +252,10 @@ function StudioApp({
                 setNoteFocus(null);
               }}
               focusCheckin={checkinFocus}
-              onCheckinOpened={() => setCheckinFocus(null)}
+              onCheckinOpened={() => {
+                releaseStudio();
+                setCheckinFocus(null);
+              }}
             />
           ) : null}
           {tab === "calendar" ? (
@@ -954,6 +958,18 @@ const CLIENT_SECTIONS = [
   ["client-progress", "Progress"],
 ] as const;
 
+function holdStudio() {
+  const root = document.querySelector("[data-studio-root]");
+  if (root instanceof HTMLElement) root.style.visibility = "hidden";
+  const scroller = document.getElementById("app-scroll");
+  if (scroller) scroller.scrollTop = 0;
+}
+
+function releaseStudio() {
+  const root = document.querySelector("[data-studio-root]");
+  if (root instanceof HTMLElement) root.style.visibility = "";
+}
+
 function scrollClientSection(id: string) {
   const scroller = document.getElementById("app-scroll");
   const target = document.getElementById(id);
@@ -968,8 +984,8 @@ function scrollClientSection(id: string) {
   scroller.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
 }
 
-function ClientSectionNav() {
-  const [current, setCurrent] = useState<string>(CLIENT_SECTIONS[0][0]);
+function ClientSectionNav({ initial = "client-visits" }: { initial?: string }) {
+  const [current, setCurrent] = useState(initial);
 
   useEffect(() => {
     const scroller = document.getElementById("app-scroll");
@@ -1047,7 +1063,7 @@ function ClientDetail({
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [checkins, setCheckins] = useState<CheckinRow[]>([]);
   const [checkinsReady, setCheckinsReady] = useState(false);
-  const [fileReady, setFileReady] = useState(false);
+  const [readyFor, setReadyFor] = useState<number | null>(null);
   const [litCheckin, setLitCheckin] = useState<number | null>(null);
   const [thread, setThread] = useState<MessageRow[]>([]);
   const [status, setStatus] = useState(dog.status);
@@ -1067,13 +1083,12 @@ function ClientDetail({
       .then((r) => setCurrent(r.current))
       .catch(() => setCurrent([]));
     setCheckinsReady(false);
-    setFileReady(false);
     let cancelled = false;
     let sessionsDone = false;
     let checkinsDone = false;
     let threadDone = false;
     const finish = () => {
-      if (!cancelled && sessionsDone && checkinsDone && threadDone) setFileReady(true);
+      if (!cancelled && sessionsDone && checkinsDone && threadDone) setReadyFor(dog.id);
     };
     void listSessions({ data: { dogId: dog.id } })
       .then((rows) => {
@@ -1141,10 +1156,14 @@ function ClientDetail({
   checkinOpened.current = onCheckinOpened;
 
   useLayoutEffect(() => {
-    if (focusCheckin == null || !checkinsReady || !fileReady) return;
+    if (focusCheckin == null || !checkinsReady || readyFor !== dog.id) return;
     const scroller = document.getElementById("app-scroll");
     const target = document.getElementById(`checkin-${focusCheckin}`) ?? document.getElementById("client-checkins");
-    if (!scroller || !target) return;
+    if (!scroller || !target) {
+      releaseStudio();
+      checkinOpened.current?.();
+      return;
+    }
     const headerH = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
     const top =
       target.getBoundingClientRect().top -
@@ -1153,9 +1172,16 @@ function ClientDetail({
       headerH -
       16;
     scroller.scrollTo({ top: Math.max(0, top) });
+    releaseStudio();
     setLitCheckin(focusCheckin);
     checkinOpened.current?.();
-  }, [focusCheckin, checkinsReady, fileReady, dog.id, checkins.length]);
+  }, [focusCheckin, checkinsReady, readyFor, dog.id, checkins.length]);
+
+  useEffect(() => {
+    if (focusCheckin == null) return;
+    const timer = window.setTimeout(releaseStudio, 4000);
+    return () => window.clearTimeout(timer);
+  }, [focusCheckin]);
 
   useEffect(() => {
     if (litCheckin == null) return;
@@ -1502,7 +1528,7 @@ function ClientDetail({
         </CardBody>
       </Card>
         </div>
-        <ClientSectionNav />
+        <ClientSectionNav initial={focusCheckin != null ? "client-checkins" : "client-visits"} />
       </div>
     </div>
   );
