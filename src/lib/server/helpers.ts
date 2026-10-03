@@ -36,6 +36,35 @@ export async function linkDogsByEmail(userId: string, email: string | null) {
     where lower(owner_email) = lower(${email})
       and (owner_user_id is null or owner_user_id = ${userId})
   `;
+  await ensureConsultFromIntake(userId);
+}
+
+/** The consult form stores a time on the dog. Once they have a login, that time is the consult visit. */
+async function ensureConsultFromIntake(userId: string) {
+  const sql = await getSql();
+  const dogs = await sql<{ id: number; preferred_at: string; address: string }>`
+    select id, preferred_at, address from dogs
+    where owner_user_id = ${userId}
+      and status <> 'archived'
+      and preferred_at <> ''
+  `;
+  for (const dog of dogs) {
+    const when = new Date(dog.preferred_at);
+    if (Number.isNaN(when.getTime())) continue;
+    const existing = await sql<{ id: number }>`
+      select id from sessions
+      where dog_id = ${dog.id} and session_type = 'consult'
+      limit 1
+    `;
+    if (existing.length) continue;
+    await sql`
+      insert into sessions (
+        dog_id, owner_user_id, session_type, scheduled_at, duration_min, status, location, owner_notes
+      ) values (
+        ${dog.id}, ${userId}, 'consult', ${when.toISOString()}, 30, 'requested', ${dog.address}, ''
+      )
+    `;
+  }
 }
 
 export async function assertDogAccess(userId: string, dogId: number): Promise<DogRow> {
