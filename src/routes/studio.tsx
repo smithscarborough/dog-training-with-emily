@@ -225,7 +225,7 @@ function StudioApp({
                 setTab("clients");
               }}
               onCheckin={(dogId, checkinId) => {
-                holdStudio();
+                holdStudioView();
                 setSelected(dogId);
                 setCheckinFocus(checkinId);
                 setTab("clients");
@@ -253,7 +253,7 @@ function StudioApp({
               }}
               focusCheckin={checkinFocus}
               onCheckinOpened={() => {
-                releaseStudio();
+                showStudioView();
                 setCheckinFocus(null);
               }}
             />
@@ -958,14 +958,14 @@ const CLIENT_SECTIONS = [
   ["client-progress", "Progress"],
 ] as const;
 
-function holdStudio() {
+function holdStudioView() {
   const root = document.querySelector("[data-studio-root]");
   if (root instanceof HTMLElement) root.style.visibility = "hidden";
   const scroller = document.getElementById("app-scroll");
   if (scroller) scroller.scrollTop = 0;
 }
 
-function releaseStudio() {
+function showStudioView() {
   const root = document.querySelector("[data-studio-root]");
   if (root instanceof HTMLElement) root.style.visibility = "";
 }
@@ -1160,7 +1160,7 @@ function ClientDetail({
     const scroller = document.getElementById("app-scroll");
     const target = document.getElementById(`checkin-${focusCheckin}`) ?? document.getElementById("client-checkins");
     if (!scroller || !target) {
-      releaseStudio();
+      showStudioView();
       checkinOpened.current?.();
       return;
     }
@@ -1172,14 +1172,14 @@ function ClientDetail({
       headerH -
       16;
     scroller.scrollTo({ top: Math.max(0, top) });
-    releaseStudio();
+    showStudioView();
     setLitCheckin(focusCheckin);
     checkinOpened.current?.();
   }, [focusCheckin, checkinsReady, readyFor, dog.id, checkins.length]);
 
   useEffect(() => {
     if (focusCheckin == null) return;
-    const timer = window.setTimeout(releaseStudio, 4000);
+    const timer = window.setTimeout(showStudioView, 4000);
     return () => window.clearTimeout(timer);
   }, [focusCheckin]);
 
