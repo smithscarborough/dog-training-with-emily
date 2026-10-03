@@ -353,7 +353,7 @@ function HomeTab({
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Send a neighbor</CardTitle>
+          <CardTitle>Refer a friend</CardTitle>
         </CardHeader>
         <CardBody>
           <p className="font-display text-4xl tracking-wide">{dog.referral_code}</p>
@@ -377,7 +377,7 @@ function HomeTab({
           {(dog.referral_gifts ?? []).length ? (
             <ul className="mt-4 space-y-1 text-sm text-ink">
               {(dog.referral_gifts ?? []).map((gift) => (
-                <li key={`${gift.created_at}-${gift.referred_name}`}>A free hour for sending {gift.referred_name}.</li>
+                <li key={`${gift.created_at}-${gift.referred_name}`}>A free hour for referring {gift.referred_name}.</li>
               ))}
             </ul>
           ) : null}

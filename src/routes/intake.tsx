@@ -45,10 +45,10 @@ function IntakePage() {
             </p>
             {code ? (
               <div className="mx-auto mt-8 max-w-md rounded-2xl border border-line bg-surface px-6 py-6">
-                <p className="text-sm font-semibold text-ink">Your code</p>
+                <p className="text-sm font-semibold text-ink">Your referral code</p>
                 <p className="mt-1 font-display text-4xl tracking-wide text-ink">{code}</p>
                 <p className="mt-2 text-sm leading-relaxed text-muted">
-                  Pass it to a neighbor. After their consult, a free hour is added to your account. It’s also in the portal once you log in.
+                  Share it with a friend. After their consult, a free hour is added to your account. It’s also in the portal once you log in.
                 </p>
                 <button
                   type="button"

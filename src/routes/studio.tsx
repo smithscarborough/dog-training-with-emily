@@ -1456,7 +1456,7 @@ function ClientDetail({
               <p className="text-sm font-bold text-[#1a0e0a]">{ownerPos} referral code</p>
               <p className="font-display text-2xl tracking-wide">{dog.referral_code || "—"}</p>
               <p className="text-sm leading-relaxed text-muted">
-                {owner} gives this code to a friend. You don’t type it anywhere. After that friend’s consult, a free hour is added to this account.
+                {owner} shares this code with a friend. You don’t type it here. After that friend’s consult, a free hour is added to this account.
               </p>
               {(dog.referral_gifts ?? []).length ? (
                 <ul className="space-y-1 text-sm text-ink">
@@ -1467,9 +1467,9 @@ function ClientDetail({
               ) : null}
             </div>
             <div className="space-y-3 border-t border-line pt-4">
-              <p className="text-sm font-bold text-[#1a0e0a]">Someone {owner} already sent</p>
+              <p className="text-sm font-bold text-[#1a0e0a]">Someone {owner} already referred</p>
               <p className="text-sm leading-relaxed text-muted">
-                Pick them from your clients. The dog and email are there so two people with the same name stay separate. If they aren’t a client yet, type their full name.
+                Pick the person from your clients. The dog and email keep two people with the same name separate. If they aren’t a client yet, type their full name.
               </p>
               <Field label="Who was it?">
                 <select
@@ -1495,7 +1495,7 @@ function ClientDetail({
                 </select>
               </Field>
               {giftPick === "other" ? (
-                <Field label="Their full name">
+                <Field label="Full name">
                   <Input value={giftName} onChange={(e) => setGiftName(e.target.value)} placeholder="Jordan Miller" />
                 </Field>
               ) : null}
@@ -1520,9 +1520,9 @@ function ClientDetail({
               </Button>
             </div>
             <div className="space-y-3 border-t border-line pt-4">
-              <p className="text-sm font-bold text-[#1a0e0a]">Who sent {owner}</p>
+              <p className="text-sm font-bold text-[#1a0e0a]">Who referred {owner}</p>
               <p className="text-sm leading-relaxed text-muted">
-                If another client sent {owner}, paste that client’s code. The free hour is added to that client when you mark this consult completed.
+                If another client referred {owner}, paste that client’s code. The free hour is added to that client when you mark this consult completed.
               </p>
               <Field label={`Code ${owner} used`}>
                 <Input
@@ -1535,7 +1535,7 @@ function ClientDetail({
               <p className="text-sm leading-relaxed text-muted">
                 {dog.thanked_referrer_code
                   ? `Thank-you hour already given to ${dog.thanked_referrer_code}.`
-                  : `Leave this blank if nobody sent ${owner}.`}
+                  : `Leave this blank if nobody referred ${owner}.`}
               </p>
               <Button
                 size="sm"
