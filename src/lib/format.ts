@@ -59,9 +59,10 @@ export function statusTone(status: string): "default" | "accent" | "ok" | "warn"
   return "default";
 }
 
-export function checkinTone(status: string): "practiced" | "skipped" | "stuck" | "default" {
+export function checkinTone(status: string): "practiced" | "skipped" | "stuck" | "note" | "default" {
   if (status === "practiced") return "practiced";
   if (status === "skipped") return "skipped";
   if (status === "stuck") return "stuck";
+  if (status === "note") return "note";
   return "default";
 }

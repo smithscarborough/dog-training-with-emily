@@ -389,7 +389,8 @@
 
 .badge-stuck,
 .badge-practiced,
-.badge-skipped {
+.badge-skipped,
+.badge-note {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.4),
     inset 0 -1px 0 rgba(44, 24, 16, 0.14),

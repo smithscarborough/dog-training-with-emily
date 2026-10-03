@@ -5,7 +5,7 @@ export function Badge({
   tone = "default",
   ...props
 }: React.ComponentProps<"span"> & {
-  tone?: "default" | "accent" | "ok" | "warn" | "muted" | "solid" | "done" | "stuck" | "practiced" | "skipped";
+  tone?: "default" | "accent" | "ok" | "warn" | "muted" | "solid" | "done" | "stuck" | "practiced" | "skipped" | "note";
 }) {
   return (
     <span
@@ -21,6 +21,7 @@ export function Badge({
         tone === "stuck" && "badge-stuck text-ink",
         tone === "practiced" && "badge-practiced text-ink",
         tone === "skipped" && "badge-skipped text-bg",
+        tone === "note" && "badge-note bg-pearl text-ink ring-1 ring-ink/40",
         className,
       )}
       {...props}
