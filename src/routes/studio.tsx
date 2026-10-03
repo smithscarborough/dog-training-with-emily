@@ -87,16 +87,13 @@ function TrainerUnlock({ onUnlock }: { onUnlock: () => void }) {
   return (
     <div className="min-h-dvh">
       <EspressoBanner kicker="Studio">
-        Enter the trainer code to open Emily’s chair. Code TEDDY works until you
-        change it in settings.
+        Enter your studio code to open the trainer tools.
       </EspressoBanner>
       <main className="mx-auto max-w-md px-4 py-16 sm:px-6">
         <p className="text-sm text-muted">Trainer studio</p>
-        <h1 className="mt-2 font-display text-4xl tracking-tight">Emily’s chair.</h1>
+        <h1 className="mt-2 font-display text-4xl tracking-tight">Studio code.</h1>
         <p className="mt-4 text-muted leading-relaxed">
           This account isn’t the trainer yet. Enter the studio code to open it.
-          If someone else signed in first, this still works — the code moves
-          the studio to you.
         </p>
         <form
           className="mt-8 space-y-3"
@@ -168,7 +165,7 @@ function StudioApp({
   return (
     <div data-studio-root className="flex min-h-full flex-col">
       <EspressoBanner kicker="Studio">
-        Clients, progress, sessions, and inbox — owners never see this side.
+        Clients, visits, and progress.
       </EspressoBanner>
       <main className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-6 xl:max-w-[84rem]">
         <div className="flex flex-wrap items-end justify-between gap-4">

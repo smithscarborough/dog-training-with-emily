@@ -1,7 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { EspressoBanner } from "@/components/layout/espresso-banner";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
 import { Field } from "@/components/ui/label";
@@ -10,7 +9,7 @@ import { GROK_PROVIDERS, authClient, authEnabled, signIn } from "@/lib/auth/clie
 import { QA_ADMIN } from "@/lib/qa-admin";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { freezeSignedOutHeader } from "@/lib/auth/header-hold";
-import { becomeTrainer, getMe } from "@/lib/server/me";
+import { getMe } from "@/lib/server/me";
 import { primeMe } from "@/lib/use-me";
 import { seedDemoIfNeeded } from "@/lib/server/seed-demo-fn";
 
@@ -40,16 +39,11 @@ function LoginPage() {
   }, []);
   return (
     <div data-login-root className="min-h-dvh">
-      <EspressoBanner kicker="Emily — studio">
-        For testing, use <span className="font-semibold text-accent-soft">Sign in as Emily</span>.
-        Studio code <span className="font-semibold text-accent-soft">TEDDY</span> still works.
-      </EspressoBanner>
       <main className="mx-auto w-full max-w-lg px-5 py-12 text-center sm:px-6 lg:py-16">
         <p className="text-sm text-muted">Login</p>
         <h1 className="mt-2 font-display text-4xl tracking-tight">Sign in.</h1>
         <p className="mx-auto mt-4 max-w-md text-muted leading-relaxed">
-          Clients and Emily use the same page. Sign in with the email from
-          your intake, or continue with Google or X.
+          Sign in with the email from your consult, or continue with Google or X.
         </p>
         <p className="mx-auto mt-4 max-w-md text-muted leading-relaxed">
           New here?{" "}
@@ -57,23 +51,6 @@ function LoginPage() {
             Book a consult
           </Link>{" "}
           first. You can create a login later.
-        </p>
-        <p className="mx-auto mt-6 max-w-md rounded-lg bg-bg px-4 py-3 text-sm leading-relaxed text-muted">
-          Sample clients for QA — password{" "}
-          <span className="font-semibold text-ink">PortalDemo1</span>
-          <br />
-          <span className="text-ink">jordan.hale@demo.local</span> · Maple
-          <br />
-          <span className="text-ink">priya.shah@demo.local</span> · Bean
-          <br />
-          <span className="text-ink">luis.ortega@demo.local</span> · Gus
-          <br />
-          Emily (studio) —{" "}
-          <span className="text-ink">{QA_ADMIN.email}</span> · password{" "}
-          <span className="font-semibold text-ink">{QA_ADMIN.password}</span>
-          <br />
-          Or just press Sign in as Emily. Studio code{" "}
-          <span className="font-semibold text-ink">TEDDY</span>.
         </p>
         <div className="mx-auto mt-10 w-full max-w-md text-left">
           <LoginAuth preferStudio={as === "trainer"} handoff={handoff} setHandoff={setHandoff} />
@@ -98,7 +75,7 @@ function LoginAuth({
   const state = isPending ? shown.current : user ? "in" : "out";
 
   if (state === "in" && !handoff) return <AlreadyIn preferStudio={preferStudio} setHandoff={setHandoff} />;
-  if (state === "out" || handoff) return <AuthCard preferStudio={preferStudio} setHandoff={setHandoff} />;
+  if (state === "out" || handoff) return <AuthCard setHandoff={setHandoff} />;
   return null;
 }
 
@@ -193,17 +170,14 @@ function openSignedIn(router: ReturnType<typeof useRouter>, to: "/studio" | "/po
 }
 
 function AuthCard({
-  preferStudio,
   setHandoff,
 }: {
-  preferStudio: boolean;
   setHandoff: (hold: boolean) => void;
 }) {
   const [mode, setMode] = useState<"in" | "up">("in");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [pin, setPin] = useState(preferStudio ? "TEDDY" : "");
   const [busy, setBusy] = useState(false);
   const [paws, setPaws] = useState(0);
   const router = useRouter();
@@ -232,22 +206,8 @@ function AuthCard({
         if (error || !data?.user) throw new Error(error?.message ?? "Could not sign in.");
         signedInId = data.user.id;
       }
-      const code = pin.trim();
-      let to: "/studio" | "/portal" = "/portal";
-      if (code) {
-        try {
-          await becomeTrainer({ data: { pin: code } });
-          toast.success("Studio is yours.");
-          to = "/studio";
-        } catch (err) {
-          toast.error(err instanceof Error ? err.message : "Studio code didn’t match.");
-          to = "/studio";
-        }
-      } else {
-        toast.success(mode === "up" ? "Account created." : "Welcome back.");
-      }
       primeMe(signedInId, await getMe());
-      await openSignedIn(router, to);
+      await openSignedIn(router, "/portal");
     } catch (err) {
       freezeSignedOutHeader(false);
       setHandoff(false);
@@ -293,7 +253,7 @@ function AuthCard({
                   autoComplete="email"
                 />
               </Field>
-              <Field label="Password" hint={mode === "up" ? "At least 8 characters. No email code is sent." : undefined}>
+              <Field label="Password" hint={mode === "up" ? "At least 8 characters." : undefined}>
                 <Input
                   type="password"
                   value={password}
@@ -301,14 +261,6 @@ function AuthCard({
                   required
                   minLength={8}
                   autoComplete={mode === "up" ? "new-password" : "current-password"}
-                />
-              </Field>
-              <Field label="Studio code (Emily only)" hint="Leave blank if you’re a client.">
-                <Input
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value)}
-                  autoComplete="off"
-                  placeholder="TEDDY"
                 />
               </Field>
               <div className="relative">
@@ -346,7 +298,7 @@ function AuthCard({
                   variant="outline"
                   onClick={() =>
                     signIn(p.providerId, {
-                      callbackURL: pin.trim() ? "/studio" : "/portal",
+                      callbackURL: "/portal",
                     })
                   }
                 >
