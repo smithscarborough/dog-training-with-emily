@@ -473,7 +473,7 @@ export function IntakeForm({
                   setHeardFriend(name);
                   set("referral_source", friendSource(name));
                 }}
-                placeholder="Their name"
+                placeholder="Jordan Miller"
                 autoComplete="off"
                 aria-label="Name of the friend or neighbor"
               />
