@@ -1045,6 +1045,7 @@ function ClientDetail({
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [checkins, setCheckins] = useState<CheckinRow[]>([]);
   const [checkinsReady, setCheckinsReady] = useState(false);
+  const [fileReady, setFileReady] = useState(false);
   const [litCheckin, setLitCheckin] = useState<number | null>(null);
   const [thread, setThread] = useState<MessageRow[]>([]);
   const [status, setStatus] = useState(dog.status);
@@ -1063,22 +1064,55 @@ function ClientDetail({
     void getProgress({ data: { dogId: dog.id } })
       .then((r) => setCurrent(r.current))
       .catch(() => setCurrent([]));
-    void listSessions({ data: { dogId: dog.id } })
-      .then(setSessions)
-      .catch(() => setSessions([]));
     setCheckinsReady(false);
+    setFileReady(false);
+    let cancelled = false;
+    let sessionsDone = false;
+    let checkinsDone = false;
+    let threadDone = false;
+    const finish = () => {
+      if (!cancelled && sessionsDone && checkinsDone && threadDone) setFileReady(true);
+    };
+    void listSessions({ data: { dogId: dog.id } })
+      .then((rows) => {
+        if (!cancelled) setSessions(rows);
+      })
+      .catch(() => {
+        if (!cancelled) setSessions([]);
+      })
+      .finally(() => {
+        sessionsDone = true;
+        finish();
+      });
     void listCheckins({ data: { dogId: dog.id, limit: 8 } })
       .then((rows) => {
+        if (cancelled) return;
         setCheckins(rows);
         setCheckinsReady(true);
       })
       .catch(() => {
+        if (cancelled) return;
         setCheckins([]);
         setCheckinsReady(true);
+      })
+      .finally(() => {
+        checkinsDone = true;
+        finish();
       });
     void listMessages({ data: { dogId: dog.id } })
-      .then(setThread)
-      .catch(() => setThread([]));
+      .then((rows) => {
+        if (!cancelled) setThread(rows);
+      })
+      .catch(() => {
+        if (!cancelled) setThread([]);
+      })
+      .finally(() => {
+        threadDone = true;
+        finish();
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [dog]);
 
   const notesOpened = useRef(onNotesOpened);
@@ -1105,7 +1139,7 @@ function ClientDetail({
   checkinOpened.current = onCheckinOpened;
 
   useLayoutEffect(() => {
-    if (focusCheckin == null || !checkinsReady) return;
+    if (focusCheckin == null || !checkinsReady || !fileReady) return;
     const scroller = document.getElementById("app-scroll");
     const target = document.getElementById(`checkin-${focusCheckin}`) ?? document.getElementById("client-checkins");
     if (!scroller || !target) return;
@@ -1119,7 +1153,7 @@ function ClientDetail({
     scroller.scrollTo({ top: Math.max(0, top) });
     setLitCheckin(focusCheckin);
     checkinOpened.current?.();
-  }, [focusCheckin, checkinsReady, dog.id]);
+  }, [focusCheckin, checkinsReady, fileReady, dog.id, checkins.length]);
 
   useEffect(() => {
     if (litCheckin == null) return;
