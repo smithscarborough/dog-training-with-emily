@@ -106,6 +106,27 @@ function ChoiceGroup({
   );
 }
 
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+const TIMES = ["Morning", "Afternoon", "After 4"] as const;
+
+function pickedInOrder(order: readonly string[], selected: readonly string[]) {
+  return order.filter((item) => selected.includes(item));
+}
+
+function availabilityLabel(days: readonly string[], times: readonly string[]) {
+  const dayText = days.join(", ");
+  const timeText = times.join(", ");
+  if (dayText && timeText) return `${dayText} · ${timeText}`;
+  return dayText || timeText;
+}
+
+function parseAvailability(value: string) {
+  const [dayPart, timePart] = value.split(" · ");
+  const days = pickedInOrder(DAYS, (dayPart ?? "").split(",").map((part) => part.trim()));
+  const times = pickedInOrder(TIMES, (timePart ?? "").split(",").map((part) => part.trim()));
+  return { days, times };
+}
+
 function localToday() {
   const d = new Date();
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -142,11 +163,25 @@ export function IntakeForm({
   const [heard, setHeard] = useState(startingReferral.choice);
   const [heardOther, setHeardOther] = useState(startingReferral.other);
   const [heardFriend, setHeardFriend] = useState(startingReferral.friend);
+  const startingAvailability = parseAvailability(initial?.preferred_days ?? "");
+  const [openDays, setOpenDays] = useState<string[]>(startingAvailability.days);
+  const [openTimes, setOpenTimes] = useState<string[]>(startingAvailability.times);
   const [busy, setBusy] = useState(false);
   const [paws, setPaws] = useState(0);
 
   function set<K extends keyof IntakeInput>(key: K, value: IntakeInput[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  function pickAvailability(kind: "days" | "times", value: string) {
+    const order = kind === "days" ? DAYS : TIMES;
+    const current = kind === "days" ? openDays : openTimes;
+    const next = pickedInOrder(order, current.includes(value) ? current.filter((item) => item !== value) : [...current, value]);
+    const days = kind === "days" ? next : openDays;
+    const times = kind === "times" ? next : openTimes;
+    if (kind === "days") setOpenDays(next);
+    else setOpenTimes(next);
+    set("preferred_days", availabilityLabel(days, times));
   }
 
   function pickReferral(next: string) {
@@ -374,14 +409,49 @@ export function IntakeForm({
               ) : null}
             </Field>
           ) : null}
-          <Field label="Days that usually work" hint="Optional. For visits after the consult." className="max-w-lg sm:col-span-2">
-            <Input
-              value={form.preferred_days}
-              onChange={(e) => set("preferred_days", e.target.value)}
-              onBlur={(e) => set("preferred_days", formatSentenceStart(e.target.value))}
-              placeholder="Tue / Thu after 4, weekend morning"
-            />
-          </Field>
+          <fieldset className="sm:col-span-2">
+            <legend className="text-base font-bold text-[#1a0e0a]">Days that usually work</legend>
+            <p className="mt-1 text-xs text-faint">Optional. For visits after the consult. Tap any that fit.</p>
+            <div className="mt-4">
+              <p className="text-sm font-bold text-[#1a0e0a]">Days</p>
+              <div role="group" aria-label="Days that usually work" className="mt-2 flex flex-wrap gap-2">
+                {DAYS.map((day) => {
+                  const on = openDays.includes(day);
+                  return (
+                    <button
+                      key={day}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => pickAvailability("days", day)}
+                      className={cn("chip-3d rounded-full px-3 py-2 text-sm", on && "is-on")}
+                    >
+                      {day}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="mt-4">
+              <p className="text-sm font-bold text-[#1a0e0a]">Time of day</p>
+              <div role="group" aria-label="Times of day that usually work" className="mt-2 flex flex-wrap gap-2">
+                {TIMES.map((time) => {
+                  const on = openTimes.includes(time);
+                  return (
+                    <button
+                      key={time}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => pickAvailability("times", time)}
+                      className={cn("chip-3d rounded-full px-3 py-2 text-sm", on && "is-on")}
+                    >
+                      {time}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-xs text-faint">Morning is before noon. Afternoon is noon to 4.</p>
+            </div>
+          </fieldset>
         </div>
       </section>
 
