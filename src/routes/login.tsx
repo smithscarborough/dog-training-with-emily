@@ -282,16 +282,16 @@ function AuthCard({
                 />
               </Field>
               {signupNote === "unknown" ? (
-                <p role="alert" className="rounded-lg border border-line bg-bg px-3 py-3 text-sm leading-relaxed text-ink">
-                  This email isn’t on file yet.{" "}
+                <p role="alert" className="rounded-lg border border-line bg-bg px-4 py-3 text-center text-sm leading-relaxed text-ink">
+                  We don’t have this email yet.{" "}
                   <Link to="/intake" className="font-semibold underline underline-offset-4">
                     Book a consult
-                  </Link>{" "}
-                  first. You can create a login after that.
+                  </Link>
+                  , then come back to create your login.
                 </p>
               ) : null}
               {signupNote === "exists" ? (
-                <p role="alert" className="rounded-lg border border-line bg-bg px-3 py-3 text-sm leading-relaxed text-ink">
+                <p role="alert" className="rounded-lg border border-line bg-bg px-4 py-3 text-center text-sm leading-relaxed text-ink">
                   You already have a login.{" "}
                   <button
                     type="button"
@@ -307,7 +307,7 @@ function AuthCard({
                 </p>
               ) : null}
               {signupNote === "invalid" ? (
-                <p role="alert" className="text-sm text-ink">
+                <p role="alert" className="text-center text-sm text-ink">
                   Enter the email from your consult.
                 </p>
               ) : null}
