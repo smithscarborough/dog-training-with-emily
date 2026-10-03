@@ -403,8 +403,12 @@
 .badge-practiced {
   background-color: #7dcc93;
 }
-.badge-skipped {
-  background-color: #6f5848;
+.visit-focus {
+  box-shadow: 0 0 0 2px transparent;
+  transition: box-shadow 900ms ease;
+}
+.visit-focus.is-on {
+  box-shadow: 0 0 0 2px var(--color-accent);
 }
 
 .book-cta {

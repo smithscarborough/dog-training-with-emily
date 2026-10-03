@@ -2053,7 +2053,7 @@ function SessionEditor({
   return (
     <li
       id={`session-${session.id}`}
-      className={cn("rounded-lg bg-bg p-3", lit && "ring-2 ring-accent")}
+      className={cn("visit-focus rounded-lg bg-bg p-3", lit && "is-on")}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
