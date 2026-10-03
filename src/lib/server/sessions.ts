@@ -60,6 +60,16 @@ export const requestSession = createServerFn({ method: "POST" })
     if (!isTrainer && !isWithinHours(when, parseHours(studio.hours_json), type.minutes)) {
       throw new Error("That time isn’t open. Pick another.");
     }
+    if (!isTrainer && type.id === "consult") {
+      const open = await sql<{ id: number }>`
+        select id from sessions
+        where dog_id = ${dog.id}
+          and session_type = 'consult'
+          and status in ('requested', 'confirmed')
+        limit 1
+      `;
+      if (open.length) throw new Error("You already have a consult on the books.");
+    }
     if (!isTrainer && type.id !== "consult") {
       const prior = await sql<{ session_type: string; status: string; scheduled_at: string }>`
         select session_type, status, scheduled_at from sessions where dog_id = ${dog.id}

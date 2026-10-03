@@ -1057,6 +1057,10 @@ function SessionsTab({
   }, [hadConsult, sessionType]);
 
   const listed = useMemo(() => [...sessions].sort(compareSessionList), [sessions]);
+  const openConsult = sessions
+    .filter((row) => row.session_type === "consult" && (row.status === "requested" || row.status === "confirmed"))
+    .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())[0];
+  const waitingOnConsult = !hadConsult && Boolean(openConsult);
 
   const confirming = sessions.find((row) => row.id === confirmingId) ?? null;
 
@@ -1067,6 +1071,14 @@ function SessionsTab({
           <CardTitle>Request a session</CardTitle>
         </CardHeader>
         <CardBody className="space-y-3">
+          {waitingOnConsult && openConsult ? (
+            <p className="text-sm leading-relaxed text-muted">
+              {openConsult.status === "confirmed"
+                ? `Your consult is set for ${formatWhen(openConsult.scheduled_at)}. Longer sessions open after that visit.`
+                : `Your consult is requested for ${formatWhen(openConsult.scheduled_at)}. Use New time on that visit if the window should change. Longer sessions open after the consult.`}
+            </p>
+          ) : (
+            <>
           <fieldset>
             <legend className="text-sm font-bold text-[#1a0e0a]">Type</legend>
             <div role="radiogroup" aria-label="Session type" className="mt-2 flex flex-wrap gap-2">
@@ -1148,6 +1160,8 @@ function SessionsTab({
           <p className="text-xs text-faint">
             From the list, cancel or ask for a new time. A day ahead is best.
           </p>
+            </>
+          )}
         </CardBody>
       </Card>
       <div className="space-y-3">
