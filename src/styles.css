@@ -884,40 +884,48 @@
   left: 50%;
   bottom: 0;
   z-index: 2;
-  transform: translate(-50%, 12px);
+  transform: translate(-50%, 26px);
   line-height: 0;
   pointer-events: none;
 }
 .holiday-emblem.is-new-year {
-  transform: translate(-50%, 8px);
+  transform: translate(-50%, 22px);
 }
-.holiday-emblem.is-easter,
+.holiday-emblem.is-easter {
+  transform: translate(-50%, 34px);
+}
 .holiday-emblem.is-fathers {
-  transform: translate(-50%, 14px);
+  transform: translate(-50%, 30px);
 }
 .holiday-emblem.is-memorial {
-  transform: translate(-50%, 18px);
+  transform: translate(-50%, 34px);
+}
+.holiday-emblem.is-july4 {
+  transform: translate(-50%, 16px);
 }
 .emblem {
   display: block;
-  height: 22px;
+  height: 40px;
   width: auto;
   filter: drop-shadow(0 1px 1px rgba(36, 20, 14, 0.18));
 }
 .emblem-wide {
-  height: 16px;
-}
-.emblem-eggs {
-  height: 28px;
-}
-.emblem-ribbon {
   height: 36px;
 }
+.emblem-eggs {
+  height: 50px;
+}
+.emblem-ribbon {
+  height: 52px;
+}
 .emblem-tie {
-  height: 30px;
+  height: 44px;
 }
 .emblem-flag {
-  height: 20px;
+  height: 30px;
+}
+.emblem-rose {
+  height: 48px;
 }
 .holiday-banner.is-patrick .holiday-banner-svg {
   mask-image: linear-gradient(90deg, #000 0%, #000 14%, transparent 34%, transparent 66%, #000 86%, #000 100%);
@@ -970,22 +978,25 @@
     font-size: 1.05rem;
   }
   .emblem {
-    height: 24px;
+    height: 44px;
   }
   .emblem-wide {
-    height: 18px;
-  }
-  .emblem-eggs {
-    height: 30px;
-  }
-  .emblem-ribbon {
     height: 40px;
   }
+  .emblem-eggs {
+    height: 56px;
+  }
+  .emblem-ribbon {
+    height: 58px;
+  }
   .emblem-flag {
-    height: 22px;
+    height: 34px;
+  }
+  .emblem-rose {
+    height: 52px;
   }
   .holiday-emblem.is-memorial {
-    transform: translate(-50%, 20px);
+    transform: translate(-50%, 38px);
   }
 }
 .holiday-preview {
