@@ -269,10 +269,78 @@ function goalPill(id: string) {
   return GOAL_COLOR[id] ?? "bg-[#D7B8C4]";
 }
 
-function referralNoticeLine(name: string, fromConsult: boolean) {
-  const person = name.split(" · ")[0]?.trim() || "A friend";
-  if (fromConsult) return `${person}’s consult is done. One free hour is on your account.`;
-  return `One free hour is on your account, for referring ${person}.`;
+function spellCount(n: number) {
+  const words = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+  return words[n] ?? String(n);
+}
+
+function joinNames(names: string[]) {
+  if (names.length <= 1) return names[0] ?? "A friend";
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  return `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+}
+
+function referralNoticeCopy(notes: DogRow["referral_gifts"]) {
+  const names = notes.map((gift) => gift.referred_name.split(" · ")[0]?.trim() || "A friend");
+  const n = notes.length;
+  const title = n === 1 ? "A free hour" : `${spellCount(n)} free hours`;
+  const named = joinNames(names);
+  const fromConsults = notes.every((gift) => gift.from_consult);
+  const detail = fromConsults
+    ? n === 1
+      ? `${names[0]}’s consult is done. One free hour is on your account.`
+      : `${named}’s consults are done. ${spellCount(n)} free hours are on your account.`
+    : n === 1
+      ? `One free hour is on your account, for referring ${names[0]}.`
+      : `${spellCount(n)} free hours are on your account, for referring ${named}.`;
+  return { title, detail };
+}
+
+const REFERRAL_PAWS = [
+  { left: "8%", top: "34%", size: 18, delay: "0ms", rot: "-16deg", color: "var(--color-accent-deep)" },
+  { left: "18%", top: "24%", size: 13, delay: "90ms", rot: "10deg", color: "var(--color-ink)" },
+  { left: "31%", top: "18%", size: 16, delay: "40ms", rot: "-6deg", color: "var(--color-accent)" },
+  { left: "46%", top: "14%", size: 12, delay: "160ms", rot: "14deg", color: "var(--color-ink)" },
+  { left: "62%", top: "18%", size: 17, delay: "70ms", rot: "-12deg", color: "var(--color-accent-deep)" },
+  { left: "76%", top: "26%", size: 14, delay: "130ms", rot: "8deg", color: "var(--color-accent)" },
+  { left: "88%", top: "36%", size: 19, delay: "20ms", rot: "18deg", color: "var(--color-ink)" },
+  { left: "12%", top: "48%", size: 12, delay: "180ms", rot: "-8deg", color: "var(--color-accent)" },
+  { left: "84%", top: "50%", size: 15, delay: "110ms", rot: "-14deg", color: "var(--color-accent-deep)" },
+];
+
+function ReferralCelebrate() {
+  const [on, setOn] = useState(true);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setOn(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setOn(false), 2800);
+    return () => window.clearTimeout(timer);
+  }, []);
+  if (!on || typeof document === "undefined") return null;
+  return createPortal(
+    <div className="referral-celebrate" aria-hidden="true">
+      {REFERRAL_PAWS.map((paw, index) => (
+        <span
+          key={index}
+          className="referral-paw"
+          style={{
+            left: paw.left,
+            top: paw.top,
+            width: paw.size,
+            height: paw.size,
+            color: paw.color,
+            animationDelay: paw.delay,
+            ["--rot" as string]: paw.rot,
+          }}
+        >
+          <PawPrint />
+        </span>
+      ))}
+    </div>,
+    document.body,
+  );
 }
 
 function ReferralNotice({ gifts }: { gifts: DogRow["referral_gifts"] }) {
@@ -282,17 +350,15 @@ function ReferralNotice({ gifts }: { gifts: DogRow["referral_gifts"] }) {
     void acknowledgeReferralNotices({ data: { ids: notes.map((gift) => gift.id) } }).catch(() => undefined);
   }, [notes]);
   if (!notes.length) return null;
+  const copy = referralNoticeCopy(notes);
   return (
-    <div className="mx-auto max-w-lg rounded-2xl border border-line bg-pearl px-6 py-5 text-center">
-      <p className="text-xs font-bold uppercase tracking-wide text-accent-deep">A free hour</p>
-      <ul className="mt-2 space-y-1.5">
-        {notes.map((gift) => (
-          <li key={gift.id} className="text-sm leading-relaxed text-ink">
-            {referralNoticeLine(gift.referred_name, gift.from_consult)}
-          </li>
-        ))}
-      </ul>
-    </div>
+    <>
+      <ReferralCelebrate />
+      <div className="referral-note mx-auto max-w-lg rounded-2xl border border-line bg-pearl px-6 py-6 text-center">
+        <p className="font-display text-3xl tracking-tight text-ink">{copy.title}</p>
+        <p className="mt-2 text-sm leading-relaxed text-muted">{copy.detail}</p>
+      </div>
+    </>
   );
 }
 
