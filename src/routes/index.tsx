@@ -291,12 +291,9 @@ function Services() {
                           </li>
                         ))}
                       </ul>
-                      <Link
-                        to="/intake"
-                        className="inline-flex pt-1 text-base font-semibold text-accent-deep underline-offset-4 hover:underline"
-                      >
-                        Book a consult
-                      </Link>
+                      <Button asChild className="book-cta mt-2 w-full">
+                        <Link to="/intake">Book a consult</Link>
+                      </Button>
                     </div>
                   </div>
                 </div>
