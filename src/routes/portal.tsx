@@ -346,8 +346,9 @@ function ReferralCelebrate() {
   );
 }
 
-function ReferralNotice({ gifts }: { gifts: DogRow["referral_gifts"] }) {
+function ReferralNotice({ gifts, code }: { gifts: DogRow["referral_gifts"]; code: string }) {
   const [notes] = useState(() => (gifts ?? []).filter((gift) => !gift.seen));
+  const [copied, setCopied] = useState(false);
   useEffect(() => {
     if (!notes.length) return;
     void acknowledgeReferralNotices({ data: { ids: notes.map((gift) => gift.id) } }).catch(() => undefined);
@@ -360,6 +361,30 @@ function ReferralNotice({ gifts }: { gifts: DogRow["referral_gifts"] }) {
       <div className="referral-note mx-auto max-w-lg rounded-2xl border border-line bg-pearl px-6 py-6 text-center">
         <p className="font-display text-3xl tracking-tight text-ink">Thank you!</p>
         <p className="mt-3 text-sm leading-relaxed text-muted">{copy.detail}</p>
+        {code ? (
+          <div className="mt-4 border-t border-line pt-4">
+            <p className="text-xs font-bold uppercase tracking-wide text-muted">Your referral code</p>
+            <p className="mt-1 font-display text-2xl tracking-wide text-ink">{code}</p>
+            <p className="mt-2 text-sm leading-relaxed text-muted">
+              Pass this along. Another finished consult is another free hour.
+            </p>
+            <button
+              type="button"
+              className="mt-3 text-sm font-semibold text-accent-deep underline-offset-4 hover:underline"
+              onClick={() => {
+                void navigator.clipboard?.writeText(code).then(
+                  () => {
+                    setCopied(true);
+                    toast.success("Referral code copied.");
+                  },
+                  () => toast.error("Could not copy."),
+                );
+              }}
+            >
+              {copied ? "Copied" : "Copy referral code"}
+            </button>
+          </div>
+        ) : null}
       </div>
     </>
   );
@@ -396,7 +421,7 @@ function HomeTab({
 
   return (
     <div className="space-y-4">
-      <ReferralNotice key={dog.id} gifts={dog.referral_gifts ?? []} />
+      <ReferralNotice key={dog.id} gifts={dog.referral_gifts ?? []} code={dog.referral_code} />
       <div className="grid w-full gap-4 lg:grid-cols-2">
       <CheckinCard dog={dog} lastDone={lastDone ?? null} watching={watching} onUnread={onUnread} />
       <Card
