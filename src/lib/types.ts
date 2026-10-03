@@ -113,6 +113,7 @@ export type CheckinRow = {
   updated_at: string;
   dog_name?: string;
   owner_name?: string;
+  note_removed?: boolean;
 };
 
 export type MessageRow = {

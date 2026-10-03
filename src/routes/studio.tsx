@@ -590,11 +590,16 @@ function Board({
                   <span className="mt-0.5 block text-xs text-muted">
                     {c.owner_name} · {formatWhen(c.updated_at || c.created_at)}
                   </span>
-                  {c.note ? (
+                  {c.note_removed ? (
+                    <span className="mt-1 block text-sm italic leading-relaxed text-muted">This note was deleted.</span>
+                  ) : c.note ? (
                     <span className="mt-1 block text-sm leading-relaxed">{c.note}</span>
                   ) : null}
                 </span>
-                <Badge tone={checkinTone(c.status)} className="shrink-0">{checkinById(c.status).label}</Badge>
+                <span className="flex shrink-0 flex-col items-end gap-1.5">
+                  <Badge tone={checkinTone(c.status)}>{checkinById(c.status).label}</Badge>
+                  {c.note_removed ? <Badge tone="muted">Removed</Badge> : null}
+                </span>
               </button>
             ))
           )}
@@ -1420,13 +1425,18 @@ function ClientDetail({
               >
                 <div className="min-w-0">
                   <p className="text-xs text-muted">{formatWhen(c.updated_at || c.created_at)}</p>
-                  {c.note ? (
+                  {c.note_removed ? (
+                    <p className="mt-1 text-sm italic text-muted">This note was deleted.</p>
+                  ) : c.note ? (
                     <p className="mt-1 text-sm leading-relaxed">{c.note}</p>
                   ) : (
                     <p className="mt-1 text-sm text-muted">No note.</p>
                   )}
                 </div>
-                <Badge tone={checkinTone(c.status)} className="shrink-0">{checkinById(c.status).label}</Badge>
+                <span className="flex shrink-0 flex-col items-end gap-1.5">
+                  <Badge tone={checkinTone(c.status)}>{checkinById(c.status).label}</Badge>
+                  {c.note_removed ? <Badge tone="muted">Removed</Badge> : null}
+                </span>
               </div>
             ))
           )}

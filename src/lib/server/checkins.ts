@@ -30,14 +30,28 @@ export const listCheckins = createServerFn({ method: "GET" })
     if (isTrainer) {
       rows = data.dogId
         ? await sql<CheckinRow>`
-            select c.*, d.name as dog_name, d.owner_name
+            select c.*, d.name as dog_name, d.owner_name,
+              exists (
+                select 1 from messages m
+                where m.dog_id = c.dog_id
+                  and m.author = 'client'
+                  and m.removed_at is not null
+                  and abs(extract(epoch from (m.created_at - c.created_at))) < 120
+              ) as note_removed
             from checkins c join dogs d on d.id = c.dog_id
             where c.dog_id = ${data.dogId}
             order by c.created_at desc
             limit ${limit}
           `
         : await sql<CheckinRow>`
-            select c.*, d.name as dog_name, d.owner_name
+            select c.*, d.name as dog_name, d.owner_name,
+              exists (
+                select 1 from messages m
+                where m.dog_id = c.dog_id
+                  and m.author = 'client'
+                  and m.removed_at is not null
+                  and abs(extract(epoch from (m.created_at - c.created_at))) < 120
+              ) as note_removed
             from checkins c join dogs d on d.id = c.dog_id
             order by c.created_at desc
             limit ${limit}
@@ -59,7 +73,10 @@ export const listCheckins = createServerFn({ method: "GET" })
             limit ${limit}
           `;
     }
-    return rows;
+    return rows.map((row) => ({
+      ...row,
+      note_removed: row.note_removed === true,
+    }));
   });
 
 export const submitCheckin = createServerFn({ method: "POST" })
