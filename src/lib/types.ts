@@ -43,7 +43,7 @@ export type DogRow = {
   referral_source: string;
   referral_code: string;
   referred_by_code: string;
-  referral_gifts: { referred_name: string; created_at: string }[];
+  referral_gifts: { id: number; referred_name: string; created_at: string; seen: boolean; from_consult: boolean }[];
   thanked_referrer_code: string;
   preferred_at: string;
   photo_url: string | null;

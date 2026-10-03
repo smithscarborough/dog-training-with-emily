@@ -21,6 +21,7 @@ import { getProgress } from "@/lib/server/progress";
 import { updateDogPhoto, updateOwnProfile } from "@/lib/server/dogs";
 import { fileToJpegDataUrl } from "@/lib/photo";
 import { listCheckins, submitCheckin, clearCheckin } from "@/lib/server/checkins";
+import { acknowledgeReferralNotices } from "@/lib/server/referrals";
 import { listMessages, markClientRead, recordHouseholdNote, deleteOwnNote } from "@/lib/server/messages";
 import { notifyEmilyNote, notifyEmilyCancel } from "@/lib/notify-studio";
 import { NoteThread } from "@/components/portal/note-thread";
@@ -268,6 +269,33 @@ function goalPill(id: string) {
   return GOAL_COLOR[id] ?? "bg-[#D7B8C4]";
 }
 
+function referralNoticeLine(name: string, fromConsult: boolean) {
+  const person = name.split(" · ")[0]?.trim() || "A friend";
+  if (fromConsult) return `${person}’s consult is done. One free hour is on your account.`;
+  return `One free hour is on your account, for referring ${person}.`;
+}
+
+function ReferralNotice({ gifts }: { gifts: DogRow["referral_gifts"] }) {
+  const [notes] = useState(() => (gifts ?? []).filter((gift) => !gift.seen));
+  useEffect(() => {
+    if (!notes.length) return;
+    void acknowledgeReferralNotices({ data: { ids: notes.map((gift) => gift.id) } }).catch(() => undefined);
+  }, [notes]);
+  if (!notes.length) return null;
+  return (
+    <div className="rounded-2xl border border-line bg-pearl px-5 py-4">
+      <p className="text-xs font-bold uppercase tracking-wide text-accent-deep">A free hour</p>
+      <ul className="mt-2 space-y-1.5">
+        {notes.map((gift) => (
+          <li key={gift.id} className="text-sm leading-relaxed text-ink">
+            {referralNoticeLine(gift.referred_name, gift.from_consult)}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function HomeTab({
   dog,
   watching,
@@ -298,7 +326,9 @@ function HomeTab({
   })();
 
   return (
-    <div className="grid w-full gap-4 lg:grid-cols-2">
+    <div className="space-y-4">
+      <ReferralNotice key={dog.id} gifts={dog.referral_gifts ?? []} />
+      <div className="grid w-full gap-4 lg:grid-cols-2">
       <CheckinCard dog={dog} lastDone={lastDone ?? null} watching={watching} onUnread={onUnread} />
       <Card
         className={
@@ -414,6 +444,7 @@ function HomeTab({
           {dog.goals_other ? <p className="mt-3 text-sm text-muted">{dog.goals_other}</p> : null}
         </CardBody>
       </Card>
+      </div>
     </div>
   );
 }

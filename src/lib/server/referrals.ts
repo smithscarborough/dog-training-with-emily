@@ -4,7 +4,13 @@ import { getSql, type Sql } from "@/lib/db";
 import type { DogRow } from "@/lib/types";
 import { requireTrainer } from "./helpers";
 
-export type ReferralGift = { referred_name: string; created_at: string };
+export type ReferralGift = {
+  id: number;
+  referred_name: string;
+  created_at: string;
+  seen: boolean;
+  from_consult: boolean;
+};
 
 function letters(value: string) {
   return value
@@ -142,13 +148,15 @@ export async function attachReferrals(sql: Sql, dogs: DogRow[]) {
   await refreshIncomingCodes(sql, dogs);
   if (!dogs.length) return dogs;
   const gifts = await sql<{
+    id: number;
     referrer_dog_id: number;
     referred_dog_id: number | null;
     referred_name: string;
     created_at: string;
+    seen_at: string | null;
     referrer_code: string;
   }>`
-    select g.referrer_dog_id, g.referred_dog_id, g.referred_name, g.created_at, d.referral_code as referrer_code
+    select g.id, g.referrer_dog_id, g.referred_dog_id, g.referred_name, g.created_at, g.seen_at, d.referral_code as referrer_code
     from referral_gifts g
     join dogs d on d.id = g.referrer_dog_id
     order by g.created_at desc
@@ -156,7 +164,13 @@ export async function attachReferrals(sql: Sql, dogs: DogRow[]) {
   for (const dog of dogs) {
     dog.referral_gifts = gifts
       .filter((gift) => gift.referrer_dog_id === dog.id)
-      .map((gift) => ({ referred_name: gift.referred_name, created_at: gift.created_at }));
+      .map((gift) => ({
+        id: gift.id,
+        referred_name: gift.referred_name,
+        created_at: gift.created_at,
+        seen: Boolean(gift.seen_at),
+        from_consult: gift.referred_dog_id != null,
+      }));
     dog.thanked_referrer_code =
       gifts.find((gift) => gift.referred_dog_id === dog.id)?.referrer_code ?? "";
   }
@@ -217,4 +231,27 @@ export const setReferredByCode = createServerFn({ method: "POST" })
     `;
     const thanked = consults.length ? await grantReferralHour(sql, data.dogId) : null;
     return { thanked };
+  });
+
+/** The client has seen the one-time note for these thank-you hours. */
+export const acknowledgeReferralNotices = createServerFn({ method: "POST" })
+  .validator((data: { ids?: number[] }) => ({
+    ids: (data.ids ?? []).filter((id) => Number.isInteger(id) && id > 0).slice(0, 20),
+  }))
+  .middleware([authMiddleware])
+  .handler(async ({ context, data }) => {
+    if (!data.ids.length) return { ok: true };
+    const sql = await getSql();
+    for (const id of data.ids) {
+      await sql`
+        update referral_gifts g
+        set seen_at = now()
+        from dogs d
+        where g.id = ${id}
+          and g.referrer_dog_id = d.id
+          and d.owner_user_id = ${context.userId}
+          and g.seen_at is null
+      `;
+    }
+    return { ok: true };
   });
