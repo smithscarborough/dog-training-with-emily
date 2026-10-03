@@ -2549,7 +2549,7 @@ function Calendar({
       </div>
 
       {view === "list" ? (
-        <div className="max-w-2xl space-y-3">
+        <div className="mx-auto max-w-2xl space-y-3">
           {filtered.length === 0 ? <p className="text-sm text-muted">No sessions in this view.</p> : null}
           {filtered.map((s) => (
             <SessionLine key={s.id} session={s} onOpen={openSession} />
@@ -2619,7 +2619,7 @@ function Calendar({
               })}
             </div>
             <div className="border-t border-line pt-4">
-              <div className="max-w-2xl">
+              <div className="mx-auto max-w-2xl">
                 <p className="text-sm font-semibold text-ink">{formatDayLabel(selected)}</p>
                 {selectedSessions.length === 0 ? (
                   <p className="mt-2 text-sm text-muted">Nothing scheduled.</p>
