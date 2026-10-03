@@ -64,9 +64,14 @@ export function AvailabilityFields({
       <p className="mt-1 text-xs text-faint">Optional. For visits after the consult. Tap any that fit.</p>
       <div className="mt-4">
         <p className="text-sm font-bold text-[#1a0e0a]">Days</p>
-        <div role="group" aria-label="Days that usually work" className="mt-2 flex flex-wrap gap-x-2 gap-y-3">
+        <div role="group" aria-label="Days that usually work" className="mt-2 grid grid-cols-7 gap-1.5 sm:flex sm:flex-wrap sm:gap-x-2 sm:gap-y-3">
           {DAYS.map((day) => (
-            <ChipToggle key={day} pressed={days.includes(day)} onToggle={() => toggle("days", day)}>
+            <ChipToggle
+              key={day}
+              pressed={days.includes(day)}
+              onToggle={() => toggle("days", day)}
+              className="w-full justify-center px-0 text-xs sm:w-auto sm:px-3 sm:text-sm"
+            >
               {day}
             </ChipToggle>
           ))}
