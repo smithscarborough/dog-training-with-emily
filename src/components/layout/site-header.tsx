@@ -9,7 +9,7 @@ import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { goToHomeSection, scrollHome, syncScrollPadding } from "@/lib/scroll-to-section";
 import { cn } from "@/lib/utils";
 import { useMe } from "@/lib/use-me";
-import { HolidayPreviewBar, HolidayRule } from "@/components/layout/holiday-chrome";
+import { HolidayPreviewBar, HolidayRule, HolidaySides } from "@/components/layout/holiday-chrome";
 import { useHolidayTouch } from "@/lib/use-holiday";
 
 const LINKS = [
@@ -53,12 +53,13 @@ export function SiteHeader(_props?: { solid?: boolean }) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 border-b bg-header transition-[background-color,border-color,backdrop-filter] duration-300",
+        "relative sticky top-0 z-40 border-b bg-header transition-[background-color,border-color,backdrop-filter] duration-300",
         scrolled ? "header-blur border-ink/20" : "border-ink/15",
         holiday && "header-holiday",
       )}
     >
-      <div id="site-nav-bar" className="mx-auto flex h-[8.75rem] max-w-6xl items-center justify-between gap-2 px-3 py-1.5 sm:h-[7.5rem] sm:gap-4 sm:px-6 lg:h-44">
+      {holiday ? <HolidaySides holiday={holiday} /> : null}
+      <div id="site-nav-bar" className="relative z-10 mx-auto flex h-[8.75rem] max-w-6xl items-center justify-between gap-2 px-3 py-1.5 sm:h-[7.5rem] sm:gap-4 sm:px-6 lg:h-44">
         <Link
           to="/"
           className="min-w-0 shrink"
