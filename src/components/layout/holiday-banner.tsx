@@ -81,7 +81,7 @@ function RibbonStripes({ a, b, c, d }: { a: Pt; b: Pt; c: Pt; d: Pt }) {
 }
 
 function Leaf({ fill }: { fill: string }) {
-  return <path fill={fill} d="M0 2C4-2 9-9 4-15 2-17 0-14 0-10 0-14-2-17-4-15-9-9-4-2 0 2Z" />;
+  return <path fill={fill} stroke="#0F3D2E" strokeWidth="0.8" d="M0 2C4-2 9-9 4-15 2-17 0-14 0-10 0-14-2-17-4-15-9-9-4-2 0 2Z" />;
 }
 
 function FourLeaf({ fill }: { fill: string }) {
@@ -115,16 +115,18 @@ function Wreath() {
   const leaves = [0, 1, 2, 3, 4, 5];
   return (
     <svg className="emblem emblem-wide" viewBox="0 0 168 40" aria-hidden="true">
-      <path d="M84 30C52 30 28 18 12 6" fill="none" stroke="#D4B483" strokeWidth="1" />
-      <path d="M84 30C116 30 140 18 156 6" fill="none" stroke="#D4B483" strokeWidth="1" />
+      <path d="M84 30C52 30 28 18 12 6" fill="none" stroke="#3A2A14" strokeWidth="2.2" />
+      <path d="M84 30C116 30 140 18 156 6" fill="none" stroke="#3A2A14" strokeWidth="2.2" />
+      <path d="M84 30C52 30 28 18 12 6" fill="none" stroke="#C6A36A" strokeWidth="1" />
+      <path d="M84 30C116 30 140 18 156 6" fill="none" stroke="#C6A36A" strokeWidth="1" />
       {leaves.map((i) => (
-        <ellipse key={i} cx={22 + i * 10} cy={22 - i * 2.6} rx="6" ry="2.3" fill="#D4B483" transform={`rotate(${-48 + i * 7} ${22 + i * 10} ${22 - i * 2.6})`} />
+        <ellipse key={i} cx={22 + i * 10} cy={22 - i * 2.6} rx="6" ry="2.3" fill="#C6A36A" stroke="#3A2A14" strokeWidth="0.8" transform={`rotate(${-48 + i * 7} ${22 + i * 10} ${22 - i * 2.6})`} />
       ))}
       {leaves.map((i) => (
-        <ellipse key={`r${i}`} cx={146 - i * 10} cy={22 - i * 2.6} rx="6" ry="2.3" fill="#D4B483" transform={`rotate(${48 - i * 7} ${146 - i * 10} ${22 - i * 2.6})`} />
+        <ellipse key={`r${i}`} cx={146 - i * 10} cy={22 - i * 2.6} rx="6" ry="2.3" fill="#C6A36A" stroke="#3A2A14" strokeWidth="0.8" transform={`rotate(${48 - i * 7} ${146 - i * 10} ${22 - i * 2.6})`} />
       ))}
-      <path d="M76 30h16" stroke="#D4B483" strokeWidth="1" />
-      <path d="M84 26l2.2 4-2.2 4-2.2-4Z" fill="#D4B483" />
+      <path d="M76 30h16" stroke="#C6A36A" strokeWidth="1.4" />
+      <path d="M84 26l2.2 4-2.2 4-2.2-4Z" fill="#C6A36A" stroke="#3A2A14" strokeWidth="0.6" />
     </svg>
   );
 }
@@ -132,8 +134,7 @@ function Wreath() {
 function HeartMark() {
   return (
     <svg className="emblem" viewBox="0 0 64 58" aria-hidden="true">
-      <path fill={CREAM} d="M32 52C20 42 6 31 6 18 6 9 13 3 21 3c5 0 8 3 11 8 3-5 6-8 11-8 8 0 15 6 15 15C58 31 44 42 32 52Z" />
-      <path fill="none" stroke="#E7C9C4" strokeWidth="1.2" d="M20 16c4-6 10-8 14-3" />
+      <path fill="#6E2436" stroke={CREAM} strokeWidth="3.5" d="M32 52C20 42 6 31 6 18 6 9 13 3 21 3c5 0 8 3 11 8 3-5 6-8 11-8 8 0 15 6 15 15C58 31 44 42 32 52Z" />
     </svg>
   );
 }
@@ -144,7 +145,8 @@ function CloverMark() {
       <g transform="translate(32 28) scale(1.15)">
         <FourLeaf fill="#E4C56A" />
       </g>
-      <path d="M32 42c0 10 0 16 0 22" stroke="#C6A15B" strokeWidth="2" strokeLinecap="round" />
+      <path d="M32 42c0 10 0 16 0 22" stroke="#0F3D2E" strokeWidth="3.2" strokeLinecap="round" />
+      <path d="M32 42c0 10 0 16 0 22" stroke="#E4C56A" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   );
 }
@@ -290,10 +292,12 @@ function PumpkinMark() {
 function WheatMark() {
   return (
     <svg className="emblem" viewBox="0 0 72 78" aria-hidden="true">
-      <path d="M36 74V28" stroke="#F4EFE4" strokeWidth="1.7" strokeLinecap="round" />
-      <path d="M30 74c2-16 2-28 6-42M42 74c-2-16-2-28-6-42" stroke="#E7C27A" strokeWidth="1.2" fill="none" />
+      <path d="M36 74V28" stroke="#3C2418" strokeWidth="2.6" strokeLinecap="round" />
+      <path d="M36 74V28" stroke="#E2B656" strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M30 74c2-16 2-28 6-42M42 74c-2-16-2-28-6-42" stroke="#3C2418" strokeWidth="2.2" fill="none" />
+      <path d="M30 74c2-16 2-28 6-42M42 74c-2-16-2-28-6-42" stroke="#E2B656" strokeWidth="1.1" fill="none" />
       {[0, 1, 2, 3, 4, 5].map((i) => (
-        <ellipse key={i} cx={i % 2 ? 28 : 44} cy={24 + i * 7} rx="6" ry="2.5" fill="#F4EFE4" transform={`rotate(${i % 2 ? -35 : 35} ${i % 2 ? 28 : 44} ${24 + i * 7})`} />
+        <ellipse key={i} cx={i % 2 ? 28 : 44} cy={24 + i * 7} rx="6" ry="2.5" fill="#E2B656" stroke="#3C2418" strokeWidth="0.7" transform={`rotate(${i % 2 ? -35 : 35} ${i % 2 ? 28 : 44} ${24 + i * 7})`} />
       ))}
       <path d="M28 62h16" stroke="#C6A15B" strokeWidth="2" strokeLinecap="round" />
     </svg>
@@ -303,7 +307,7 @@ function WheatMark() {
 function HollyMark() {
   return (
     <svg className="emblem" viewBox="0 0 80 70" aria-hidden="true">
-      <path fill="#7EAF8C" d="M40 42C28 28 18 22 10 24c8 8 16 14 22 22-8 2-14 8-16 16 10-2 16-8 18-14 2 8 8 14 16 16-2-10-8-16-14-18 8-2 16-8 24-16-10 0-18 4-24 12Z" />
+      <path fill="#7EAF8C" stroke="#14352A" strokeWidth="1.2" d="M40 42C28 28 18 22 10 24c8 8 16 14 22 22-8 2-14 8-16 16 10-2 16-8 18-14 2 8 8 14 16 16-2-10-8-16-14-18 8-2 16-8 24-16-10 0-18 4-24 12Z" />
       <path d="M22 30c6 4 10 8 12 14M58 30c-6 4-10 8-12 14M40 36v16" fill="none" stroke="#14352A" strokeWidth="0.8" opacity="0.45" />
       <circle cx="30" cy="26" r="4" fill="#C45C5C" />
       <circle cx="50" cy="26" r="4" fill="#C45C5C" />

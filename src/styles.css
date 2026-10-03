@@ -873,7 +873,7 @@
   position: relative;
   z-index: 1;
   margin: 0;
-  padding: 13px 24px 36px;
+  padding: 10px 24px 12px;
   text-align: center;
   font-weight: 500;
   line-height: 1.35;
@@ -884,40 +884,40 @@
   left: 50%;
   bottom: 0;
   z-index: 2;
-  transform: translate(-50%, 18px);
+  transform: translate(-50%, 12px);
   line-height: 0;
   pointer-events: none;
 }
 .holiday-emblem.is-new-year {
-  transform: translate(-50%, 11px);
+  transform: translate(-50%, 8px);
 }
 .holiday-emblem.is-easter,
 .holiday-emblem.is-fathers {
-  transform: translate(-50%, 22px);
+  transform: translate(-50%, 14px);
 }
 .holiday-emblem.is-memorial {
-  transform: translate(-50%, 30px);
+  transform: translate(-50%, 18px);
 }
 .emblem {
   display: block;
-  height: 44px;
+  height: 22px;
   width: auto;
-  filter: drop-shadow(0 3px 3px rgba(36, 20, 14, 0.14));
+  filter: drop-shadow(0 1px 1px rgba(36, 20, 14, 0.18));
 }
 .emblem-wide {
-  height: 28px;
+  height: 16px;
 }
 .emblem-eggs {
-  height: 52px;
+  height: 28px;
 }
 .emblem-ribbon {
-  height: 64px;
+  height: 36px;
 }
 .emblem-tie {
-  height: 54px;
+  height: 30px;
 }
 .emblem-flag {
-  height: 38px;
+  height: 20px;
 }
 .holiday-banner.is-patrick .holiday-banner-svg {
   mask-image: linear-gradient(90deg, #000 0%, #000 14%, transparent 34%, transparent 66%, #000 86%, #000 100%);
@@ -934,11 +934,11 @@
   background: #0f3d2e;
 }
 .holiday-banner.is-easter {
-  background: linear-gradient(90deg, #f6e4e6 0%, #f7f3ea 46%, #e5f0e6 100%);
+  background: #e7cfc4;
 }
 .holiday-banner.is-mothers {
-  background: #f6ebe8;
-  box-shadow: inset 0 2px 0 #c48b96, inset 0 -2px 0 #c48b96;
+  background: #e4c4c0;
+  box-shadow: inset 0 2px 0 #8e5360, inset 0 -2px 0 #8e5360;
 }
 .holiday-banner.is-memorial {
   background: linear-gradient(to bottom, #b22234 0 18%, #ffffff 18% 82%, #1b365d 82% 100%);
@@ -965,27 +965,27 @@
 }
 @media (min-width: 640px) {
   .holiday-banner p {
-    padding-top: 15px;
-    padding-bottom: 40px;
+    padding-top: 12px;
+    padding-bottom: 12px;
     font-size: 1.05rem;
   }
   .emblem {
-    height: 48px;
+    height: 24px;
   }
   .emblem-wide {
-    height: 30px;
+    height: 18px;
   }
   .emblem-eggs {
-    height: 58px;
+    height: 30px;
   }
   .emblem-ribbon {
-    height: 72px;
+    height: 40px;
   }
   .emblem-flag {
-    height: 42px;
+    height: 22px;
   }
   .holiday-emblem.is-memorial {
-    transform: translate(-50%, 34px);
+    transform: translate(-50%, 20px);
   }
 }
 .holiday-preview {
