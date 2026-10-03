@@ -1213,7 +1213,7 @@ function ClientDetail({
 
   useEffect(() => {
     if (litCheckin == null) return;
-    const timer = window.setTimeout(() => setLitCheckin(null), 2500);
+    const timer = window.setTimeout(() => setLitCheckin(null), 4500);
     return () => window.clearTimeout(timer);
   }, [litCheckin]);
 
@@ -1251,7 +1251,7 @@ function ClientDetail({
 
   useEffect(() => {
     if (litSession == null) return;
-    const timer = window.setTimeout(() => setLitSession(null), 3400);
+    const timer = window.setTimeout(() => setLitSession(null), 4500);
     return () => window.clearTimeout(timer);
   }, [litSession]);
 
@@ -1514,7 +1514,7 @@ function ClientDetail({
                 id={`checkin-${c.id}`}
                 className={cn(
                   "flex items-start justify-between gap-3 rounded-lg px-3 py-3 hairline",
-                  litCheckin === c.id && "bg-accent/15 ring-2 ring-accent",
+                  litCheckin === c.id && "visit-focus is-on",
                 )}
               >
                 <div className="min-w-0">

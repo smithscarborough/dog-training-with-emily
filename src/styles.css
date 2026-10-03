@@ -404,11 +404,11 @@
   background-color: #7dcc93;
 }
 .visit-focus.is-on {
-  animation: visit-border-out 3.2s ease forwards;
+  animation: visit-border-out 4.2s ease forwards;
 }
 @keyframes visit-border-out {
   0%,
-  72% {
+  68% {
     box-shadow: 0 0 0 2px var(--color-accent);
   }
   100% {

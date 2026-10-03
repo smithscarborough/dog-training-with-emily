@@ -1025,7 +1025,7 @@ function SessionsTab({
 
   useEffect(() => {
     if (highlightId == null) return;
-    const timer = window.setTimeout(() => setHighlightId(null), 1800);
+    const timer = window.setTimeout(() => setHighlightId(null), 4500);
     return () => window.clearTimeout(timer);
   }, [highlightId]);
 
@@ -1164,7 +1164,7 @@ function SessionsTab({
                 "scroll-mt-28",
                 s.status === "confirmed" && "border-l-[3px] border-l-accent",
                 s.status === "requested" && "border-l-[3px] border-l-ink/40",
-                highlightId === s.id && "ring-2 ring-accent",
+                highlightId === s.id && "visit-focus is-on",
               )}
             >
               <CardBody className="space-y-3">
