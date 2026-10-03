@@ -403,6 +403,9 @@
 .badge-practiced {
   background-color: #7dcc93;
 }
+.badge-skipped {
+  background-color: #6b4a32;
+}
 .visit-focus.is-on {
   animation: visit-border-out 4.2s ease forwards;
 }
