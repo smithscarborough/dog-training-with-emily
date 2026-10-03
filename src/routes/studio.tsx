@@ -150,6 +150,7 @@ function StudioApp({
   const [selected, setSelected] = useState<number | null>(dogs[0]?.id ?? null);
   const [waiting, setWaiting] = useState<MessageRow[]>([]);
   const [noteFocus, setNoteFocus] = useState<number | null>(null);
+  const [checkinFocus, setCheckinFocus] = useState<number | null>(null);
   const pending = dogs.filter((d) => d.status === "pending");
   const active = dogs.filter((d) => d.status === "active");
 
@@ -223,6 +224,11 @@ function StudioApp({
                 setSelected(id);
                 setTab("clients");
               }}
+              onCheckin={(dogId, checkinId) => {
+                setSelected(dogId);
+                setCheckinFocus(checkinId);
+                setTab("clients");
+              }}
               onReply={(id) => {
                 setSelected(id);
                 setNoteFocus(id);
@@ -239,6 +245,8 @@ function StudioApp({
               onNotes={refreshWaiting}
               focusNotes={noteFocus != null && noteFocus === selected}
               onNotesOpened={() => setNoteFocus(null)}
+              focusCheckin={checkinFocus}
+              onCheckinOpened={() => setCheckinFocus(null)}
             />
           ) : null}
           {tab === "calendar" ? (
@@ -333,11 +341,13 @@ function Board({
   waiting,
   onOpen,
   onReply,
+  onCheckin,
 }: {
   dogs: DogRow[];
   waiting: MessageRow[];
   onOpen: (id: number) => void;
   onReply: (id: number) => void;
+  onCheckin: (dogId: number, checkinId: number) => void;
 }) {
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [checkins, setCheckins] = useState<CheckinRow[]>([]);
@@ -549,7 +559,7 @@ function Board({
                 key={c.id}
                 type="button"
                 className="flex w-full items-start justify-between gap-3 rounded-lg px-3 py-3 text-left hairline transition-colors hover:bg-bg"
-                onClick={() => onOpen(c.dog_id)}
+                onClick={() => onCheckin(c.dog_id, c.id)}
               >
                 <span className="min-w-0">
                   <span className="block font-medium">{c.dog_name}</span>
@@ -657,6 +667,8 @@ function Clients({
   onNotes,
   focusNotes = false,
   onNotesOpened,
+  focusCheckin = null,
+  onCheckinOpened,
 }: {
   dogs: DogRow[];
   selected: number | null;
@@ -665,6 +677,8 @@ function Clients({
   onNotes: () => void;
   focusNotes?: boolean;
   onNotesOpened?: () => void;
+  focusCheckin?: number | null;
+  onCheckinOpened?: () => void;
 }) {
   const [q, setQ] = useState("");
   const [formMode, setFormMode] = useState<null | "new" | "existing">(null);
@@ -866,6 +880,8 @@ function Clients({
           leading={onboardForm}
           focusNotes={focusNotes}
           onNotesOpened={onNotesOpened}
+          focusCheckin={focusCheckin}
+          onCheckinOpened={onCheckinOpened}
         />
       ) : (
         <div className="space-y-6">
@@ -984,6 +1000,8 @@ function ClientDetail({
   leading,
   focusNotes = false,
   onNotesOpened,
+  focusCheckin = null,
+  onCheckinOpened,
 }: {
   dog: DogRow;
   onRefresh: () => void;
@@ -991,6 +1009,8 @@ function ClientDetail({
   leading?: ReactNode;
   focusNotes?: boolean;
   onNotesOpened?: () => void;
+  focusCheckin?: number | null;
+  onCheckinOpened?: () => void;
 }) {
   const [notes, setNotes] = useState(dog.trainer_private_notes);
   const [savedNote, setSavedNote] = useState(dog.trainer_private_notes);
@@ -1000,6 +1020,8 @@ function ClientDetail({
   const [filter, setFilter] = useState<"working" | "all">("working");
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [checkins, setCheckins] = useState<CheckinRow[]>([]);
+  const [checkinsReady, setCheckinsReady] = useState(false);
+  const [litCheckin, setLitCheckin] = useState<number | null>(null);
   const [thread, setThread] = useState<MessageRow[]>([]);
   const [status, setStatus] = useState(dog.status);
   const [statusBusy, setStatusBusy] = useState(false);
@@ -1020,9 +1042,16 @@ function ClientDetail({
     void listSessions({ data: { dogId: dog.id } })
       .then(setSessions)
       .catch(() => setSessions([]));
+    setCheckinsReady(false);
     void listCheckins({ data: { dogId: dog.id, limit: 8 } })
-      .then(setCheckins)
-      .catch(() => setCheckins([]));
+      .then((rows) => {
+        setCheckins(rows);
+        setCheckinsReady(true);
+      })
+      .catch(() => {
+        setCheckins([]);
+        setCheckinsReady(true);
+      });
     void listMessages({ data: { dogId: dog.id } })
       .then(setThread)
       .catch(() => setThread([]));
@@ -1047,6 +1076,32 @@ function ClientDetail({
     notes.querySelector("textarea")?.focus({ preventScroll: true });
     notesOpened.current?.();
   }, [focusNotes, dog.id]);
+
+  const checkinOpened = useRef(onCheckinOpened);
+  checkinOpened.current = onCheckinOpened;
+
+  useLayoutEffect(() => {
+    if (focusCheckin == null || !checkinsReady) return;
+    const scroller = document.getElementById("app-scroll");
+    const target = document.getElementById(`checkin-${focusCheckin}`) ?? document.getElementById("client-checkins");
+    if (!scroller || !target) return;
+    const headerH = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+    const top =
+      target.getBoundingClientRect().top -
+      scroller.getBoundingClientRect().top +
+      scroller.scrollTop -
+      headerH -
+      16;
+    scroller.scrollTo({ top: Math.max(0, top) });
+    setLitCheckin(focusCheckin);
+    checkinOpened.current?.();
+  }, [focusCheckin, checkinsReady, dog.id]);
+
+  useEffect(() => {
+    if (litCheckin == null) return;
+    const timer = window.setTimeout(() => setLitCheckin(null), 2500);
+    return () => window.clearTimeout(timer);
+  }, [litCheckin]);
 
   const byKey = useMemo(
     () => Object.fromEntries(current.map((p) => [p.skill_key, p])),
@@ -1299,7 +1354,11 @@ function ClientDetail({
             checkins.map((c) => (
               <div
                 key={c.id}
-                className="flex items-start justify-between gap-3 rounded-lg px-3 py-3 hairline"
+                id={`checkin-${c.id}`}
+                className={cn(
+                  "flex items-start justify-between gap-3 rounded-lg px-3 py-3 hairline",
+                  litCheckin === c.id && "bg-accent/15 ring-2 ring-accent",
+                )}
               >
                 <div className="min-w-0">
                   <p className="text-xs text-muted">{formatWhen(c.updated_at || c.created_at)}</p>
