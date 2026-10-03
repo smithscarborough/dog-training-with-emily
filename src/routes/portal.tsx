@@ -162,7 +162,7 @@ function PortalApp({
   return (
     <div className="flex min-h-full flex-col">
       <EspressoBanner kicker="Portal">
-        Homework, a between-session check-in, and the 1–7 progress for your dog.
+        Homework, check-ins, and how training is going.
       </EspressoBanner>
       <main className="portal-type mx-auto w-full max-w-5xl px-5 py-8 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -347,7 +347,7 @@ function HomeTab({
         <CardBody>
           <p className="font-display text-4xl tabular-nums">{dog.credits}</p>
           <p className="mt-2 text-sm text-muted">
-            A session already paid for, or a thank-you hour. One comes off when a visit is completed.
+            Hours left. One is used when a visit is completed.
           </p>
         </CardBody>
       </Card>
@@ -358,7 +358,7 @@ function HomeTab({
         <CardBody>
           <p className="font-display text-4xl tracking-wide">{dog.referral_code}</p>
           <p className="mt-2 text-sm leading-relaxed text-muted">
-            Have them type this whole code on the consult form. After their consult, a free hour is added here.
+            Share this with a friend. After their consult, a free hour is added here.
           </p>
           {dog.referral_code ? (
             <button
@@ -377,7 +377,9 @@ function HomeTab({
           {(dog.referral_gifts ?? []).length ? (
             <ul className="mt-4 space-y-1 text-sm text-ink">
               {(dog.referral_gifts ?? []).map((gift) => (
-                <li key={`${gift.created_at}-${gift.referred_name}`}>A free hour for referring {gift.referred_name}.</li>
+                <li key={`${gift.created_at}-${gift.referred_name}`}>
+                  Referred {gift.referred_name.replace(" · ", " and ")}.
+                </li>
               ))}
             </ul>
           ) : null}
@@ -496,7 +498,7 @@ function CheckinCard({
         <div className="space-y-4 border-t border-line pt-5">
         <p className="font-display text-xl font-bold tracking-tight text-ink">How did homework go?</p>
         <p className="text-sm leading-relaxed text-muted">
-          Complete this section after you and {dog.name} have completed the recommended homework.
+          After you and {dog.name} practice, tell Emily how it went.
         </p>
         <p className="text-sm leading-relaxed text-muted">
           Emily will review prior to the next session and adapt training as needed.
@@ -721,8 +723,7 @@ function ProgressTab({ dog }: { dog: DogRow }) {
         </CardHeader>
         <CardBody>
           <p className="max-w-2xl text-sm text-muted">
-            Each trick and skill sits on a seven-phase ladder. Open one to see
-            where {dog.name} is, and the last note from a session.
+            Each skill is scored from 1 to 7. Open one to see where {dog.name} is, and the last note from a session.
           </p>
           <div className="mt-5">
             <PhaseLegend />

@@ -521,7 +521,7 @@ export function IntakeForm({
           <div className="rounded-xl border border-line bg-surface px-4 py-4 sm:px-5">
             <p className="text-sm font-semibold text-ink">Refer a friend</p>
             <p className="mt-1 text-sm leading-relaxed text-muted">
-              A referral code is created for you when you submit this form. Share it with a friend, and a free hour is added to your account after their visit.
+              You’ll get a code to share with a friend. After their consult, a free hour is added to your account.
             </p>
           </div>
         ) : null}
