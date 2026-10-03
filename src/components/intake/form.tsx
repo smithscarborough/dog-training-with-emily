@@ -519,9 +519,9 @@ export function IntakeForm({
         </fieldset>
         {showReferral ? (
           <div className="rounded-xl border border-line bg-surface px-4 py-4 sm:px-5">
-            <p className="text-sm font-semibold text-ink">Pass it on</p>
+            <p className="text-sm font-semibold text-ink">Send a neighbor</p>
             <p className="mt-1 text-sm leading-relaxed text-muted">
-              After you send this, you’ll have a code. A neighbor can type it on this form. When their consult is finished, a free hour is added to your account.
+              Your code is on the next screen. Have them use it when they book. Once I’ve finished their consult, a free hour goes on your account.
             </p>
           </div>
         ) : null}
