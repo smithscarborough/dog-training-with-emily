@@ -5,6 +5,7 @@ import { DogAvatar } from "@/components/dogs/dog-avatar";
 import { EspressoBanner } from "@/components/layout/espresso-banner";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { Overview } from "@/components/studio/overview";
+import { HolidaySettings } from "@/components/studio/holiday-settings";
 import { PrivateNoteEditor } from "@/components/studio/private-note";
 import { IntakeForm } from "@/components/intake/form";
 import { PhaseMeter } from "@/components/progress/phase-meter";
@@ -2939,7 +2940,7 @@ function Settings({
   studio,
   onRefresh,
 }: {
-  studio: { email: string; phone: string; instagram: string; facebook: string; x_url: string; banner_text?: string };
+  studio: { email: string; phone: string; instagram: string; facebook: string; x_url: string; banner_text?: string; holiday_mode?: string; holiday_skip?: string };
   onRefresh: () => void;
 }) {
   const [email, setEmail] = useState(studio.email);
@@ -3002,6 +3003,7 @@ function Settings({
         </div>
       </CardBody>
     </Card>
+    <HolidaySettings mode={studio.holiday_mode ?? "auto"} skip={studio.holiday_skip ?? ""} onRefresh={onRefresh} />
     <div className="grid gap-6 lg:grid-cols-2">
     <Card className="max-w-lg">
       <CardHeader>

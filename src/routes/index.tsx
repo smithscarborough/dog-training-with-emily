@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, type FormEvent } from "react";
+import { useLayoutEffect, useState, type FormEvent } from "react";
 import { createFileRoute, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { ContactMethods, SocialLinks } from "@/components/brand/social-links";
@@ -9,10 +9,10 @@ import { Field } from "@/components/ui/label";
 import { Input, Textarea } from "@/components/ui/input";
 import { HOUSTON_AREAS, SESSION_TYPES, dollars } from "@/lib/catalog";
 import { createInquiry } from "@/lib/server/inquiries";
-import { getPublicStudio } from "@/lib/server/public";
 import { notifyStudioInbox } from "@/lib/notify-studio";
 import { formatUsPhone } from "@/lib/phone";
 import { scrollToSection, allowHomePin, scrollAppTo } from "@/lib/scroll-to-section";
+import { useHolidayTouch } from "@/lib/use-holiday";
 
 export const Route = createFileRoute("/")({ component: HomePage });
 
@@ -35,16 +35,11 @@ const SESSION_IMAGES: Record<string, { src: string; alt: string }> = {
 };
 
 function HomePage() {
-  const [banner, setBanner] = useState("");
+  const { banner, holiday } = useHolidayTouch();
   const leaving = useRouterState({
     select: (s) => s.isLoading && s.location.pathname !== "/",
   });
-
-  useEffect(() => {
-    void getPublicStudio()
-      .then((studio) => setBanner(studio.banner_text.trim()))
-      .catch(() => setBanner(""));
-  }, []);
+  const message = holiday?.preview ? holiday.line : banner.trim() || holiday?.line || "";
 
   useLayoutEffect(() => {
     if (leaving) return;
@@ -76,7 +71,7 @@ function HomePage() {
 
   return (
     <div>
-      {banner ? <HomeBanner message={banner} /> : null}
+      {message ? <HomeBanner message={message} /> : null}
       <Hero />
       <Philosophy />
       <About />

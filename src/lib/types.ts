@@ -12,6 +12,8 @@ export type StudioRow = {
   x_url: string;
   banner_text: string;
   hours_json: string;
+  holiday_mode: string;
+  holiday_skip: string;
 };
 
 export type DogRow = {

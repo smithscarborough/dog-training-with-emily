@@ -9,6 +9,8 @@ import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { goToHomeSection, scrollHome, syncScrollPadding } from "@/lib/scroll-to-section";
 import { cn } from "@/lib/utils";
 import { useMe } from "@/lib/use-me";
+import { HolidayPreviewBar, HolidayRule } from "@/components/layout/holiday-chrome";
+import { useHolidayTouch } from "@/lib/use-holiday";
 
 const LINKS = [
   { href: "/#about", label: "About" },
@@ -20,6 +22,7 @@ export function SiteHeader(_props?: { solid?: boolean }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { me, user } = useMe();
+  const { holiday, preview } = useHolidayTouch();
   const { user: sessionUser, isPending } = useCurrentUserState();
   const frozenOut = useFrozenSignedOutHeader();
   const authMode = useRef<"in" | "out" | "pending">("pending");
@@ -52,6 +55,7 @@ export function SiteHeader(_props?: { solid?: boolean }) {
       className={cn(
         "sticky top-0 z-40 border-b bg-header transition-[background-color,border-color,backdrop-filter] duration-300",
         scrolled ? "header-blur border-ink/20" : "border-ink/15",
+        holiday && "header-holiday",
       )}
     >
       <div id="site-nav-bar" className="mx-auto flex h-[8.75rem] max-w-6xl items-center justify-between gap-2 px-3 py-1.5 sm:h-[7.5rem] sm:gap-4 sm:px-6 lg:h-44">
@@ -111,6 +115,8 @@ export function SiteHeader(_props?: { solid?: boolean }) {
           </button>
         </div>
       </div>
+      {holiday ? <HolidayRule holiday={holiday} /> : null}
+      {preview ? <HolidayPreviewBar id={preview} /> : null}
       <div className={open ? "menu-panel is-open md:hidden" : "menu-panel md:hidden"}>
         <div>
             <SignedIn>

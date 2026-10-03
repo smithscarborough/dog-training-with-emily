@@ -5,6 +5,7 @@ import type { DogRow, MePayload } from "@/lib/types";
 import { linkDogsByEmail, loadStudio, stripPrivate, userEmail } from "./helpers";
 import { ensureDemoSeed } from "./seed-demo";
 import { normalizeHours, serializeHours } from "@/lib/hours";
+import { isHolidayId } from "@/lib/holidays";
 import { normalizeUsPhone } from "@/lib/phone";
 import { attachReferrals } from "./referrals";
 
@@ -108,6 +109,28 @@ export const updateStudioBanner = createServerFn({ method: "POST" })
     const sql = await getSql();
     await sql`update studio set banner_text = ${text}, updated_at = now() where id = 1`;
     return { ok: true, banner_text: text };
+  });
+
+export const updateStudioHoliday = createServerFn({ method: "POST" })
+  .validator((data: { mode: string; skip: string }) => {
+    const mode = data.mode === "off" ? "off" : "auto";
+    const skip = typeof data.skip === "string" ? data.skip.trim() : "";
+    if (skip) {
+      const [id, year] = skip.split(":");
+      const parsed = Number(year);
+      if (!id || !isHolidayId(id) || !Number.isInteger(parsed) || parsed < 2000 || parsed > 2100) {
+        throw new Error("Could not save.");
+      }
+    }
+    return { mode, skip };
+  })
+  .middleware([authMiddleware])
+  .handler(async ({ context, data }) => {
+    const { requireTrainer } = await import("./helpers");
+    await requireTrainer(context.userId);
+    const sql = await getSql();
+    await sql`update studio set holiday_mode = ${data.mode}, holiday_skip = ${data.skip}, updated_at = now() where id = 1`;
+    return { ok: true, holiday_mode: data.mode, holiday_skip: data.skip };
   });
 
 export const updateStudioHours = createServerFn({ method: "POST" })

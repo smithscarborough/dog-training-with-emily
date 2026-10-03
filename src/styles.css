@@ -857,6 +857,103 @@
   }
 }
 
+.header-holiday,
+.header-holiday.header-blur {
+  border-bottom-color: transparent;
+  box-shadow: none;
+}
+.holiday-ornament {
+  position: relative;
+  z-index: 12;
+  height: 2px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--holiday) 12%, var(--holiday) 88%, transparent);
+}
+.holiday-seal {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: var(--color-header);
+  color: var(--holiday);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--holiday) 62%, transparent);
+}
+.holiday-seal svg {
+  display: block;
+  width: 15px;
+  height: 15px;
+}
+.holiday-seal.is-live svg {
+  animation: holiday-breathe 5.2s ease-in-out infinite;
+}
+@keyframes holiday-breathe {
+  0%,
+  100% {
+    opacity: 0.62;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.holiday-preview {
+  position: fixed;
+  z-index: 60;
+  left: 50%;
+  bottom: 16px;
+  display: flex;
+  max-width: calc(100vw - 24px);
+  transform: translateX(-50%);
+  align-items: center;
+  gap: 10px;
+  border-radius: 999px;
+  background: var(--color-ink);
+  color: var(--color-bg);
+  padding: 8px 8px 8px 16px;
+  box-shadow: 0 12px 28px -16px rgba(36, 20, 14, 0.7);
+}
+.holiday-preview p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.holiday-preview select,
+.holiday-preview button {
+  height: 32px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.holiday-preview select {
+  max-width: 11rem;
+  padding: 0 8px;
+  background: color-mix(in oklab, white 10%, transparent);
+}
+.holiday-preview button {
+  padding: 0 12px;
+  font-weight: 600;
+}
+@media (max-width: 640px) {
+  .holiday-preview {
+    flex-wrap: wrap;
+    justify-content: center;
+    border-radius: 18px;
+    text-align: center;
+  }
+  .holiday-preview p {
+    white-space: normal;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-photo {
     animation: none;
@@ -883,7 +980,8 @@
   }
   .photo-upload-ring,
   .photo-upload-veil::after,
-  .photo-upload-dots i {
+  .photo-upload-dots i,
+  .holiday-seal.is-live svg {
     animation: none;
   }
 }
