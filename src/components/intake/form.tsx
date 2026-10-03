@@ -211,6 +211,7 @@ export function IntakeForm({
               value={form.owner_name}
               onChange={(e) => set("owner_name", e.target.value)}
               onBlur={(e) => set("owner_name", formatProperName(e.target.value))}
+              placeholder="John Smith"
               required
             />
           </Field>
