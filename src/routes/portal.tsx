@@ -356,9 +356,10 @@ function HomeTab({
           <CardTitle>Refer a friend</CardTitle>
         </CardHeader>
         <CardBody>
-          <p className="font-display text-4xl tracking-wide">{dog.referral_code}</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-muted">Your referral code</p>
+          <p className="mt-1 font-display text-4xl tracking-wide">{dog.referral_code || "—"}</p>
           <p className="mt-2 text-sm leading-relaxed text-muted">
-            Share this with a friend. After their consult, a free hour is added here.
+            A friend enters this code when booking a consult. After that consult, one free hour is added to your account.
           </p>
           {dog.referral_code ? (
             <button
@@ -366,17 +367,17 @@ function HomeTab({
               className="mt-3 text-sm font-semibold text-accent-deep underline-offset-4 hover:underline"
               onClick={() => {
                 void navigator.clipboard?.writeText(dog.referral_code).then(
-                  () => toast.success("Code copied."),
+                  () => toast.success("Referral code copied."),
                   () => toast.error("Could not copy."),
                 );
               }}
             >
-              Copy code
+              Copy referral code
             </button>
           ) : null}
           {(dog.referral_gifts ?? []).length ? (
             <div className="mt-5 border-t border-line pt-4">
-              <p className="text-xs font-bold uppercase tracking-wide text-muted">Referred</p>
+              <p className="text-xs font-bold uppercase tracking-wide text-muted">You referred</p>
               <ul className="mt-1">
                 {(dog.referral_gifts ?? []).map((gift) => {
                   const [person, dogName] = gift.referred_name.split(" · ");
