@@ -75,7 +75,7 @@ const COPY: Record<HolidayId, { name: string; line: string; color: string; motio
   },
   july4: {
     name: "Independence Day",
-    line: "Happy Fourth of July!",
+    line: "Happy Independence Day, America!",
     color: "#3E4C5E",
     motion: false,
   },
