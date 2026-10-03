@@ -222,6 +222,7 @@ export function IntakeForm({
               value={form.owner_email}
               onChange={(e) => set("owner_email", e.target.value)}
               onBlur={(e) => set("owner_email", formatEmail(e.target.value))}
+              placeholder="john.smith@email.com"
               required
             />
           </Field>
