@@ -596,10 +596,7 @@ function Board({
                     <span className="mt-1 block text-sm leading-relaxed">{c.note}</span>
                   ) : null}
                 </span>
-                <span className="flex shrink-0 flex-col items-end gap-1.5">
-                  <Badge tone={checkinTone(c.status)}>{checkinById(c.status).label}</Badge>
-                  {c.note_removed ? <Badge tone="muted">Removed</Badge> : null}
-                </span>
+                <Badge tone={checkinTone(c.status)} className="shrink-0">{checkinById(c.status).label}</Badge>
               </button>
             ))
           )}
@@ -1433,10 +1430,7 @@ function ClientDetail({
                     <p className="mt-1 text-sm text-muted">No note.</p>
                   )}
                 </div>
-                <span className="flex shrink-0 flex-col items-end gap-1.5">
-                  <Badge tone={checkinTone(c.status)}>{checkinById(c.status).label}</Badge>
-                  {c.note_removed ? <Badge tone="muted">Removed</Badge> : null}
-                </span>
+                <Badge tone={checkinTone(c.status)} className="shrink-0">{checkinById(c.status).label}</Badge>
               </div>
             ))
           )}
