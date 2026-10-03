@@ -1445,21 +1445,27 @@ function ClientDetail({
             >
               Update credits
             </Button>
-            <div className="space-y-3 border-t border-line pt-3">
+            <div className="space-y-3 border-t border-line pt-4">
               <p className="text-sm font-bold text-[#1a0e0a]">Their code</p>
-              <p className="mt-1 font-display text-2xl tracking-wide">{dog.referral_code || "—"}</p>
-              <p className="mt-1 text-xs leading-relaxed text-muted">
-                A neighbor types this on the consult form. It is a first name and last initial, so another client with the same name is not credited. A free hour lands here when that consult is completed.
+              <p className="font-display text-2xl tracking-wide">{dog.referral_code || "—"}</p>
+              <p className="text-sm leading-relaxed text-muted">
+                This is the code they give a friend. You don’t type it anywhere. After that friend’s consult, a free hour is added to this account.
               </p>
               {(dog.referral_gifts ?? []).length ? (
-                <ul className="mt-2 space-y-1 text-sm text-ink">
+                <ul className="space-y-1 text-sm text-ink">
                   {(dog.referral_gifts ?? []).map((gift) => (
                     <li key={`${gift.created_at}-${gift.referred_name}`}>{gift.referred_name} · thank-you hour</li>
                   ))}
                 </ul>
               ) : null}
-              <Field label="Who they already sent">
-                <Input value={giftName} onChange={(e) => setGiftName(e.target.value)} placeholder="Maria" />
+            </div>
+            <div className="space-y-3 border-t border-line pt-4">
+              <p className="text-sm font-bold text-[#1a0e0a]">Someone they already sent</p>
+              <p className="text-sm leading-relaxed text-muted">
+                Use this only if they referred someone before the code existed. Type that person’s name, then add the hour.
+              </p>
+              <Field label="Their name">
+                <Input value={giftName} onChange={(e) => setGiftName(e.target.value)} placeholder="Maria Alvarez" />
               </Field>
               <Button
                 size="sm"
@@ -1477,23 +1483,24 @@ function ClientDetail({
               >
                 Give a thank-you hour
               </Button>
-              <p className="text-xs leading-relaxed text-muted">
-                For a referral that already happened, before the code was used.
-              </p>
             </div>
-            <div className="space-y-3 border-t border-line pt-3">
+            <div className="space-y-3 border-t border-line pt-4">
+              <p className="text-sm font-bold text-[#1a0e0a]">Who sent them</p>
+              <p className="text-sm leading-relaxed text-muted">
+                If another client sent them, paste that client’s code. The free hour is added to that client when you mark this consult completed.
+              </p>
               <Field label="Code they used">
                 <Input
                   value={incomingCode}
                   onChange={(e) => setIncomingCode(e.target.value.toUpperCase())}
-                  placeholder="LUIS"
+                  placeholder="JORDANM"
                   className="uppercase"
                 />
               </Field>
-              <p className="text-xs leading-relaxed text-muted">
+              <p className="text-sm leading-relaxed text-muted">
                 {dog.thanked_referrer_code
                   ? `Thank-you hour already given to ${dog.thanked_referrer_code}.`
-                  : "If they were sent by a client, save the code. The hour is added once the consult is completed."}
+                  : "Leave this blank if nobody sent them."}
               </p>
               <Button
                 size="sm"

@@ -70,6 +70,25 @@ export async function assignReferralCode(
   return "";
 }
 
+function firstNameCode(ownerName: string) {
+  const first = ownerName.trim().split(/\s+/)[0] ?? "";
+  return letters(first).slice(0, 12);
+}
+
+/** Old first-name codes, like LUIS, now point at the client's current code when only one person matches. */
+async function refreshIncomingCodes(sql: Sql, dogs: DogRow[]) {
+  for (const dog of dogs) {
+    const used = normalizeReferralCode(dog.referred_by_code ?? "");
+    if (!used) continue;
+    if (dogs.some((other) => other.referral_code === used)) continue;
+    const matches = dogs.filter((other) => other.id !== dog.id && firstNameCode(other.owner_name) === used);
+    if (matches.length !== 1 || !matches[0].referral_code) continue;
+    const next = matches[0].referral_code;
+    await sql`update dogs set referred_by_code = ${next}, updated_at = now() where id = ${dog.id}`;
+    dog.referred_by_code = next;
+  }
+}
+
 export async function ensureReferralCodes(sql: Sql, dogs: DogRow[]) {
   for (const dog of dogs) {
     const stem = referralCodeStem(dog.owner_name, dog.name);
@@ -120,6 +139,7 @@ export async function revokeReferralHour(sql: Sql, referredDogId: number) {
 
 export async function attachReferrals(sql: Sql, dogs: DogRow[]) {
   await ensureReferralCodes(sql, dogs);
+  await refreshIncomingCodes(sql, dogs);
   if (!dogs.length) return dogs;
   const gifts = await sql<{
     referrer_dog_id: number;
