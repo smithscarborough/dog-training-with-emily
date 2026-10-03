@@ -141,9 +141,9 @@ export const submitPublicIntake = createServerFn({ method: "POST" })
     `;
     const id = inserted[0]?.id;
     if (!id) throw new Error("Could not save intake.");
-    await assignReferralCode(sql, id, data.owner_name, data.name);
+    const referralCode = await assignReferralCode(sql, id, data.owner_name, data.name);
     await seedProgressForDog(id);
-    return { id };
+    return { id, referralCode };
   });
 
 export const checkClientSignup = createServerFn({ method: "POST" })

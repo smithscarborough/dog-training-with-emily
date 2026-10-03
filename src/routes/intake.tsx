@@ -17,6 +17,7 @@ function IntakePage() {
   const { user } = useCurrentUserState();
   const { me } = useMe();
   const [done, setDone] = useState(false);
+  const [code, setCode] = useState("");
   const [hours, setHours] = useState<HoursDay[]>(defaultHours);
 
   useLayoutEffect(() => {
@@ -42,6 +43,27 @@ function IntakePage() {
               I’ll write you at the email you left to set a time. The consult is
               $40, in your home.
             </p>
+            {code ? (
+              <div className="mx-auto mt-8 max-w-md rounded-2xl border border-line bg-surface px-6 py-6">
+                <p className="text-sm font-semibold text-ink">Your code</p>
+                <p className="mt-1 font-display text-4xl tracking-wide text-ink">{code}</p>
+                <p className="mt-2 text-sm leading-relaxed text-muted">
+                  Pass it to a neighbor. After their consult, a free hour is added to your account. It’s also in the portal once you log in.
+                </p>
+                <button
+                  type="button"
+                  className="mt-3 text-sm font-semibold text-accent-deep underline-offset-4 hover:underline"
+                  onClick={() => {
+                    void navigator.clipboard?.writeText(code).then(
+                      () => toast.success("Code copied."),
+                      () => toast.error("Could not copy."),
+                    );
+                  }}
+                >
+                  Copy code
+                </button>
+              </div>
+            ) : null}
             <div className="mt-8 flex flex-wrap justify-center gap-2">
               <Button asChild>
                 <Link to="/">Back home</Link>
@@ -82,15 +104,17 @@ function IntakePage() {
                   owner_email: user?.primaryEmail ?? "",
                 }}
                 hours={hours}
+                showReferral
                 submitLabel="Submit"
                 onSubmit={async (data) => {
                   try {
-                    await submitPublicIntake({
+                    const result = await submitPublicIntake({
                       data: {
                         ...data,
                         preferred_at: data.preferred_at ? new Date(data.preferred_at).toISOString() : "",
                       },
                     });
+                    setCode(result.referralCode || "");
                     toast.success("Intake received. I’ll write you shortly.");
                     setDone(true);
                     scrollAppTo(0, "smooth");
