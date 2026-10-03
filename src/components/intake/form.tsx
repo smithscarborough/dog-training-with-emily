@@ -293,7 +293,7 @@ export function IntakeForm({
               placeholder="42 lbs"
             />
           </Field>
-          <Field label="Birthday" hint="Optional. I’ll celebrate your dog on the day.">
+          <Field label="Birthday" hint="Optional. I’ll wish them a happy birthday.">
             <DateField value={form.birthday} max={localToday()} onChange={(value) => set("birthday", value)} />
           </Field>
           <Field label="Allergies or dietary restrictions">

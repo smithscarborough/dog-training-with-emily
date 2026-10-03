@@ -1701,7 +1701,7 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
                   />
                 </Field>
               </div>
-              <Field label="Birthday" hint="Optional. I’ll celebrate your dog on the day.">
+              <Field label="Birthday" hint="Optional. I’ll wish them a happy birthday.">
                 <DateField value={draft.birthday} max={todayKey()} onChange={(value) => patch("birthday", value)} />
               </Field>
               <Field label="Allergies or dietary restrictions">
