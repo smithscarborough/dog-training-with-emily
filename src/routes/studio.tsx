@@ -1232,6 +1232,7 @@ function ClientDetail({
       sessionOpened.current?.();
       return;
     }
+    target.classList.add("is-on");
     const headerH = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
     const top =
       target.getBoundingClientRect().top -
@@ -1253,7 +1254,7 @@ function ClientDetail({
 
   useEffect(() => {
     if (litSession == null) return;
-    const timer = window.setTimeout(() => setLitSession(null), 2500);
+    const timer = window.setTimeout(() => setLitSession(null), 3400);
     return () => window.clearTimeout(timer);
   }, [litSession]);
 

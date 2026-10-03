@@ -403,12 +403,17 @@
 .badge-practiced {
   background-color: #7dcc93;
 }
-.visit-focus {
-  box-shadow: 0 0 0 2px transparent;
-  transition: box-shadow 900ms ease;
-}
 .visit-focus.is-on {
-  box-shadow: 0 0 0 2px var(--color-accent);
+  animation: visit-border-out 3.2s ease forwards;
+}
+@keyframes visit-border-out {
+  0%,
+  72% {
+    box-shadow: 0 0 0 2px var(--color-accent);
+  }
+  100% {
+    box-shadow: 0 0 0 2px transparent;
+  }
 }
 
 .book-cta {
