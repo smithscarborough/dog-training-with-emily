@@ -46,8 +46,8 @@ export function HolidaySettings({
       </CardHeader>
       <CardBody className="space-y-4">
         <p className="text-sm leading-relaxed text-muted">
-          A small mark under the header, and one line on the home page, for a few days around each holiday.
-          Your own banner replaces that line. The mark still shows.
+          A banner at the top of the home page for a few days around each holiday.
+          If you post your own banner, yours shows instead.
         </p>
         <div className="inline-flex rounded-full bg-ink p-1">
           {(

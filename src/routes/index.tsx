@@ -13,6 +13,7 @@ import { notifyStudioInbox } from "@/lib/notify-studio";
 import { formatUsPhone } from "@/lib/phone";
 import { scrollToSection, allowHomePin, scrollAppTo } from "@/lib/scroll-to-section";
 import { useHolidayTouch } from "@/lib/use-holiday";
+import { HolidayBanner } from "@/components/layout/holiday-banner";
 
 export const Route = createFileRoute("/")({ component: HomePage });
 
@@ -39,7 +40,8 @@ function HomePage() {
   const leaving = useRouterState({
     select: (s) => s.isLoading && s.location.pathname !== "/",
   });
-  const message = holiday?.preview ? holiday.line : banner.trim() || holiday?.line || "";
+  const custom = banner.trim();
+  const showHoliday = Boolean(holiday && (holiday.preview || !custom));
 
   useLayoutEffect(() => {
     if (leaving) return;
@@ -71,7 +73,7 @@ function HomePage() {
 
   return (
     <div>
-      {message ? <HomeBanner message={message} /> : null}
+      {showHoliday && holiday ? <HolidayBanner holiday={holiday} /> : custom ? <HomeBanner message={custom} /> : null}
       <Hero />
       <Philosophy />
       <About />
