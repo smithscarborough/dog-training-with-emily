@@ -272,7 +272,19 @@ function StudioApp({
             />
           ) : null}
           {tab === "calendar" ? (
-            <Calendar dogs={dogs} hoursJson={studio.hours_json ?? ""} onRefresh={onRefresh} />
+            <Calendar
+              dogs={dogs}
+              hoursJson={studio.hours_json ?? ""}
+              onRefresh={onRefresh}
+              onOpenSession={(dogId, sessionId) => {
+                holdStudioView();
+                setSelected(dogId);
+                setSessionFocus(sessionId);
+                setCheckinFocus(null);
+                setNoteFocus(null);
+                setTab("clients");
+              }}
+            />
           ) : null}
           {tab === "inbox" ? (
             <Inbox
@@ -2430,10 +2442,12 @@ function Calendar({
   dogs,
   hoursJson,
   onRefresh,
+  onOpenSession,
 }: {
   dogs: DogRow[];
   hoursJson: string;
   onRefresh: () => void;
+  onOpenSession: (dogId: number, sessionId: number) => void;
 }) {
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [view, setView] = useState<"month" | "list">("month");
@@ -2484,6 +2498,10 @@ function Calendar({
     });
   }
 
+  function openSession(session: SessionRow) {
+    onOpenSession(session.dog_id, session.id);
+  }
+
   return (
     <div className="space-y-4">
       <HoursCard hoursJson={hoursJson} onRefresh={onRefresh} />
@@ -2531,10 +2549,10 @@ function Calendar({
       </div>
 
       {view === "list" ? (
-        <div className="space-y-3">
+        <div className="max-w-2xl space-y-3">
           {filtered.length === 0 ? <p className="text-sm text-muted">No sessions in this view.</p> : null}
           {filtered.map((s) => (
-            <SessionLine key={s.id} session={s} />
+            <SessionLine key={s.id} session={s} onOpen={openSession} />
           ))}
         </div>
       ) : (
@@ -2574,9 +2592,8 @@ function Calendar({
                 const items = byDay.get(cell.key) ?? [];
                 const shown = items.slice(0, 2);
                 return (
-                  <button
+                  <div
                     key={cell.key}
-                    type="button"
                     onClick={() => setSelected(cell.key)}
                     className={cn(
                       "relative flex min-h-16 cursor-pointer flex-col gap-1 rounded-lg bg-pearl p-1.5 text-left hover:z-30 sm:min-h-24 sm:p-2",
@@ -2591,26 +2608,29 @@ function Calendar({
                         key={session.id}
                         session={session}
                         align={index % 7 >= 5 ? "end" : "start"}
+                        onOpen={openSession}
                       />
                     ))}
                     {items.length > shown.length ? (
                       <span className="text-[10px] text-muted">+{items.length - shown.length}</span>
                     ) : null}
-                  </button>
+                  </div>
                 );
               })}
             </div>
             <div className="border-t border-line pt-4">
-              <p className="text-sm font-semibold text-ink">{formatDayLabel(selected)}</p>
-              {selectedSessions.length === 0 ? (
-                <p className="mt-2 text-sm text-muted">Nothing scheduled.</p>
-              ) : (
-                <div className="mt-3 space-y-2">
-                  {selectedSessions.map((s) => (
-                    <SessionLine key={s.id} session={s} />
-                  ))}
-                </div>
-              )}
+              <div className="max-w-2xl">
+                <p className="text-sm font-semibold text-ink">{formatDayLabel(selected)}</p>
+                {selectedSessions.length === 0 ? (
+                  <p className="mt-2 text-sm text-muted">Nothing scheduled.</p>
+                ) : (
+                  <div className="mt-3 space-y-2">
+                    {selectedSessions.map((s) => (
+                      <SessionLine key={s.id} session={s} onOpen={openSession} />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </CardBody>
         </Card>
@@ -2622,18 +2642,33 @@ function Calendar({
   );
 }
 
-function ApptChip({ session, align }: { session: SessionRow; align: "start" | "end" }) {
+function ApptChip({
+  session,
+  align,
+  onOpen,
+}: {
+  session: SessionRow;
+  align: "start" | "end";
+  onOpen: (session: SessionRow) => void;
+}) {
   const place = session.location?.trim();
+  const label = `${session.dog_name}, ${sessionTypeById(session.session_type).name}`;
   return (
     <span className="group/appt relative block min-w-0">
-      <span
+      <button
+        type="button"
+        aria-label={`Open ${label}`}
+        onClick={(event) => {
+          event.stopPropagation();
+          onOpen(session);
+        }}
         className={cn(
-          "block truncate rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-ink sm:text-[11px]",
+          "block w-full cursor-pointer truncate rounded-full px-1.5 py-0.5 text-left text-[10px] font-semibold leading-tight text-ink sm:text-[11px]",
           sessionTint(session.status),
         )}
       >
         {chicagoTime(session.scheduled_at)} {session.dog_name}
-      </span>
+      </button>
       <span
         role="tooltip"
         className={cn(
@@ -2656,21 +2691,29 @@ function ApptChip({ session, align }: { session: SessionRow; align: "start" | "e
   );
 }
 
-function SessionLine({ session }: { session: SessionRow }) {
+function SessionLine({ session, onOpen }: { session: SessionRow; onOpen: (session: SessionRow) => void }) {
   const place = session.location?.trim();
+  const label = `${session.dog_name}, ${sessionTypeById(session.session_type).name}`;
   return (
     <Card>
-      <CardBody className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="font-medium">
-            {session.dog_name} · {sessionTypeById(session.session_type).name}
-          </p>
-          <p className="text-sm text-muted">
-            {session.owner_name} · {formatWhen(session.scheduled_at)}
-          </p>
-          {place ? <p className="mt-1 text-sm text-ink">{place}</p> : null}
-        </div>
-        <Badge tone={statusTone(session.status)} className="shrink-0">{session.status}</Badge>
+      <CardBody className="p-0">
+        <button
+          type="button"
+          aria-label={`Open ${label}`}
+          onClick={() => onOpen(session)}
+          className="flex w-full cursor-pointer items-start justify-between gap-3 p-5 text-left"
+        >
+          <span className="min-w-0">
+            <span className="block font-medium">
+              {session.dog_name} · {sessionTypeById(session.session_type).name}
+            </span>
+            <span className="mt-0.5 block text-sm text-muted">
+              {session.owner_name} · {formatWhen(session.scheduled_at)}
+            </span>
+            {place ? <span className="mt-1 block text-sm text-ink">{place}</span> : null}
+          </span>
+          <Badge tone={statusTone(session.status)} className="shrink-0">{session.status}</Badge>
+        </button>
       </CardBody>
     </Card>
   );
