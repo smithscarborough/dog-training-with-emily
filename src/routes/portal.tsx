@@ -286,16 +286,16 @@ function referralNoticeCopy(notes: DogRow["referral_gifts"]) {
   const named = joinNames(names);
   const added =
     n === 1
-      ? "One free hour with Emily has been added to your account."
-      : `${spellCount(n)} free hours with Emily have been added to your account.`;
+      ? "One free hour with Emily has been added to your account"
+      : `${spellCount(n)} free hours with Emily have been added to your account`;
   const fromConsults = notes.every((gift) => gift.from_consult);
   const detail = fromConsults
     ? n === 1
-      ? `${names[0]}’s consult is done. ${added}`
-      : `${named}’s consults are done. ${added}`
+      ? `${names[0]}’s consult is done. ${added} for this referral.`
+      : `${named}’s consults are done. ${added} for these referrals.`
     : n === 1
-      ? `${added} This is for referring ${names[0]}.`
-      : `${added} This is for referring ${named}.`;
+      ? `${added} for referring ${names[0]}.`
+      : `${added} for referring ${named}.`;
   return { detail };
 }
 
