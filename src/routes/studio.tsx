@@ -1561,7 +1561,7 @@ function ClientDetail({
               />
             </Field>
             <p className="text-xs leading-relaxed text-muted">
-              Optional. Coming-up days show on the board.
+              Optional. Upcoming birthdays show on the <em>Board</em> tab.
             </p>
             <Button
               size="sm"
