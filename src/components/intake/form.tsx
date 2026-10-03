@@ -222,7 +222,7 @@ export function IntakeForm({
               required
             />
           </Field>
-          <Field label="Phone" required className="sm:col-span-2">
+          <Field label="Phone" required>
             <Input
               type="tel"
               inputMode="tel"
@@ -350,7 +350,7 @@ export function IntakeForm({
                   ? "Optional. No open times right now. Send the form and I’ll suggest one."
                   : `Optional. Open ${hoursSummary(hours).replaceAll("   ", " · ")}. Houston time. Closed days can’t be selected.`
               }
-              className="sm:col-span-2"
+              className="max-w-lg sm:col-span-2"
             >
               <WhenPicker
                 value={form.preferred_at}
@@ -374,7 +374,7 @@ export function IntakeForm({
               ) : null}
             </Field>
           ) : null}
-          <Field label="Days that usually work" hint="Optional. For visits after the consult." className="sm:col-span-2">
+          <Field label="Days that usually work" hint="Optional. For visits after the consult." className="max-w-lg sm:col-span-2">
             <Input
               value={form.preferred_days}
               onChange={(e) => set("preferred_days", e.target.value)}
