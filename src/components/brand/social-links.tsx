@@ -136,7 +136,7 @@ export function ContactMethods({
       <li>
         <a
           className={cn(
-            "inline-flex min-h-11 items-center gap-3 text-sm",
+            "inline-flex min-h-11 items-center gap-3 text-base",
             onDark ? "text-bg hover:text-accent-soft" : "font-medium text-ink hover:text-ink",
           )}
           href={`mailto:${PLACEHOLDER_EMAIL}`}
@@ -148,7 +148,7 @@ export function ContactMethods({
       <li>
         <a
           className={cn(
-            "inline-flex min-h-11 items-center gap-3 text-sm",
+            "inline-flex min-h-11 items-center gap-3 text-base",
             onDark ? "text-bg hover:text-accent-soft" : "font-medium text-ink hover:text-ink",
           )}
           href="tel:+17135550148"

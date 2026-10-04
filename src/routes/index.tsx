@@ -106,11 +106,11 @@ function Hero() {
     <section className="overflow-hidden bg-bg">
       <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-12 sm:py-16 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)] lg:gap-16 lg:py-16">
         <div className="flex flex-col items-center text-center lg:items-start lg:self-center lg:text-left lg:-translate-y-8">
-          <p className="text-base font-semibold uppercase tracking-wide text-accent-deep">Greater Houston · in-home</p>
+          <p className="text-lg font-semibold uppercase tracking-wide text-accent-deep">Greater Houston · in-home</p>
           <h1 className="mt-6 font-display text-4xl leading-[1.12] tracking-tight sm:mt-8 sm:text-5xl">
             Hi, I’m Emily.
           </h1>
-          <p className="mt-6 max-w-lg text-base leading-relaxed text-muted sm:mt-8 sm:text-lg">
+          <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted sm:mt-8 sm:text-xl">
             I spent years helping dogs thrive with structure and enrichment. Now
             I come to you: we work in your home, address your dog’s specific
             needs, and leave with you knowing exactly what they need from you.
@@ -153,7 +153,7 @@ function Philosophy() {
         <p className="font-display text-3xl font-semibold italic leading-snug text-tiffany sm:text-4xl">
           A fulfilled dog is a trained dog.
         </p>
-        <p className="mt-10 text-base leading-relaxed text-bg/75 sm:mt-12 sm:text-lg">
+        <p className="mt-10 text-lg leading-relaxed text-bg/75 sm:mt-12 sm:text-xl">
           When a dog struggles, it usually means we haven’t given them a clear
           picture of the world yet. That isn’t a scolding — it’s the work. They
           need more than food, water, and a roof. They need a job, a plan, and a
@@ -172,7 +172,7 @@ function About() {
         <h2 className="mt-8 font-display text-3xl tracking-tight sm:mt-10">
           I grew up here. Teddy made the rest obvious.
         </h2>
-        <div className="mt-10 space-y-5 text-base leading-relaxed text-muted sm:mt-12 sm:space-y-6 sm:text-lg">
+        <div className="mt-10 space-y-5 text-lg leading-relaxed text-muted sm:mt-12 sm:space-y-6 sm:text-xl">
           <p>
             I found this work the way a lot of honest trainers do — by stumbling
             into my first dog. Teddy, whom I adopted, made it clear that love is
@@ -212,7 +212,7 @@ function Services() {
         <h2 className="mx-auto mt-8 max-w-xl font-display text-3xl tracking-tight sm:mt-10">
           We start with ten minutes on how the week went. We end with homework.
         </h2>
-        <p className="mx-auto mt-8 max-w-2xl text-base leading-relaxed text-muted sm:mt-10 sm:text-lg">
+        <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-muted sm:mt-10 sm:text-xl">
           Every visit is in your home, across the Greater Houston area. The last
           fifteen minutes are a debrief: what we worked on, and what will make
           the next six days count.
@@ -249,10 +249,10 @@ function Services() {
                         {dollars(s.price)}
                       </p>
                     </div>
-                    <p className="mt-2 text-base leading-relaxed text-ink">
+                    <p className="mt-2 text-lg leading-relaxed text-ink">
                       {s.minutes} minutes · {s.for}
                     </p>
-                    <span className="mt-3 inline-flex items-center gap-1.5 text-base font-semibold text-accent-deep">
+                    <span className="mt-3 inline-flex items-center gap-1.5 text-lg font-semibold text-accent-deep">
                       {isOpen ? "Close" : "More details"}
                       <svg
                         viewBox="0 0 16 16"
@@ -277,10 +277,10 @@ function Services() {
                 >
                   <div>
                     <div className="space-y-3 px-5 pb-5 pt-3">
-                      <p className="text-base leading-relaxed text-ink">
+                      <p className="text-lg leading-relaxed text-ink">
                         {s.blurb}
                       </p>
-                      <ul className="space-y-2 text-base leading-relaxed text-ink">
+                      <ul className="space-y-2 text-lg leading-relaxed text-ink">
                         {s.includes.map((line) => (
                           <li key={line} className="pl-3.5 relative">
                             <span className="absolute left-0 top-[0.55em] size-1.5 rounded-full bg-accent-soft" />
@@ -341,8 +341,8 @@ function HowItWorks() {
               <span className="mt-2 inline-flex size-10 items-center justify-center rounded-full bg-ink font-logo text-lg font-extrabold text-bg">
                 {i + 1}
               </span>
-              <h3 className="mt-3 font-display text-xl">{s.title}</h3>
-              <p className="mt-2 text-base leading-relaxed text-muted sm:text-lg">{s.body}</p>
+              <h3 className="mt-3 font-display text-2xl">{s.title}</h3>
+              <p className="mt-2 text-lg leading-relaxed text-muted sm:text-xl">{s.body}</p>
             </li>
           ))}
         </ol>
@@ -355,11 +355,11 @@ function Area() {
   return (
     <section className="band bg-bg-warm">
       <div className="mx-auto max-w-3xl px-6 pt-12 pb-20 text-center sm:pt-24 sm:pb-28">
-        <p className="text-base font-semibold uppercase tracking-wide text-accent-deep">
+        <p className="text-lg font-semibold uppercase tracking-wide text-accent-deep">
           Greater Houston Area
         </p>
         <h2 className="mt-8 font-display text-3xl tracking-tight sm:mt-10">I come to you.</h2>
-        <p className="mt-8 text-base leading-relaxed text-muted sm:mt-10 sm:text-lg">
+        <p className="mt-8 text-lg leading-relaxed text-muted sm:mt-10 sm:text-xl">
           If you can get a leash on and open the door, the classroom is already
           built. Neighborhoods I drive regularly:
         </p>
@@ -367,13 +367,13 @@ function Area() {
           {HOUSTON_AREAS.map((a) => (
             <li
               key={a}
-              className="rounded-full bg-accent-soft px-3 py-1.5 text-sm text-ink ring-1 ring-ink/25"
+              className="rounded-full bg-accent-soft px-3 py-1.5 text-base text-ink ring-1 ring-ink/25"
             >
               {a}
             </li>
           ))}
         </ul>
-        <p className="mt-12 text-sm text-muted sm:mt-14">Other neighborhoods by request.</p>
+        <p className="mt-12 text-base text-muted sm:mt-14">Other neighborhoods by request.</p>
       </div>
     </section>
   );
@@ -408,8 +408,8 @@ function Faq() {
           <dl className="mt-10 divide-y divide-ink/20 text-center sm:mt-12 lg:mt-0 lg:text-left">
             {items.map((item) => (
               <div key={item.q} className="py-5 first:pt-0 last:pb-0">
-                <dt className="text-lg font-bold text-ink">{item.q}</dt>
-                <dd className="mt-1.5 text-base leading-relaxed text-muted">{item.a}</dd>
+                <dt className="text-xl font-bold text-ink">{item.q}</dt>
+                <dd className="mt-1.5 text-lg leading-relaxed text-muted">{item.a}</dd>
               </div>
             ))}
           </dl>
@@ -458,16 +458,17 @@ function Contact() {
         <SocialLinks className="mt-4 justify-center" />
         <form className="shell-card mt-8 space-y-5 rounded-lg p-6 text-left sm:p-8" onSubmit={(e) => void onSubmit(e)}>
           <Field label="Your name">
-            <Input value={name} onChange={(e) => setName(e.target.value)} required />
+            <Input className="sm:text-base" value={name} onChange={(e) => setName(e.target.value)} required />
           </Field>
           <Field label="Your dog’s name">
-            <Input value={dogName} onChange={(e) => setDogName(e.target.value)} required />
+            <Input className="sm:text-base" value={dogName} onChange={(e) => setDogName(e.target.value)} required />
           </Field>
           <Field label="Email">
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <Input className="sm:text-base" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </Field>
           <Field label="Phone">
             <Input
+              className="sm:text-base"
               type="tel"
               inputMode="tel"
               autoComplete="tel"
@@ -478,6 +479,7 @@ function Contact() {
           </Field>
           <Field label="What’s going on at home?">
             <Textarea
+              className="sm:text-base"
               grow
               value={message}
               onChange={(e) => setMessage(e.target.value)}

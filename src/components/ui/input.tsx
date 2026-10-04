@@ -47,13 +47,15 @@ function GrowingTextarea({
     return () => observer.disconnect();
   }, [props.value, growMin, growMax]);
 
+  const largeType = className?.includes("sm:text-base");
+  const shellClass = className?.replace("sm:text-base", "");
   return (
     <div
       className={cn(
         "overflow-hidden rounded-lg border border-line bg-surface shadow-[inset_0_1px_0_rgba(47,28,18,0.04)]",
         "transition-[height,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
         "focus-within:border-accent focus-within:[box-shadow:0_0_0_3px_color-mix(in_oklab,var(--color-accent)_35%,transparent)]",
-        className,
+        shellClass,
       )}
       style={{ height }}
     >
@@ -61,7 +63,10 @@ function GrowingTextarea({
         ref={area}
         {...props}
         style={{ minHeight: growMin, maxHeight: growMax }}
-        className="block w-full resize-none overflow-y-auto border-0 bg-transparent px-3 py-2.5 text-base leading-relaxed text-ink outline-none [overflow-wrap:anywhere] placeholder:text-[#a39284] [field-sizing:content] sm:text-sm"
+        className={cn(
+          "block w-full resize-none overflow-y-auto border-0 bg-transparent px-3 py-2.5 text-base leading-relaxed text-ink outline-none [overflow-wrap:anywhere] placeholder:text-[#a39284] [field-sizing:content]",
+          largeType ? "sm:text-base" : "sm:text-sm",
+        )}
       />
     </div>
   );
