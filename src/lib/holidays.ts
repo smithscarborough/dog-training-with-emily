@@ -87,7 +87,7 @@ const COPY: Record<HolidayId, { name: string; line: string; color: string; motio
   },
   thanksgiving: {
     name: "Thanksgiving",
-    line: "Happy Thanksgiving!",
+    line: "We're thankful for you! Happy Thanksgiving to you and yours.",
     color: "#8A3E1E",
     motion: false,
   },

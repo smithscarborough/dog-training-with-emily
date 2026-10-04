@@ -22,11 +22,19 @@ const TEXT: Record<HolidayId, string> = {
 export function HolidayBanner({ holiday }: { holiday: Holiday }) {
   return (
     <aside className={`holiday-banner is-${holiday.id}`} style={{ color: TEXT[holiday.id] }} aria-label={holiday.name}>
-      <p className="text-sm sm:text-base">{holiday.line}</p>
+      <p className="text-sm sm:text-base">{holiday.id === "thanksgiving" ? <ThanksLine /> : holiday.line}</p>
       <div className={`holiday-emblem is-${holiday.id}`}>
         <Emblem id={holiday.id} />
       </div>
     </aside>
+  );
+}
+
+function ThanksLine() {
+  return (
+    <>
+      We're thankful for <span className="holiday-you">you</span>! Happy Thanksgiving to you and yours.
+    </>
   );
 }
 
@@ -84,37 +92,45 @@ function Flag() {
 }
 
 function Firework() {
-  const rays = Array.from({ length: 12 }, (_, i) => {
-    const angle = (Math.PI / 6) * i - Math.PI / 2;
-    const long = i % 2 === 0;
-    const length = long ? 24 : 16;
+  const rays = Array.from({ length: 18 }, (_, i) => {
+    const angle = (Math.PI / 9) * i - Math.PI / 2;
+    const kind = i % 3;
+    const length = kind === 0 ? 30 : kind === 1 ? 20 : 13;
     return {
-      x2: 32 + Math.cos(angle) * length,
-      y2: 32 + Math.sin(angle) * length,
-      dot: long,
+      x2: 40 + Math.cos(angle) * length,
+      y2: 40 + Math.sin(angle) * length,
+      kind,
+      angle,
     };
   });
   return (
-    <svg className="emblem emblem-wide" viewBox="0 0 64 64" aria-hidden="true">
+    <svg className="emblem emblem-wide" viewBox="0 0 80 80" aria-hidden="true">
+      <circle cx="40" cy="40" r="18" fill="#E8C872" opacity="0.16" />
       {rays.map((ray) => (
         <line
           key={`${ray.x2}-${ray.y2}`}
-          x1="32"
-          y1="32"
+          x1={40 + Math.cos(ray.angle) * 5}
+          y1={40 + Math.sin(ray.angle) * 5}
           x2={ray.x2}
           y2={ray.y2}
-          stroke={ray.dot ? "#E8C872" : "#F4EFE4"}
-          strokeWidth={ray.dot ? 2.2 : 1.4}
+          stroke={ray.kind === 0 ? "#F8E7B0" : ray.kind === 1 ? "#E8C872" : "#F4EFE4"}
+          strokeWidth={ray.kind === 0 ? 2.1 : 1.25}
           strokeLinecap="round"
         />
       ))}
       {rays
-        .filter((ray) => ray.dot)
+        .filter((ray) => ray.kind === 0)
         .map((ray) => (
-          <circle key={`d-${ray.x2}`} cx={ray.x2} cy={ray.y2} r="2.1" fill="#F4EFE4" />
+          <Star key={`s-${ray.x2}`} x={ray.x2} y={ray.y2} r={3.1} fill="#FFF8E8" />
         ))}
-      <circle cx="32" cy="32" r="4.2" fill="#E8C872" />
-      <circle cx="30.4" cy="30.4" r="1.5" fill="#FFF8E8" />
+      {rays
+        .filter((ray) => ray.kind === 1)
+        .map((ray) => (
+          <circle key={`d-${ray.x2}`} cx={ray.x2} cy={ray.y2} r="1.7" fill="#F4EFE4" />
+        ))}
+      <circle cx="40" cy="40" r="6.5" fill="#E8C872" />
+      <circle cx="40" cy="40" r="3.2" fill="#FFF8E8" />
+      <circle cx="38.6" cy="38.4" r="1.3" fill="#fff" />
     </svg>
   );
 }
@@ -141,23 +157,28 @@ function HeartMark() {
 }
 
 function CloverMark() {
-  const leaf =
-    "M0-2C-7-2-14-10-9-17-5-22 0-15 0-11 0-15 5-22 9-17 14-10 7-2 0-2Z";
+  const leaf = "M0 2C-9 2-18-7-13-18-9-26 0-20 0-14 0-20 9-26 13-18 18-7 9 2 0 2Z";
   return (
-    <svg className="emblem" viewBox="0 0 80 104" aria-hidden="true">
-      <path d="M40 58c2 14 8 28 6 40" stroke="#0C4A28" strokeWidth="4.2" fill="none" strokeLinecap="round" />
-      <path d="M40 58c2 14 8 28 6 40" stroke="#2E9A55" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-      <g transform="translate(40 36)">
+    <svg className="emblem" viewBox="0 0 92 112" aria-hidden="true">
+      <defs>
+        <radialGradient id="clover-leaf" cx="32%" cy="28%" r="78%">
+          <stop offset="0%" stopColor="#5ed08c" />
+          <stop offset="48%" stopColor="#1c9450" />
+          <stop offset="100%" stopColor="#0a5530" />
+        </radialGradient>
+      </defs>
+      <path d="M46 54c2 16 7 32 5 52" stroke="#084428" strokeWidth="4.4" fill="none" strokeLinecap="round" />
+      <path d="M46 54c2 16 7 32 5 52" stroke="#3cb371" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      <g transform="translate(46 36)">
         {[0, 90, 180, 270].map((deg) => (
-          <g key={deg} transform={`rotate(${deg})`}>
-            <path d={leaf} fill="#0E6B3A" />
-            <path d={leaf} fill="#1F9A52" transform="scale(0.72)" />
-            <path d="M0-6c0-6 0-8 0-10" stroke="#08381E" strokeWidth="0.9" fill="none" strokeLinecap="round" />
-            <ellipse cx="-3.2" cy="-12" rx="2.2" ry="3.4" fill="#fff" opacity="0.28" transform="rotate(-18)" />
+          <g key={deg} transform={`rotate(${deg}) translate(0 -11)`}>
+            <path d={leaf} fill="url(#clover-leaf)" stroke="#08381e" strokeWidth="0.7" />
+            <path d="M0 1C-1-7-1-12 0-17" stroke="#06321c" strokeWidth="0.8" fill="none" opacity="0.55" />
+            <ellipse cx="-4" cy="-10" rx="3.2" ry="5" fill="#fff" opacity="0.22" transform="rotate(-16)" />
           </g>
         ))}
-        <circle r="4.2" fill="#E8C872" />
-        <circle cx="-1" cy="-1" r="1.4" fill="#FFF6D8" />
+        <circle r="5.2" fill="#e8c872" stroke="#8a6824" strokeWidth="0.7" />
+        <circle cx="-1.3" cy="-1.3" r="1.7" fill="#fff6d4" />
       </g>
     </svg>
   );
@@ -165,135 +186,149 @@ function CloverMark() {
 
 function Eggs() {
   return (
-    <svg className="emblem emblem-eggs" viewBox="0 0 246 120" aria-hidden="true">
-      <Egg x={44} fill="#FBF7F0" accent="#6E9A78" motif="speckle" />
-      <Egg x={123} fill="#F7C9C2" accent="#C4505C" motif="ribbon" />
-      <Egg x={202} fill="#D5EEE4" accent="#3E7C9A" motif="chevron" />
+    <svg className="emblem emblem-eggs" viewBox="0 0 236 126" aria-hidden="true">
+      <Egg x={40} fill="#fbf6ee" accent="#5f9474" motif="speckle" />
+      <Egg x={118} fill="#f6c3bb" accent="#c44555" motif="ribbon" />
+      <Egg x={196} fill="#d7f0e6" accent="#3d7c9c" motif="chevron" />
     </svg>
   );
 }
 
+const EGG = "M0 0C14 1 25 28 25 60 25 96 14 116 0 116-14 116-25 96-25 60-25 28-14 1 0 0Z";
+
 function Egg({ x, fill, accent, motif }: { x: number; fill: string; accent: string; motif: "speckle" | "ribbon" | "chevron" }) {
   const id = `egg-${motif}`;
   return (
-    <g transform={`translate(${x} 58)`}>
-      <ellipse cx="2" cy="8" rx="30" ry="10" fill="rgba(36,20,14,0.14)" />
+    <g transform={`translate(${x} 2)`}>
+      <ellipse cx="1" cy="112" rx="18" ry="4.5" fill="rgba(36,20,14,0.16)" />
       <defs>
         <clipPath id={id}>
-          <path d="M0-40c16 2 26 18 26 38 0 16-10 28-26 28S-26 14-26-2C-26-22-16-42 0-40Z" />
+          <path d={EGG} />
         </clipPath>
-        <linearGradient id={`${id}-shade`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#fff" stopOpacity="0.7" />
-          <stop offset="0.42" stopColor="#fff" stopOpacity="0" />
-          <stop offset="1" stopColor="#24140e" stopOpacity="0.16" />
+        <linearGradient id={`${id}-body`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#fff" />
+          <stop offset="0.35" stopColor={fill} />
+          <stop offset="1" stopColor={fill} />
         </linearGradient>
       </defs>
-      <path d="M0-40c16 2 26 18 26 38 0 16-10 28-26 28S-26 14-26-2C-26-22-16-42 0-40Z" fill={fill} />
+      <path d={EGG} fill={`url(#${id}-body)`} />
       <g clipPath={`url(#${id})`}>
         {motif === "speckle" ? (
           <>
-            <path d="M-28 6h56v9H-28z" fill={accent} />
-            <path d="M-28 4.2h56v1.5H-28z" fill="#C6A15B" />
+            <path d="M-25 70h50v7H-25z" fill={accent} />
+            <path d="M-25 68h50" stroke="#c6a15b" strokeWidth="1.3" />
             {[
-              [-14, -22],
-              [-2, -28],
-              [10, -20],
-              [-8, -10],
-              [6, -8],
-              [14, -30],
-              [-16, -4],
-            ].map(([cx, cy]) => (
-              <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="2.3" fill={accent} />
+              [-12, 18, 1.7],
+              [-2, 12, 2.1],
+              [9, 20, 1.6],
+              [-8, 32, 1.5],
+              [6, 36, 2],
+              [13, 28, 1.4],
+              [-14, 46, 1.6],
+              [2, 50, 1.3],
+              [11, 84, 1.5],
+              [-6, 90, 1.8],
+            ].map(([cx, cy, r]) => (
+              <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={r} fill={accent} />
             ))}
           </>
         ) : null}
         {motif === "ribbon" ? (
           <>
-            <path d="M-30-2c8 8 16 8 24 0s16-8 24 0v16c-8-8-16-8-24 0s-16 8-24 0z" fill="#fffaf7" />
-            <path d="M-30-2c8 8 16 8 24 0s16-8 24 0" fill="none" stroke={accent} strokeWidth="1.6" />
-            <path d="M-30 14c8-8 16-8 24 0s16 8 24 0" fill="none" stroke="#C6A15B" strokeWidth="1.4" />
+            <path d="M-26 48h52v18H-26z" fill="#fffaf7" />
+            <path d="M-26 48h52M-26 66h52" stroke={accent} strokeWidth="1.4" />
+            <path d="M-4 48c0 6-8 8-8 14 0-6 8-8 8-14 0 6 8 8 8 14 0-6-8-8-8-14z" fill={accent} />
+            <circle cx="-8" cy="62" r="2.2" fill="#c6a15b" />
+            <circle cx="8" cy="62" r="2.2" fill="#c6a15b" />
           </>
         ) : null}
         {motif === "chevron" ? (
           <>
-            <path d="M-30-14h60l-8 10H-22z" fill={accent} />
-            <path d="M-30 2h60l-8 10H-22z" fill="#F4C96A" />
-            <path d="M-30 18h60l-8 10H-22z" fill={accent} opacity="0.85" />
+            <path d="M-26 28h52l-7 9H-19z" fill={accent} />
+            <path d="M-26 46h52l-7 9H-19z" fill="#f4c96a" />
+            <path d="M-26 64h52l-7 9H-19z" fill={accent} opacity="0.9" />
+            <path d="M-26 82h52l-7 9H-19z" fill="#fff" opacity="0.55" />
           </>
         ) : null}
       </g>
-      <path d="M0-40c16 2 26 18 26 38 0 16-10 28-26 28S-26 14-26-2C-26-22-16-42 0-40Z" fill={`url(#${id}-shade)`} />
-      <path d="M0-40c16 2 26 18 26 38 0 16-10 28-26 28S-26 14-26-2C-26-22-16-42 0-40Z" fill="none" stroke={INK} strokeWidth="1.5" />
+      <ellipse cx="-8" cy="28" rx="8" ry="16" fill="#fff" opacity="0.38" transform="rotate(-18 -8 28)" />
+      <path d={EGG} fill="none" stroke={INK} strokeWidth="1.35" />
     </g>
   );
 }
 
 function RoseMark() {
   return (
-    <svg className="emblem emblem-rose" viewBox="0 0 96 128" aria-hidden="true">
-      <path d="M48 58c2 18 6 36 4 58" stroke="#245C38" strokeWidth="3.4" fill="none" strokeLinecap="round" />
-      <path d="M48 78c-18 2-28 14-18 24 10-8 16-12 18-16z" fill="#2F7A48" />
-      <path d="M48 92c16-2 28 8 18 18-10-6-16-12-18-16z" fill="#3E9460" />
-      <path d="M46 84c-10 4-14 10-8 12M52 98c8 4 14 8 10 10" stroke="#1C432C" strokeWidth="0.9" fill="none" />
-      <g transform="translate(48 36)">
-        <ellipse cx="0" cy="2" rx="20" ry="15" fill="#A33D52" transform="rotate(-24)" />
-        <ellipse cx="0" cy="2" rx="20" ry="15" fill="#C45368" transform="rotate(28)" />
-        <ellipse cx="0" cy="1" rx="18" ry="14" fill="#D97888" transform="rotate(78)" />
-        <ellipse cx="0" cy="1" rx="18" ry="14" fill="#E7A0AC" transform="rotate(-62)" />
-        <ellipse cx="0" cy="1" rx="11" ry="8.5" fill="#F6D5DB" />
-        <path d="M0 6C-4 2-8 1-8-2c0-3 3-4 5-2 1-3 4-5 6-2 2-2 6-1 6 2 0 4-5 6-9 4z" fill="#9E3048" />
-        <ellipse cx="-6" cy="-6" rx="4" ry="2.2" fill="#fff" opacity="0.55" transform="rotate(-32)" />
+    <svg className="emblem emblem-rose" viewBox="0 0 100 132" aria-hidden="true">
+      <path d="M42 0h16c0 8-2 12-8 14s-8-6-8-14z" fill="#c45368" />
+      <path d="M50 12c1 22 2 36 0 52" stroke="#245c38" strokeWidth="3.2" fill="none" strokeLinecap="round" />
+      <path d="M50 46c-16 4-26 16-16 26 8-8 14-12 16-16z" fill="#2f7a48" />
+      <path d="M50 62c14 0 26 10 16 20-8-6-14-12-16-14z" fill="#3e9460" />
+      <path d="M48 52c-8 4-12 8-6 10M54 68c8 3 12 7 8 9" stroke="#1c432c" strokeWidth="0.8" fill="none" />
+      <g transform="translate(50 92)">
+        <path d="M-24 2c-6-20 6-34 18-28 2 12-2 22-6 26-6 2-10 2-12 2z" fill="#9a384c" />
+        <path d="M24 2c6-20-6-34-18-28-2 12 2 22 6 26 6 2 10 2 12 2z" fill="#c45368" />
+        <path d="M-16-2c-2-16 8-26 16-20 1 8-2 16-4 18-5 2-10 2-12 2z" fill="#d97888" />
+        <path d="M16-2c2-16-8-26-16-20-1 8 2 16 4 18 5 2 10 2 12 2z" fill="#e7a0ac" />
+        <path d="M0 4c-10-2-14-14-8-22 6 6 8 14 8 18 0-6 4-14 10-18 4 10-2 20-10 22z" fill="#f4d5db" />
+        <path d="M0 2c-3-8-1-14 0-16 1 2 3 8 0 16z" fill="#9e3048" />
+        <ellipse cx="-7" cy="-12" rx="4" ry="2.4" fill="#fff" opacity="0.55" transform="rotate(-28)" />
       </g>
     </svg>
   );
 }
 
+type Pt = { x: number; y: number };
+
+function point(x: number, y: number): Pt {
+  return { x, y };
+}
+
+function ribbonBands(a: Pt, b: Pt, c: Pt, d: Pt, flip: boolean) {
+  const mix = (p: Pt, q: Pt, t: number) => ({ x: p.x + (q.x - p.x) * t, y: p.y + (q.y - p.y) * t });
+  const count = 11;
+  return Array.from({ length: count }, (_, i) => {
+    const t0 = i / count;
+    const t1 = (i + 1) / count;
+    const p = mix(a, b, t0);
+    const q = mix(a, b, t1);
+    const r = mix(d, c, t1);
+    const s = mix(d, c, t0);
+    const red = i % 2 === 0;
+    return (
+      <path
+        key={i}
+        fill={(red !== flip) ? RED : "#fff"}
+        d={`M${p.x} ${p.y}L${q.x} ${q.y}L${r.x} ${r.y}L${s.x} ${s.y}Z`}
+      />
+    );
+  });
+}
+
 function Ribbon() {
-  const tailL = "M54 68 18 154 42 144 64 72Z";
-  const tailR = "M96 68 132 154 108 144 86 72Z";
-  const loop = "M75 70C50 68 30 54 34 34 37 16 54 12 66 28 62 12 70 4 75 12 80 4 88 12 84 28 96 12 113 16 116 34 120 54 100 68 75 70Z";
+  const loop = "M75 1C102-1 118 16 113 36 109 52 94 62 75 74 56 62 41 52 37 36 32 16 48-1 75 1Z";
+  const edge = "rgba(20,16,12,0.28)";
   return (
-    <svg className="emblem emblem-ribbon" viewBox="0 0 150 164" aria-hidden="true">
-      <path d={tailL} fill="rgba(14,34,68,0.2)" transform="translate(2 3)" />
-      <path d={tailR} fill="rgba(14,34,68,0.2)" transform="translate(2 3)" />
-      <defs>
-        <clipPath id="memorial-left">
-          <path d={tailL} />
-        </clipPath>
-        <clipPath id="memorial-right">
-          <path d={tailR} />
-        </clipPath>
-        <clipPath id="memorial-loop">
-          <path d={loop} />
-        </clipPath>
-      </defs>
-      <g clipPath="url(#memorial-left)">
-        {Array.from({ length: 12 }, (_, i) => (
-          <rect key={i} x="0" y={64 + i * 8} width="80" height="8" fill={i % 2 === 0 ? RED : "#fff"} />
-        ))}
-      </g>
-      <g clipPath="url(#memorial-right)">
-        {Array.from({ length: 12 }, (_, i) => (
-          <rect key={i} x="70" y={64 + i * 8} width="80" height="8" fill={i % 2 === 0 ? "#fff" : RED} />
-        ))}
-      </g>
+    <svg className="emblem emblem-ribbon" viewBox="0 0 150 158" aria-hidden="true">
+      {ribbonBands(point(58, 66), point(20, 152), point(44, 144), point(72, 68), false)}
+      {ribbonBands(point(92, 66), point(130, 152), point(106, 144), point(78, 68), true)}
+      <path d="M58 66 20 152 44 144 72 68Z" fill="none" stroke={edge} strokeWidth="1.15" strokeLinejoin="round" />
+      <path d="M92 66 130 152 106 144 78 68Z" fill="none" stroke={edge} strokeWidth="1.15" strokeLinejoin="round" />
       <path d={loop} fill={NAVY} />
-      <g clipPath="url(#memorial-loop)">
-        {[
-          [58, 30],
-          [75, 24],
-          [92, 30],
-          [66, 42],
-          [84, 42],
-          [75, 52],
-        ].map(([x, y]) => (
-          <Star key={`${x}-${y}`} x={x!} y={y!} r={3.1} fill="#fff" />
-        ))}
-      </g>
-      <path d={tailL} fill="none" stroke="#fff" strokeWidth="1.6" strokeLinejoin="round" />
-      <path d={tailR} fill="none" stroke="#fff" strokeWidth="1.6" strokeLinejoin="round" />
-      <path d={loop} fill="none" stroke="#fff" strokeWidth="1.8" />
-      <path d="M64 66h22l-4 10H68z" fill={NAVY} stroke="#fff" strokeWidth="1" />
+      {[
+        [58, 24],
+        [75, 20],
+        [92, 24],
+        [66, 36],
+        [84, 36],
+        [58, 48],
+        [75, 44],
+        [92, 48],
+      ].map(([x, y]) => (
+        <Star key={`${x}-${y}`} x={x} y={y} r={2.35} fill="#fff" />
+      ))}
+      <path d={loop} fill="none" stroke={edge} strokeWidth="1.15" />
+      <path d="M64 64h22l-3 8H67z" fill={NAVY} stroke="#fff" strokeWidth="1" />
     </svg>
   );
 }
@@ -301,7 +336,8 @@ function Ribbon() {
 function TieMark() {
   const blade = "M30 40h30l10 22L45 124 20 62 30 40Z";
   return (
-    <svg className="emblem emblem-tie" viewBox="0 0 90 132" aria-hidden="true">
+    <svg className="emblem emblem-tie" viewBox="0 0 90 128" aria-hidden="true">
+      <g transform="translate(0 -4)">
       <path d="M8 10 45 46 82 10 70 4 45 30 20 4Z" fill="#F7F1E8" />
       <path d="M20 6 45 32 70 6" fill="none" stroke="#E4D3C4" strokeWidth="1.2" />
       <path d="M32 18h26l5 20H27Z" fill="#152238" />
@@ -321,27 +357,43 @@ function TieMark() {
         <path d="M8 52h70M4 70h78M0 88h82M-4 106h86" stroke="#E8C872" strokeWidth="3.2" />
       </g>
       <path d={blade} fill="none" stroke="#0E2244" strokeWidth="1.2" strokeLinejoin="round" />
+      </g>
     </svg>
   );
 }
 
 function PumpkinMark() {
   return (
-    <svg className="emblem emblem-pumpkin" viewBox="0 0 120 104" aria-hidden="true">
-      <ellipse cx="60" cy="96" rx="26" ry="4" fill="rgba(20,12,8,0.22)" />
-      <ellipse cx="32" cy="60" rx="20" ry="30" fill="#C45A16" />
-      <ellipse cx="88" cy="60" rx="20" ry="30" fill="#C45A16" />
-      <ellipse cx="46" cy="58" rx="22" ry="34" fill="#E07A28" />
-      <ellipse cx="74" cy="58" rx="22" ry="34" fill="#D86A20" />
-      <ellipse cx="60" cy="56" rx="20" ry="36" fill="#F0943A" />
-      <path d="M46 30c1 18 1 36 0 52M74 30c-1 18-1 36 0 52" stroke="#9A4012" strokeWidth="1.6" fill="none" opacity="0.75" />
-      <ellipse cx="50" cy="44" rx="7" ry="12" fill="#fff" opacity="0.2" />
-      <path d="M60 30c2-14 12-18 18-12-8 0-14 6-15 14" fill="#5C3A16" />
-      <path d="M62 28c2-8 8-12 12-9" stroke="#8A6230" strokeWidth="1.3" fill="none" strokeLinecap="round" />
-      <path d="M40 50l12 9-12 8z" fill="#FFE7A0" />
-      <path d="M80 50l-12 9 12 8z" fill="#FFE7A0" />
-      <path d="M38 76c6 8 14 12 22 12s16-4 22-12c-6 5-14 8-22 8s-16-3-22-8z" fill="#FFE7A0" />
-      <path d="M40 50l12 9-12 8zM80 50l-12 9 12 8z" fill="none" stroke="#9A4012" strokeWidth="1" />
+    <svg className="emblem emblem-pumpkin" viewBox="0 0 128 112" aria-hidden="true">
+      <defs>
+        <linearGradient id="pumpkin-lobe" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#ffb15a" />
+          <stop offset="0.45" stopColor="#ef7d2c" />
+          <stop offset="1" stopColor="#c45112" />
+        </linearGradient>
+        <radialGradient id="pumpkin-glow" cx="50%" cy="45%" r="60%">
+          <stop offset="0" stopColor="#fff4c2" />
+          <stop offset="1" stopColor="#f0b44a" />
+        </radialGradient>
+      </defs>
+      <ellipse cx="64" cy="104" rx="28" ry="4" fill="rgba(20,12,8,0.2)" />
+      <ellipse cx="30" cy="64" rx="18" ry="32" fill="#b84a10" />
+      <ellipse cx="98" cy="64" rx="18" ry="32" fill="#b84a10" />
+      <ellipse cx="46" cy="62" rx="22" ry="36" fill="url(#pumpkin-lobe)" />
+      <ellipse cx="82" cy="62" rx="22" ry="36" fill="#d86a20" />
+      <ellipse cx="64" cy="60" rx="20" ry="38" fill="#f0943a" />
+      <path d="M46 30c2 20 2 40 0 58M64 26c1 22 1 44 0 62M82 30c-2 20-2 40 0 58" stroke="#8d3c0e" strokeWidth="1.7" fill="none" opacity="0.8" />
+      <ellipse cx="52" cy="46" rx="7" ry="14" fill="#fff" opacity="0.22" />
+      <path d="M64 24c1-12 8-20 16-16-7 1-12 8-13 16" fill="#5c3a16" />
+      <path d="M66 22c1-8 6-12 11-10" stroke="#8a6230" strokeWidth="1.4" fill="none" strokeLinecap="round" />
+      <path d="M40 52l14 11-14 9z" fill="#6a3010" />
+      <path d="M43 55l9 7-9 6z" fill="url(#pumpkin-glow)" />
+      <path d="M88 52l-14 11 14 9z" fill="#6a3010" />
+      <path d="M85 55l-9 7 9 6z" fill="url(#pumpkin-glow)" />
+      <path d="M64 66l8 10h-16z" fill="#6a3010" />
+      <path d="M64 69l5 7h-10z" fill="url(#pumpkin-glow)" />
+      <path d="M36 82c4 4 8 2 10-2 2 6 6 8 10 4 2 6 8 8 12 2 3 6 9 6 14 0-8 10-22 14-36 10-6-2-8-6-10-14z" fill="#6a3010" />
+      <path d="M40 82c3 3 7 2 9-1 2 5 6 6 9 3 2 5 7 6 11 2 3 5 8 5 12 1-7 8-20 11-32 8-5-2-7-5-9-13z" fill="url(#pumpkin-glow)" />
     </svg>
   );
 }
@@ -388,19 +440,35 @@ function TurkeyMark() {
 
 function TreeMark() {
   return (
-    <svg className="emblem emblem-tree" viewBox="0 0 96 112" aria-hidden="true">
-      <Star x={48} y={12} r={8} fill="#E8C872" />
-      <path d="M48 20 66 42H30Z" fill="#1F6B45" />
-      <path d="M48 34 72 62H24Z" fill="#18573A" />
-      <path d="M48 50 80 86H16Z" fill="#14352A" />
-      <path d="M48 22 58 40H48Z" fill="#2E8B57" opacity="0.85" />
-      <rect x="42" y="86" width="12" height="12" rx="1.5" fill="#6B3A24" />
-      <circle cx="40" cy="58" r="3.3" fill="#C8102E" />
-      <circle cx="56" cy="70" r="3.3" fill="#E8C872" />
-      <circle cx="36" cy="76" r="3.1" fill="#F4EFE4" />
-      <circle cx="58" cy="50" r="2.8" fill="#C8102E" />
-      <circle cx="41.1" cy="56.8" r="1" fill="#fff" opacity="0.7" />
-      <circle cx="57.1" cy="68.8" r="1" fill="#fff" opacity="0.7" />
+    <svg className="emblem emblem-tree" viewBox="-4 0 128 136" aria-hidden="true">
+      <defs>
+        <linearGradient id="tree-a" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#2f8f5b" />
+          <stop offset="1" stopColor="#14553a" />
+        </linearGradient>
+        <linearGradient id="tree-b" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#257a4c" />
+          <stop offset="1" stopColor="#0f3f2c" />
+        </linearGradient>
+      </defs>
+      <Star x={60} y={11} r={8.5} fill="#e8c872" />
+      <path d="M60 16c2 2 4 3 6 2-8 6-16 16-18 28h24C68 34 64 24 60 16z" fill="#e8c872" opacity="0.9" />
+      <path d="M60 18C82 34 96 46 98 56H22C24 46 38 34 60 18Z" fill="url(#tree-a)" />
+      <path d="M60 20C74 32 84 42 86 52" fill="none" stroke="#d7f0e2" strokeWidth="1.2" opacity="0.55" />
+      <path d="M60 44C90 62 108 78 112 92H8C12 78 30 62 60 44Z" fill="url(#tree-b)" />
+      <path d="M60 46C78 58 92 70 96 84" fill="none" stroke="#d7f0e2" strokeWidth="1.2" opacity="0.4" />
+      <path d="M60 70C96 90 116 108 122 124H-2C4 108 24 90 60 70Z" fill="#123f2c" />
+      <path d="M22 56h76" stroke="#0d3324" strokeWidth="1" opacity="0.35" />
+      <path d="M8 92h104" stroke="#0d3324" strokeWidth="1" opacity="0.35" />
+      <rect x="52" y="122" width="16" height="12" rx="1.5" fill="#6b3a24" />
+      <circle cx="46" cy="78" r="4.2" fill="#c8102e" />
+      <circle cx="74" cy="96" r="4.4" fill="#e8c872" />
+      <circle cx="40" cy="108" r="3.8" fill="#f4efe4" />
+      <circle cx="78" cy="70" r="3.4" fill="#c8102e" />
+      <circle cx="58" cy="112" r="3.6" fill="#2e8b57" stroke="#f4efe4" strokeWidth="0.8" />
+      <circle cx="44.6" cy="76.4" r="1.2" fill="#fff" opacity="0.75" />
+      <circle cx="72.6" cy="94.4" r="1.2" fill="#fff" opacity="0.75" />
+      <path d="M34 86c10 4 18 2 28-2 8 3 16 2 24-3" fill="none" stroke="#e8c872" strokeWidth="1.3" strokeLinecap="round" />
     </svg>
   );
 }
