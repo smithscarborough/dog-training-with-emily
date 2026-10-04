@@ -493,7 +493,7 @@ function Contact() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               onBlur={(e) => setName(formatProperName(e.target.value))}
-              placeholder="Jordan Miller"
+              placeholder="e.g., Jordan Miller"
               aria-invalid={errors.name ? true : undefined}
               required
             />
@@ -504,7 +504,7 @@ function Contact() {
               value={dogName}
               onChange={(e) => setDogName(e.target.value)}
               onBlur={(e) => setDogName(formatProperName(e.target.value))}
-              placeholder="Teddy"
+              placeholder="e.g., Teddy"
               aria-invalid={errors.dogName ? true : undefined}
               required
             />
@@ -517,7 +517,7 @@ function Contact() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onBlur={(e) => setEmail(formatEmail(e.target.value))}
-              placeholder="you@email.com"
+              placeholder="e.g., you@email.com"
               aria-invalid={errors.email ? true : undefined}
               required
             />
@@ -530,7 +530,7 @@ function Contact() {
               autoComplete="tel"
               value={phone}
               onChange={(e) => setPhone(formatUsPhone(e.target.value))}
-              placeholder="713-555-1234"
+              placeholder="e.g., 713-555-1234"
               aria-invalid={errors.phone ? true : undefined}
             />
           </Field>
@@ -541,7 +541,7 @@ function Contact() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onBlur={(e) => setMessage(formatSentenceStart(e.target.value))}
-              placeholder="Leash pulling, doorbell barking, extra energy…"
+              placeholder="e.g., Leash pulling, doorbell barking, extra energy…"
               aria-invalid={errors.message ? true : undefined}
               required
             />

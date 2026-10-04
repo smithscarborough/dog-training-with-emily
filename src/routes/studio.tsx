@@ -170,7 +170,7 @@ function StudioApp({
       <EspressoBanner kicker="Studio">
         Clients, visits, and progress.
       </EspressoBanner>
-      <main className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-6 xl:max-w-[84rem]">
+      <main className="studio-type mx-auto w-full max-w-6xl px-5 py-8 sm:px-6 xl:max-w-[84rem]">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-sm text-muted">Trainer studio</p>
@@ -1509,7 +1509,7 @@ function ClientDetail({
               </Field>
               {giftPick === "other" ? (
                 <Field label="Full name">
-                  <Input value={giftName} onChange={(e) => setGiftName(e.target.value)} placeholder="Jordan Miller" />
+                  <Input value={giftName} onChange={(e) => setGiftName(e.target.value)} placeholder="e.g., Jordan Miller" />
                 </Field>
               ) : null}
               <Button
@@ -1541,7 +1541,7 @@ function ClientDetail({
                 <Input
                   value={incomingCode}
                   onChange={(e) => setIncomingCode(e.target.value.toUpperCase())}
-                  placeholder="JORDANM"
+                  placeholder="e.g., JORDANM"
                   className="uppercase"
                 />
               </Field>
@@ -1892,7 +1892,7 @@ function SkillEditor({
         growMin={96}
         growMax={240}
         className="mt-3"
-        placeholder="Note from this session"
+        placeholder="e.g., Sat at the door without barking."
         value={c}
         onChange={(e) => setC(e.target.value)}
       />
@@ -2984,7 +2984,7 @@ function Settings({
             value={banner}
             maxLength={240}
             onChange={(e) => setBanner(e.target.value)}
-            placeholder="September consults are $20 off this week."
+            placeholder="e.g., September consults are $20 off this week."
           />
         </Field>
         <p className="text-xs text-faint">{banner.trim().length}/240</p>
@@ -3020,7 +3020,7 @@ function Settings({
             autoComplete="tel"
             value={phone}
             onChange={(e) => setPhone(formatUsPhone(e.target.value))}
-            placeholder="713-555-1234"
+            placeholder="e.g., 713-555-1234"
           />
         </Field>
         <Field label="Instagram URL">

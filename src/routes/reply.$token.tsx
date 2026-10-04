@@ -87,7 +87,7 @@ function ReplyPage() {
               <RichTextField
                 value={body}
                 onChange={setBody}
-                placeholder="What you want them to know before the next session…"
+                placeholder="e.g., The leash was calmer this week."
                 label="Your reply"
                 fieldClassName="min-h-[9.5rem] max-h-[22rem] overflow-y-auto"
               />

@@ -227,16 +227,39 @@
   }
 }
 
-.portal-type .text-sm {
-  font-size: 1.0625rem;
-  line-height: 1.65;
+.portal-type .text-sm,
+.studio-type .text-sm {
+  font-size: 1.125rem;
+  line-height: 1.6;
 }
-.portal-type .text-xs {
-  font-size: 0.9375rem;
+.portal-type .text-xs,
+.studio-type .text-xs {
+  font-size: 1rem;
   line-height: 1.5;
+}
+.portal-type .text-base,
+.studio-type .text-base {
+  font-size: 1.1875rem;
+  line-height: 1.6;
 }
 .portal-type h3 {
   font-size: 1.5rem;
+}
+.portal-type input,
+.portal-type textarea,
+.portal-type select,
+.studio-type input,
+.studio-type textarea,
+.studio-type select {
+  font-size: 1.125rem;
+}
+.studio-type .text-\[11px\] {
+  font-size: 0.8125rem;
+}
+@media (min-width: 640px) {
+  .studio-type .sm\:text-sm {
+    font-size: 1rem;
+  }
 }
 
 .band {

@@ -297,7 +297,7 @@ export function PrivateNoteEditor({
     <RichTextField
       value={value}
       onChange={onChange}
-      placeholder="What to remember before the next visit."
+      placeholder="e.g., Nervous around skateboards."
       label="Private note"
     />
   );

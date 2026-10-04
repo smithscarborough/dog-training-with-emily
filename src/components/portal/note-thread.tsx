@@ -196,7 +196,7 @@ export function TrainerReply({
       <RichTextField
         value={body}
         onChange={setBody}
-        placeholder="Write a reply…"
+        placeholder="e.g., The walk was easier today."
         label="Write a reply"
         fieldClassName="min-h-[9.5rem] max-h-[22rem] overflow-y-auto"
       />

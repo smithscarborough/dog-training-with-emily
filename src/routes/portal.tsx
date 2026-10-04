@@ -692,7 +692,7 @@ function CheckinCard({
               setNote(e.target.value);
               setConfirmClear(false);
             }}
-            placeholder="What you tried, what went well, or where it fell apart…"
+            placeholder="e.g., The doorbell was easier today."
           />
         </Field>
         <div className="flex flex-wrap items-center gap-3">
@@ -1264,7 +1264,7 @@ function SessionsTab({
               grow
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Recall in the yard, loose leash on the block…"
+              placeholder="e.g., Recall in the yard, loose leash on the block…"
             />
           </Field>
           <div className="relative w-fit">
@@ -1733,6 +1733,7 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
                   value={draft.owner_name}
                   onChange={(e) => patch("owner_name", e.target.value)}
                   onBlur={(e) => patch("owner_name", formatProperName(e.target.value))}
+                  placeholder="e.g., Jordan Miller"
                 />
               </Field>
               <Field label="Phone" required>
@@ -1741,7 +1742,7 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
                   inputMode="tel"
                   value={draft.owner_phone}
                   onChange={(e) => patch("owner_phone", formatUsPhone(e.target.value))}
-                  placeholder="713-555-1234"
+                  placeholder="e.g., 713-555-1234"
                 />
               </Field>
               <Field label="Email" required hint="How Emily reaches you. This does not change your login.">
@@ -1750,6 +1751,7 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
                   value={draft.owner_email}
                   onChange={(e) => patch("owner_email", e.target.value)}
                   onBlur={(e) => patch("owner_email", formatEmail(e.target.value))}
+                  placeholder="e.g., you@email.com"
                 />
               </Field>
               <Field label="Home address" required>
@@ -1757,6 +1759,7 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
                   value={draft.address}
                   onChange={(e) => patch("address", e.target.value)}
                   onBlur={(e) => patch("address", formatUsAddress(e.target.value))}
+                  placeholder="e.g., 1234 Westheimer Rd, Houston, TX 77006"
                 />
               </Field>
               <Field label="Who lives here">
@@ -1764,7 +1767,7 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
                   value={draft.household}
                   onChange={(e) => patch("household", e.target.value)}
                   onBlur={(e) => patch("household", formatSentenceStart(e.target.value))}
-                  placeholder="Two adults"
+                  placeholder="e.g., Two adults"
                 />
               </Field>
               <Field label="Other pets">
@@ -1772,7 +1775,7 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
                   value={draft.other_pets}
                   onChange={(e) => patch("other_pets", e.target.value)}
                   onBlur={(e) => patch("other_pets", formatSentenceStart(e.target.value))}
-                  placeholder="One cat"
+                  placeholder="e.g., One cat"
                 />
               </Field>
               <Field label="Kids in the home">
@@ -1780,7 +1783,7 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
                   value={draft.kids_in_home}
                   onChange={(e) => patch("kids_in_home", e.target.value)}
                   onBlur={(e) => patch("kids_in_home", formatSentenceStart(e.target.value))}
-                  placeholder="None, or ages 4 and 7"
+                  placeholder="e.g., None, or ages 4 and 7"
                 />
               </Field>
             </>
@@ -1809,6 +1812,7 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
                   value={draft.name}
                   onChange={(e) => patch("name", e.target.value)}
                   onBlur={(e) => patch("name", formatProperName(e.target.value))}
+                  placeholder="e.g., Teddy"
                 />
               </Field>
               <Field label="Breed">
@@ -1816,7 +1820,7 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
                   value={draft.breed}
                   onChange={(e) => patch("breed", e.target.value)}
                   onBlur={(e) => patch("breed", formatProperName(e.target.value))}
-                  placeholder="Lab mix"
+                  placeholder="e.g., Lab mix"
                 />
               </Field>
               <Chips
@@ -1837,14 +1841,14 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
                     value={draft.age_text}
                     onChange={(e) => patch("age_text", e.target.value)}
                     onBlur={(e) => patch("age_text", formatSentenceStart(e.target.value))}
-                    placeholder="3 years"
+                    placeholder="e.g., 3 years"
                   />
                 </Field>
                 <Field label="Weight">
                   <Input
                     value={draft.weight_text}
                     onChange={(e) => patch("weight_text", e.target.value)}
-                    placeholder="42 lbs"
+                    placeholder="e.g., 42 lbs"
                   />
                 </Field>
               </div>
@@ -1856,7 +1860,7 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
                   value={draft.allergies}
                   onChange={(e) => patch("allergies", e.target.value)}
                   onBlur={(e) => patch("allergies", formatSentenceStart(e.target.value))}
-                  placeholder="None, or chicken"
+                  placeholder="e.g., None, or chicken"
                 />
               </Field>
               <Field label="Things this dog does not like">
@@ -1866,6 +1870,7 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
                   value={draft.dislikes}
                   onChange={(e) => patch("dislikes", e.target.value)}
                   onBlur={(e) => patch("dislikes", formatSentenceStart(e.target.value))}
+                  placeholder="e.g., Hats, nail clippers, skateboards…"
                 />
               </Field>
               <Field label="Past bad experiences">
@@ -1875,6 +1880,7 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
                   value={draft.past_experiences}
                   onChange={(e) => patch("past_experiences", e.target.value)}
                   onBlur={(e) => patch("past_experiences", formatSentenceStart(e.target.value))}
+                  placeholder="e.g., A scare at the vet, a dog fight…"
                 />
               </Field>
               <Field label="Physical limitations">
@@ -1884,6 +1890,7 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
                   value={draft.physical_limitations}
                   onChange={(e) => patch("physical_limitations", e.target.value)}
                   onBlur={(e) => patch("physical_limitations", formatSentenceStart(e.target.value))}
+                  placeholder="e.g., Hip dysplasia, recovering from surgery…"
                 />
               </Field>
               <Field label="Veterinarian">
@@ -1891,7 +1898,7 @@ function ProfileTab({ dog, onRefresh }: { dog: DogRow; onRefresh: () => void | P
                   value={draft.vet_info}
                   onChange={(e) => patch("vet_info", e.target.value)}
                   onBlur={(e) => patch("vet_info", formatProperName(e.target.value))}
-                  placeholder="Clinic name"
+                  placeholder="e.g., Clinic name"
                 />
               </Field>
             </>

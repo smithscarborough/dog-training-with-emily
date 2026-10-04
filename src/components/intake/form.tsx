@@ -211,7 +211,7 @@ export function IntakeForm({
               value={form.owner_name}
               onChange={(e) => set("owner_name", e.target.value)}
               onBlur={(e) => set("owner_name", formatProperName(e.target.value))}
-              placeholder="John Smith"
+              placeholder="e.g., John Smith"
               required
             />
           </Field>
@@ -222,7 +222,7 @@ export function IntakeForm({
               value={form.owner_email}
               onChange={(e) => set("owner_email", e.target.value)}
               onBlur={(e) => set("owner_email", formatEmail(e.target.value))}
-              placeholder="john.smith@email.com"
+              placeholder="e.g., john.smith@email.com"
               required
             />
           </Field>
@@ -233,7 +233,7 @@ export function IntakeForm({
               autoComplete="tel"
               value={form.owner_phone}
               onChange={(e) => set("owner_phone", formatUsPhone(e.target.value))}
-              placeholder="713-555-1234"
+              placeholder="e.g., 713-555-1234"
               required
             />
           </Field>
@@ -243,7 +243,7 @@ export function IntakeForm({
               value={form.address}
               onChange={(e) => set("address", e.target.value)}
               onBlur={(e) => set("address", formatUsAddress(e.target.value))}
-              placeholder="1234 Westheimer Rd, Houston, TX 77006"
+              placeholder="e.g., 1234 Westheimer Rd, Houston, TX 77006"
               required
             />
           </Field>
@@ -258,6 +258,7 @@ export function IntakeForm({
               value={form.name}
               onChange={(e) => set("name", e.target.value)}
               onBlur={(e) => set("name", formatProperName(e.target.value))}
+              placeholder="e.g., Teddy"
               required
             />
           </Field>
@@ -266,7 +267,7 @@ export function IntakeForm({
               value={form.breed}
               onChange={(e) => set("breed", e.target.value)}
               onBlur={(e) => set("breed", formatProperName(e.target.value))}
-              placeholder="Lab mix"
+              placeholder="e.g., Lab mix"
             />
           </Field>
           <ChoiceGroup
@@ -286,14 +287,14 @@ export function IntakeForm({
               value={form.age_text}
               onChange={(e) => set("age_text", e.target.value)}
               onBlur={(e) => set("age_text", formatSentenceStart(e.target.value))}
-              placeholder="14 weeks, 3 years…"
+              placeholder="e.g., 14 weeks, 3 years…"
             />
           </Field>
           <Field label="Weight">
             <Input
               value={form.weight_text}
               onChange={(e) => set("weight_text", e.target.value)}
-              placeholder="42 lbs"
+              placeholder="e.g., 42 lbs"
             />
           </Field>
           <Field label="Birthday" hint="Optional. I like an excuse to celebrate.">
@@ -304,7 +305,7 @@ export function IntakeForm({
               value={form.allergies}
               onChange={(e) => set("allergies", e.target.value)}
               onBlur={(e) => set("allergies", formatSentenceStart(e.target.value))}
-              placeholder="None, or chicken…"
+              placeholder="e.g., None, or chicken…"
             />
           </Field>
         </div>
@@ -334,7 +335,7 @@ export function IntakeForm({
             value={form.goals_other}
             onChange={(e) => set("goals_other", e.target.value)}
             onBlur={(e) => set("goals_other", formatSentenceStart(e.target.value))}
-            placeholder="Leash pulling, doorbell barking…"
+            placeholder="e.g., Leash pulling, doorbell barking…"
           />
         </Field>
       </section>
@@ -386,7 +387,7 @@ export function IntakeForm({
               value={form.household}
               onChange={(e) => set("household", e.target.value)}
               onBlur={(e) => set("household", formatSentenceStart(e.target.value))}
-              placeholder="Two adults"
+              placeholder="e.g., Two adults"
             />
           </Field>
           <Field label="Other pets">
@@ -394,7 +395,7 @@ export function IntakeForm({
               value={form.other_pets}
               onChange={(e) => set("other_pets", e.target.value)}
               onBlur={(e) => set("other_pets", formatSentenceStart(e.target.value))}
-              placeholder="One cat"
+              placeholder="e.g., One cat"
             />
           </Field>
           <Field label="Kids in the home">
@@ -402,7 +403,7 @@ export function IntakeForm({
               value={form.kids_in_home}
               onChange={(e) => set("kids_in_home", e.target.value)}
               onBlur={(e) => set("kids_in_home", formatSentenceStart(e.target.value))}
-              placeholder="None, or ages 4 and 7"
+              placeholder="e.g., None, or ages 4 and 7"
             />
           </Field>
           <Field label="Veterinarian">
@@ -410,7 +411,7 @@ export function IntakeForm({
               value={form.vet_info}
               onChange={(e) => set("vet_info", e.target.value)}
               onBlur={(e) => set("vet_info", formatProperName(e.target.value))}
-              placeholder="Clinic name"
+              placeholder="e.g., Clinic name"
             />
           </Field>
         </div>
@@ -421,7 +422,7 @@ export function IntakeForm({
             value={form.dislikes}
             onChange={(e) => set("dislikes", e.target.value)}
             onBlur={(e) => set("dislikes", formatSentenceStart(e.target.value))}
-            placeholder="Hats, nail clippers, skateboards…"
+            placeholder="e.g., Hats, nail clippers, skateboards…"
           />
         </Field>
         <Field label="Past bad experiences">
@@ -431,7 +432,7 @@ export function IntakeForm({
             value={form.past_experiences}
             onChange={(e) => set("past_experiences", e.target.value)}
             onBlur={(e) => set("past_experiences", formatSentenceStart(e.target.value))}
-            placeholder="A scare at the vet, a dog fight…"
+            placeholder="e.g., A scare at the vet, a dog fight…"
           />
         </Field>
         <Field label="Physical limitations">
@@ -441,7 +442,7 @@ export function IntakeForm({
             value={form.physical_limitations}
             onChange={(e) => set("physical_limitations", e.target.value)}
             onBlur={(e) => set("physical_limitations", formatSentenceStart(e.target.value))}
-            placeholder="Hip dysplasia, recovering from surgery…"
+            placeholder="e.g., Hip dysplasia, recovering from surgery…"
           />
         </Field>
       </section>
@@ -475,7 +476,7 @@ export function IntakeForm({
                   setHeardFriend(name);
                   set("referral_source", friendSource(name));
                 }}
-                placeholder="Friend or neighbor's name"
+                placeholder="e.g., Jordan Miller"
                 autoComplete="off"
                 aria-label="Name of the friend or neighbor"
               />
@@ -486,7 +487,7 @@ export function IntakeForm({
                 value={form.referred_by_code}
                 onChange={(e) => set("referred_by_code", e.target.value.toUpperCase())}
                 onBlur={(e) => set("referred_by_code", normalizeReferralCode(e.target.value))}
-                placeholder="JORDANM"
+                placeholder="e.g., JORDANM"
                 autoComplete="off"
                 aria-label="Referral code"
                 className="uppercase"
@@ -512,7 +513,7 @@ export function IntakeForm({
                 setHeardOther(where);
                 set("referral_source", where);
               }}
-              placeholder="Where did you hear about us?"
+              placeholder="e.g., Nextdoor"
               aria-label="Other way you heard about us"
             />
           ) : null}
