@@ -1109,6 +1109,7 @@ function ClientDetail({
   const [current, setCurrent] = useState<ProgressRow[]>([]);
   const [filter, setFilter] = useState<"working" | "all">("working");
   const [sessions, setSessions] = useState<SessionRow[]>([]);
+  const [visitFilter, setVisitFilter] = useState<"all" | SessionRow["status"]>("all");
   const [checkins, setCheckins] = useState<CheckinRow[]>([]);
   const [checkinsReady, setCheckinsReady] = useState(false);
   const [readyFor, setReadyFor] = useState<number | null>(null);
@@ -1290,6 +1291,10 @@ function ClientDetail({
     if (filter === "all") return true;
     return (byKey[item.key]?.rating ?? 0) > 0;
   });
+  const visits = sessions
+    .filter((session) => visitFilter === "all" || session.status === visitFilter)
+    .slice()
+    .sort(compareSessionList);
 
   return (
     <div className="min-w-0 space-y-6">
@@ -1372,6 +1377,26 @@ function ClientDetail({
 
       <div className="grid lg:grid-cols-[minmax(0,1fr)_10.5rem] lg:items-start lg:gap-8">
         <div className="min-w-0 space-y-6 lg:order-first">
+      <div className="flex flex-wrap gap-x-2 gap-y-3">
+        {(
+          [
+            ["all", "All", "is-on"],
+            ["requested", "Requested", "is-requested"],
+            ["confirmed", "Confirmed", "is-confirmed"],
+            ["completed", "Completed", "is-completed"],
+            ["cancelled", "Cancelled", "is-cancelled"],
+          ] as const
+        ).map(([id, label, on]) => (
+          <ChipToggle
+            key={id}
+            pressed={visitFilter === id}
+            onToggle={() => setVisitFilter(id)}
+            className={cn("py-1.5", visitFilter === id && on)}
+          >
+            {label}
+          </ChipToggle>
+        ))}
+      </div>
       <Card id="client-visits">
         <CardHeader>
           <CardTitle>Visits</CardTitle>
@@ -1383,11 +1408,10 @@ function ClientDetail({
           <ul className="space-y-3">
             {sessions.length === 0 ? (
               <li className="text-sm text-muted">Nothing booked yet.</li>
+            ) : visits.length === 0 ? (
+              <li className="text-sm text-muted">No sessions in this view.</li>
             ) : null}
-            {sessions
-              .slice()
-              .sort(compareSessionList)
-              .map((s) => (
+            {visits.map((s) => (
               <SessionEditor
                 key={s.id}
                 session={s}
