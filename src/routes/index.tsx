@@ -120,7 +120,7 @@ function Hero() {
             <Button
               size="lg"
               type="button"
-              className="book-cta"
+              className="book-cta sm:h-16 sm:min-w-56 sm:px-10 sm:text-lg sm:font-semibold"
               onClick={() => {
                 if (leaving) return;
                 setLeaving(true);
