@@ -10,7 +10,8 @@ import { Input, Textarea } from "@/components/ui/input";
 import { HOUSTON_AREAS, SESSION_TYPES, dollars } from "@/lib/catalog";
 import { createInquiry } from "@/lib/server/inquiries";
 import { notifyStudioInbox } from "@/lib/notify-studio";
-import { formatUsPhone } from "@/lib/phone";
+import { formatUsPhone, phoneDigits } from "@/lib/phone";
+import { formatEmail, formatProperName, formatSentenceStart } from "@/lib/text";
 import { scrollToSection, allowHomePin, scrollAppTo } from "@/lib/scroll-to-section";
 import { useHolidayTouch } from "@/lib/use-holiday";
 import { HolidayBanner } from "@/components/layout/holiday-banner";
@@ -425,21 +426,48 @@ function Contact() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [paws, setPaws] = useState(0);
 
+  function problemsFor(values: { name: string; dogName: string; email: string; phone: string; message: string }) {
+    const next: Record<string, string> = {};
+    if (!values.name) next.name = "Your name is required.";
+    if (!values.dogName) next.dogName = "Your dog’s name is required.";
+    if (!values.email) next.email = "Email is required.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) next.email = "Enter a real email.";
+    if (values.phone && phoneDigits(values.phone).length !== 10) {
+      next.phone = "Enter a 10-digit phone number, like 713-555-1234.";
+    }
+    if (!values.message) next.message = "Tell me what’s going on at home.";
+    return next;
+  }
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
+    const nextName = formatProperName(name);
+    const nextDog = formatProperName(dogName);
+    const nextEmail = formatEmail(email);
+    const nextMessage = formatSentenceStart(message);
+    setName(nextName);
+    setDogName(nextDog);
+    setEmail(nextEmail);
+    setMessage(nextMessage);
+    const found = problemsFor({ name: nextName, dogName: nextDog, email: nextEmail, phone, message: nextMessage });
+    setErrors(found);
+    if (Object.keys(found).length > 0) return;
     setBusy(true);
+    setPaws((n) => n + 1);
     try {
-      await createInquiry({ data: { name, email, phone, dogName, message } });
-      await notifyStudioInbox({ name, email, phone, dogName, message });
+      await createInquiry({ data: { name: nextName, email: nextEmail, phone, dogName: nextDog, message: nextMessage } });
+      await notifyStudioInbox({ name: nextName, email: nextEmail, phone, dogName: nextDog, message: nextMessage });
       toast.success("Message received. I’ll write back shortly.");
       setName("");
       setDogName("");
       setEmail("");
       setPhone("");
       setMessage("");
+      setErrors({});
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not send.");
     } finally {
@@ -456,17 +484,45 @@ function Contact() {
         </h2>
         <ContactMethods className="mt-8 inline-flex flex-col items-center" />
         <SocialLinks className="mt-4 justify-center" />
-        <form className="shell-card mt-8 space-y-5 rounded-lg p-6 text-left sm:p-8" onSubmit={(e) => void onSubmit(e)}>
-          <Field label="Your name">
-            <Input className="sm:text-base" value={name} onChange={(e) => setName(e.target.value)} required />
+        <form className="shell-card mt-8 space-y-5 rounded-lg p-6 text-left sm:p-8" noValidate onSubmit={(e) => void onSubmit(e)}>
+          <p className="text-sm text-muted">Starred fields are required. Phone can wait.</p>
+          <Field label="Your name" required error={errors.name}>
+            <Input
+              className="sm:text-base"
+              autoComplete="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onBlur={(e) => setName(formatProperName(e.target.value))}
+              placeholder="Jordan Miller"
+              aria-invalid={errors.name ? true : undefined}
+              required
+            />
           </Field>
-          <Field label="Your dog’s name">
-            <Input className="sm:text-base" value={dogName} onChange={(e) => setDogName(e.target.value)} required />
+          <Field label="Your dog’s name" required error={errors.dogName}>
+            <Input
+              className="sm:text-base"
+              value={dogName}
+              onChange={(e) => setDogName(e.target.value)}
+              onBlur={(e) => setDogName(formatProperName(e.target.value))}
+              placeholder="Teddy"
+              aria-invalid={errors.dogName ? true : undefined}
+              required
+            />
           </Field>
-          <Field label="Email">
-            <Input className="sm:text-base" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <Field label="Email" required error={errors.email}>
+            <Input
+              className="sm:text-base"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onBlur={(e) => setEmail(formatEmail(e.target.value))}
+              placeholder="you@email.com"
+              aria-invalid={errors.email ? true : undefined}
+              required
+            />
           </Field>
-          <Field label="Phone">
+          <Field label="Phone" error={errors.phone}>
             <Input
               className="sm:text-base"
               type="tel"
@@ -475,20 +531,23 @@ function Contact() {
               value={phone}
               onChange={(e) => setPhone(formatUsPhone(e.target.value))}
               placeholder="713-555-1234"
+              aria-invalid={errors.phone ? true : undefined}
             />
           </Field>
-          <Field label="What’s going on at home?">
+          <Field label="What’s going on at home?" required error={errors.message}>
             <Textarea
               className="sm:text-base"
               grow
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              onBlur={(e) => setMessage(formatSentenceStart(e.target.value))}
               placeholder="Leash pulling, doorbell barking, extra energy…"
+              aria-invalid={errors.message ? true : undefined}
               required
             />
           </Field>
           <div className="relative flex justify-center">
-            <Button type="submit" className="book-cta" disabled={busy} onClick={() => setPaws((n) => n + 1)}>
+            <Button type="submit" className="book-cta" disabled={busy}>
               {busy ? "Sending…" : "Submit"}
             </Button>
             {paws > 0 ? (

@@ -13,12 +13,14 @@ export function Label({ className, ...props }: React.ComponentProps<"label">) {
 export function Field({
   label,
   hint,
+  error,
   required,
   children,
   className,
 }: {
   label: string;
   hint?: string;
+  error?: string;
   required?: boolean;
   children: React.ReactNode;
   className?: string;
@@ -34,7 +36,13 @@ export function Field({
         ) : null}
       </span>
       {children}
-      {hint ? <span className="text-xs text-faint">{hint}</span> : null}
+      {error ? (
+        <span className="text-sm text-danger" role="alert">
+          {error}
+        </span>
+      ) : hint ? (
+        <span className="text-xs text-faint">{hint}</span>
+      ) : null}
     </label>
   );
 }
