@@ -133,7 +133,7 @@ export function SiteHeader(_props?: { solid?: boolean }) {
                 <a
                   key={l.href}
                   href={l.href}
-                  className="rounded-md px-3 py-3.5 text-base text-ink underline-offset-[10px] decoration-2 decoration-accent transition-colors hover:font-bold hover:text-accent hover:underline"
+                  className="menu-link"
                   onClick={(e) => {
                     e.preventDefault();
                     setOpen(false);
@@ -147,7 +147,7 @@ export function SiteHeader(_props?: { solid?: boolean }) {
             })}
             <Link
               to="/intake"
-              className="rounded-md px-3 py-3.5 text-base text-ink hover:bg-surface-2"
+              className="menu-link"
               onClick={() => setOpen(false)}
             >
               Book a consult
@@ -155,7 +155,7 @@ export function SiteHeader(_props?: { solid?: boolean }) {
             {signedOut ? (
               <Link
                 to="/login"
-                className="rounded-md px-3 py-3.5 text-base text-ink hover:bg-surface-2"
+                className="menu-link"
                 onClick={() => setOpen(false)}
               >
                 Log in

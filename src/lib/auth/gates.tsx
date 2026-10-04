@@ -123,12 +123,12 @@ export function UserButton({
           <Link
             to={nameTo}
             onClick={openAccount}
-            className="rounded-md px-3 py-3.5 text-base font-bold text-accent hover:bg-surface-2"
+            className="menu-link font-normal"
           >
             {label}
           </Link>
         ) : (
-          <span className="px-3 py-3.5 text-base font-bold text-accent">{label}</span>
+          <span className="menu-link">{label}</span>
         )}
         {authEnabled && !gateSession && (
           <button
@@ -139,7 +139,7 @@ export function UserButton({
               onNavigate?.();
               void signOut().catch(() => setSigningOut(false));
             }}
-            className="rounded-md px-3 py-3.5 text-base text-ink hover:bg-surface-2 disabled:cursor-wait"
+            className="menu-link disabled:cursor-wait"
           >
             {signingOut ? "Signing out…" : "Sign out"}
           </button>

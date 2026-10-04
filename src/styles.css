@@ -343,6 +343,22 @@
   min-height: 0;
   overflow: hidden;
 }
+.menu-link {
+  border-radius: 0.375rem;
+  padding: 0.875rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-ink);
+  text-decoration-color: var(--color-accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 10px;
+  transition: color 150ms ease;
+}
+.menu-link:hover {
+  font-weight: 700;
+  color: var(--color-accent);
+  text-decoration-line: underline;
+}
 
 .fold {
   display: grid;
