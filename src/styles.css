@@ -873,7 +873,7 @@
   position: relative;
   z-index: 1;
   margin: 0;
-  padding: 10px 24px 12px;
+  padding: 11px 24px 22px;
   text-align: center;
   font-weight: 500;
   line-height: 1.35;
@@ -884,24 +884,9 @@
   left: 50%;
   bottom: 0;
   z-index: 2;
-  transform: translate(-50%, 26px);
+  transform: translate(-50%, 78%);
   line-height: 0;
   pointer-events: none;
-}
-.holiday-emblem.is-new-year {
-  transform: translate(-50%, 22px);
-}
-.holiday-emblem.is-easter {
-  transform: translate(-50%, 34px);
-}
-.holiday-emblem.is-fathers {
-  transform: translate(-50%, 30px);
-}
-.holiday-emblem.is-memorial {
-  transform: translate(-50%, 34px);
-}
-.holiday-emblem.is-july4 {
-  transform: translate(-50%, 16px);
 }
 .emblem {
   display: block;
@@ -974,7 +959,7 @@
 @media (min-width: 640px) {
   .holiday-banner p {
     padding-top: 12px;
-    padding-bottom: 12px;
+    padding-bottom: 24px;
     font-size: 1.05rem;
   }
   .emblem {
@@ -994,9 +979,6 @@
   }
   .emblem-rose {
     height: 52px;
-  }
-  .holiday-emblem.is-memorial {
-    transform: translate(-50%, 38px);
   }
 }
 .holiday-preview {
