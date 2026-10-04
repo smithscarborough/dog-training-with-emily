@@ -158,8 +158,8 @@ export function SiteHeader(_props?: { solid?: boolean }) {
                   className={cn(
                     "rounded-md px-3 py-3.5 text-base underline-offset-[10px] decoration-2 decoration-accent transition-colors",
                     current
-                      ? "font-bold text-accent-deep underline"
-                      : "text-ink hover:font-bold hover:text-accent-deep hover:underline",
+                      ? "font-bold text-accent underline"
+                      : "text-ink hover:font-bold hover:text-accent hover:underline",
                   )}
                   onClick={(e) => {
                     e.preventDefault();
