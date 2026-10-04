@@ -34,31 +34,31 @@ const COPY: Record<HolidayId, { name: string; line: string; color: string; motio
   "new-year": {
     name: "New Year’s Day",
     line: "Happy New Year!",
-    color: "#9A7A4A",
+    color: "#C6A15B",
     motion: false,
   },
   valentine: {
     name: "Valentine’s Day",
     line: "Happy Valentine’s Day!",
-    color: "#9B4E5E",
+    color: "#C8102E",
     motion: true,
   },
   patrick: {
     name: "St. Patrick’s Day",
     line: "Happy St. Patrick’s Day!",
-    color: "#2C6B4A",
+    color: "#127A45",
     motion: false,
   },
   easter: {
     name: "Easter",
     line: "Happy Easter!",
-    color: "#6E8B74",
+    color: "#E7A0B0",
     motion: false,
   },
   mothers: {
     name: "Mother’s Day",
     line: "Happy Mother’s Day!",
-    color: "#8E5360",
+    color: "#C45368",
     motion: false,
   },
   memorial: {
@@ -70,7 +70,7 @@ const COPY: Record<HolidayId, { name: string; line: string; color: string; motio
   fathers: {
     name: "Father’s Day",
     line: "Happy Father’s Day!",
-    color: "#6B5344",
+    color: "#1E3348",
     motion: false,
   },
   july4: {
@@ -82,19 +82,19 @@ const COPY: Record<HolidayId, { name: string; line: string; color: string; motio
   halloween: {
     name: "Halloween",
     line: "Happy Halloween!",
-    color: "#B56A32",
+    color: "#E07A2F",
     motion: true,
   },
   thanksgiving: {
     name: "Thanksgiving",
     line: "Happy Thanksgiving!",
-    color: "#8A5A32",
+    color: "#8A3E1E",
     motion: false,
   },
   christmas: {
     name: "Christmas",
     line: "Merry Christmas!",
-    color: "#7A3E45",
+    color: "#A32030",
     motion: true,
   },
 };

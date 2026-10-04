@@ -899,23 +899,20 @@
 .holiday-banner {
   position: relative;
   z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
   overflow: visible;
-}
-.holiday-banner-svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
 }
 .holiday-banner p {
   position: relative;
   z-index: 1;
   margin: 0;
-  padding: 11px 24px 22px;
+  padding: 14px 28px;
   text-align: center;
   font-weight: 500;
-  line-height: 1.35;
+  line-height: 1.25;
   text-wrap: balance;
 }
 .holiday-emblem {
@@ -923,7 +920,7 @@
   left: 50%;
   bottom: 0;
   z-index: 2;
-  transform: translate(-50%, 78%);
+  transform: translate(-50%, 94%);
   line-height: 0;
   pointer-events: none;
 }
@@ -931,93 +928,105 @@
   display: block;
   height: 40px;
   width: auto;
-  filter: drop-shadow(0 1px 1px rgba(36, 20, 14, 0.18));
+  filter: drop-shadow(0 2px 2px rgba(36, 20, 14, 0.2));
 }
 .emblem-wide {
-  height: 36px;
+  height: 38px;
 }
 .emblem-eggs {
-  height: 50px;
+  height: 54px;
 }
 .emblem-ribbon {
-  height: 52px;
+  height: 58px;
 }
 .emblem-tie {
-  height: 44px;
+  height: 52px;
 }
 .emblem-flag {
-  height: 30px;
+  height: 32px;
 }
 .emblem-rose {
-  height: 48px;
+  height: 56px;
 }
-.holiday-banner.is-patrick .holiday-banner-svg {
-  mask-image: linear-gradient(90deg, #000 0%, #000 14%, transparent 34%, transparent 66%, #000 86%, #000 100%);
+.emblem-pumpkin {
+  height: 52px;
+}
+.emblem-turkey {
+  height: 54px;
+}
+.emblem-tree {
+  height: 56px;
 }
 .holiday-banner.is-new-year {
-  background: #24140e;
-  box-shadow: inset 0 2px 0 #d4b483, inset 0 -2px 0 #d4b483;
+  background: #0e1a33;
+  box-shadow: inset 0 4px 0 #d4b483, inset 0 -4px 0 #d4b483;
 }
 .holiday-banner.is-valentine {
-  background: #6e2436;
-  box-shadow: inset 0 2px 0 rgba(244, 239, 228, 0.45), inset 0 -2px 0 rgba(244, 239, 228, 0.45);
+  background: #c8102e;
+  box-shadow: inset 0 4px 0 #f4efe4, inset 0 -4px 0 #f4efe4;
 }
 .holiday-banner.is-patrick {
-  background: #0f3d2e;
+  background: #0c5a38;
+  box-shadow: inset 0 4px 0 #e8c872, inset 0 -4px 0 #e8c872;
 }
 .holiday-banner.is-easter {
-  background: #e7cfc4;
+  min-height: 64px;
+  background: linear-gradient(to bottom, #f4b6c6 0 33.333%, #f8e7a0 33.333% 66.666%, #b9ddf0 66.666% 100%);
 }
 .holiday-banner.is-mothers {
-  background: #e4c4c0;
-  box-shadow: inset 0 2px 0 #8e5360, inset 0 -2px 0 #8e5360;
+  background: linear-gradient(to bottom, #c45368 0 16%, #fbf6f2 16% 84%, #c45368 84% 100%);
 }
 .holiday-banner.is-memorial {
   background: linear-gradient(to bottom, #b22234 0 18%, #ffffff 18% 82%, #1b365d 82% 100%);
 }
 .holiday-banner.is-fathers {
-  background: #3c3028;
-  box-shadow: inset 0 2px 0 #d4b483, inset 0 -2px 0 #d4b483;
+  background: #1e3348;
+  box-shadow: inset 0 4px 0 #d4b483, inset 0 -4px 0 #d4b483;
 }
 .holiday-banner.is-july4 {
   background: #152238;
-  box-shadow: inset 0 3px 0 #b22234, inset 0 -3px 0 #b22234;
+  box-shadow: inset 0 5px 0 #b22234, inset 0 -5px 0 #b22234;
 }
 .holiday-banner.is-halloween {
-  background: #1c1410;
-  box-shadow: inset 0 3px 0 #e08a3c, inset 0 -3px 0 #e08a3c;
+  background: #16100e;
+  box-shadow: inset 0 6px 0 #e07a2f, inset 0 -6px 0 #e07a2f;
 }
 .holiday-banner.is-thanksgiving {
-  background: #6b3e24;
-  box-shadow: inset 0 2px 0 #e7c27a, inset 0 -2px 0 #e7c27a;
+  background: #6a3418;
+  box-shadow: inset 0 5px 0 #e7c27a, inset 0 -5px 0 #e7c27a;
 }
 .holiday-banner.is-christmas {
-  background: #14352a;
-  box-shadow: inset 0 3px 0 #7a3e45, inset 0 -3px 0 #7a3e45;
+  background: linear-gradient(to bottom, #a32030 0 16%, #14352a 16% 84%, #a32030 84% 100%);
 }
 @media (min-width: 640px) {
   .holiday-banner p {
-    padding-top: 12px;
-    padding-bottom: 24px;
+    padding-top: 15px;
+    padding-bottom: 15px;
     font-size: 1.05rem;
   }
   .emblem {
     height: 44px;
   }
   .emblem-wide {
-    height: 40px;
+    height: 42px;
   }
   .emblem-eggs {
-    height: 56px;
+    height: 60px;
   }
   .emblem-ribbon {
-    height: 58px;
+    height: 64px;
   }
   .emblem-flag {
-    height: 34px;
+    height: 36px;
   }
-  .emblem-rose {
-    height: 52px;
+  .emblem-rose,
+  .emblem-tree {
+    height: 60px;
+  }
+  .emblem-pumpkin,
+  .emblem-turkey,
+  .emblem-tie {
+    height: 56px;
   }
 }
 .holiday-preview {

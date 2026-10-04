@@ -22,7 +22,6 @@ const TEXT: Record<HolidayId, string> = {
 export function HolidayBanner({ holiday }: { holiday: Holiday }) {
   return (
     <aside className={`holiday-banner is-${holiday.id}`} style={{ color: TEXT[holiday.id] }} aria-label={holiday.name}>
-      {holiday.id === "patrick" ? <CloverField /> : null}
       <p className="text-sm sm:text-base">{holiday.line}</p>
       <div className={`holiday-emblem is-${holiday.id}`}>
         <Emblem id={holiday.id} />
@@ -32,7 +31,7 @@ export function HolidayBanner({ holiday }: { holiday: Holiday }) {
 }
 
 function Emblem({ id }: { id: HolidayId }) {
-  if (id === "new-year") return <Clock />;
+  if (id === "new-year") return <Firework />;
   if (id === "valentine") return <HeartMark />;
   if (id === "patrick") return <CloverMark />;
   if (id === "easter") return <Eggs />;
@@ -41,8 +40,8 @@ function Emblem({ id }: { id: HolidayId }) {
   if (id === "fathers") return <TieMark />;
   if (id === "july4") return <Flag />;
   if (id === "halloween") return <PumpkinMark />;
-  if (id === "thanksgiving") return <WheatMark />;
-  return <HollyMark />;
+  if (id === "thanksgiving") return <TurkeyMark />;
+  return <TreeMark />;
 }
 
 function starPoints(cx: number, cy: number, r: number) {
@@ -55,226 +54,6 @@ function starPoints(cx: number, cy: number, r: number) {
 
 function Star({ x, y, r, fill }: { x: number; y: number; r: number; fill: string }) {
   return <polygon points={starPoints(x, y, r)} fill={fill} />;
-}
-
-type Pt = { x: number; y: number };
-
-function mix(a: Pt, b: Pt, t: number): Pt {
-  return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
-}
-
-function RibbonStripes({ a, b, c, d }: { a: Pt; b: Pt; c: Pt; d: Pt }) {
-  const colors = [RED, "#fff", RED, "#fff", RED];
-  return (
-    <>
-      {colors.map((fill, i) => {
-        const t0 = i / colors.length;
-        const t1 = (i + 1) / colors.length;
-        const p = mix(a, b, t0);
-        const q = mix(a, b, t1);
-        const r = mix(d, c, t1);
-        const s = mix(d, c, t0);
-        return <path key={i} fill={fill} d={`M${p.x} ${p.y}L${q.x} ${q.y}L${r.x} ${r.y}L${s.x} ${s.y}Z`} />;
-      })}
-    </>
-  );
-}
-
-function Leaf({ fill, stroke }: { fill: string; stroke: string }) {
-  return (
-    <path
-      fill={fill}
-      stroke={stroke}
-      strokeWidth="1.15"
-      strokeLinejoin="round"
-      d="M0 3C-2 0-9-4-10-11-12-18-4-20 0-15 4-20 12-18 10-11 9-4 2 0 0 3Z"
-    />
-  );
-}
-
-function FourLeaf({ fill, stroke }: { fill: string; stroke: string }) {
-  return (
-    <>
-      {[0, 90, 180, 270].map((deg) => (
-        <g key={deg} transform={`rotate(${deg})`}>
-          <Leaf fill={fill} stroke={stroke} />
-        </g>
-      ))}
-    </>
-  );
-}
-
-function CloverField() {
-  return (
-    <svg className="holiday-banner-svg" viewBox="0 0 1440 80" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      <defs>
-        <pattern id="clover-tile" width="108" height="72" patternUnits="userSpaceOnUse">
-          <g transform="translate(36 34) scale(0.95)" opacity="0.55">
-            <FourLeaf fill="#E4C56A" stroke="#0c3328" />
-          </g>
-        </pattern>
-      </defs>
-      <rect width="1440" height="80" fill="url(#clover-tile)" />
-    </svg>
-  );
-}
-
-function Clock() {
-  return (
-    <svg className="emblem emblem-wide" viewBox="0 0 64 64" aria-hidden="true">
-      <circle cx="32" cy="32" r="28" fill="#24140e" stroke="#C6A36A" strokeWidth="3.5" />
-      {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg) => (
-        <line
-          key={deg}
-          x1="32"
-          y1="10"
-          x2="32"
-          y2={deg % 90 === 0 ? 16 : 14}
-          stroke="#C6A36A"
-          strokeWidth={deg % 90 === 0 ? 2.2 : 1.2}
-          transform={`rotate(${deg} 32 32)`}
-        />
-      ))}
-      <line x1="32" y1="34" x2="21" y2="16" stroke="#F4EFE4" strokeWidth="2.2" strokeLinecap="round" />
-      <line x1="32" y1="34" x2="30" y2="14" stroke="#F4EFE4" strokeWidth="2.6" strokeLinecap="round" />
-      <circle cx="32" cy="34" r="2.4" fill="#C6A36A" />
-    </svg>
-  );
-}
-
-function HeartMark() {
-  return (
-    <svg className="emblem" viewBox="0 0 64 58" aria-hidden="true">
-      <path fill="#6E2436" stroke={CREAM} strokeWidth="3.5" d="M32 52C20 42 6 31 6 18 6 9 13 3 21 3c5 0 8 3 11 8 3-5 6-8 11-8 8 0 15 6 15 15C58 31 44 42 32 52Z" />
-    </svg>
-  );
-}
-
-function CloverMark() {
-  return (
-    <svg className="emblem" viewBox="0 0 72 90" aria-hidden="true">
-      <g transform="translate(36 32) scale(1.45)">
-        <FourLeaf fill="#2E8B57" stroke="#E4C56A" />
-      </g>
-      <path d="M36 50v28" stroke="#0F3D2E" strokeWidth="4" strokeLinecap="round" />
-      <path d="M36 50v28" stroke="#3FA56C" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function Eggs() {
-  return (
-    <svg className="emblem emblem-eggs" viewBox="0 0 220 108" aria-hidden="true">
-      <Egg x={42} fill="#FBF7F0" motif="speckle" />
-      <Egg x={110} fill="#F4C7BC" motif="ribbon" />
-      <Egg x={178} fill="#D5E8DA" motif="chevron" />
-    </svg>
-  );
-}
-
-function Egg({ x, fill, motif }: { x: number; fill: string; motif: "speckle" | "ribbon" | "chevron" }) {
-  const id = `egg-${motif}`;
-  return (
-    <g transform={`translate(${x} 54)`}>
-      <ellipse cx="1" cy="4" rx="28" ry="38" fill="rgba(36,20,14,0.12)" />
-      <defs>
-        <clipPath id={id}>
-          <ellipse cx="0" cy="0" rx="26" ry="36" />
-        </clipPath>
-      </defs>
-      <ellipse cx="0" cy="0" rx="26" ry="36" fill={fill} />
-      <g clipPath={`url(#${id})`}>
-        {motif === "speckle" ? (
-          <>
-            <rect x="-26" y="8" width="52" height="8" fill="#7FA184" />
-            <rect x="-26" y="6" width="52" height="1.4" fill="#C6A15B" />
-            {[
-              [-12, -16],
-              [-2, -20],
-              [8, -14],
-              [-8, -6],
-              [4, -4],
-              [12, -24],
-            ].map(([cx, cy]) => (
-              <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="2.1" fill="#7FA184" />
-            ))}
-          </>
-        ) : null}
-        {motif === "ribbon" ? (
-          <>
-            <rect x="-26" y="-8" width="52" height="16" fill="#FBF7F0" />
-            <rect x="-26" y="-8" width="52" height="1.6" fill="#C6A15B" />
-            <rect x="-26" y="6.4" width="52" height="1.6" fill="#C6A15B" />
-            {[-14, 0, 14].map((cx) => (
-              <circle key={cx} cx={cx} cy="0" r="2.4" fill="#A85A62" />
-            ))}
-          </>
-        ) : null}
-        {motif === "chevron" ? (
-          <>
-            <path d="M-26-6h52l-8 8h-36z" fill="#C45C5C" opacity="0.9" />
-            <path d="M-26 8h52l-8 8h-36z" fill="#C6A15B" />
-            <path d="M-18-22h8l-4 6zM-2-24h8l-4 6zM14-20h8l-4 6z" fill="#FBF7F0" />
-          </>
-        ) : null}
-      </g>
-      <ellipse cx="0" cy="0" rx="26" ry="36" fill="none" stroke={INK} strokeWidth="1.6" />
-    </g>
-  );
-}
-
-function RoseMark() {
-  return (
-    <svg className="emblem emblem-rose" viewBox="0 0 72 100" aria-hidden="true">
-      <path d="M36 52c2 16 6 28 4 40" stroke="#245C38" strokeWidth="2.6" fill="none" strokeLinecap="round" />
-      <path d="M36 64c-16 0-22 10-14 16 6-6 12-8 14-10z" fill="#2F6B45" />
-      <path d="M38 76c14-2 22 6 14 14-8-4-12-8-14-12z" fill="#3E8056" />
-      <path d="M34 66c-8 2-12 8-10 8M40 78c8 2 12 6 10 6" stroke="#1C432C" strokeWidth="0.8" fill="none" />
-      <path d="M36 50C18 46 12 30 20 20c6 10 12 16 16 16C32 22 42 12 52 16c-2 12 2 20 8 24-10 4-16 8-24 10z" fill="#8E5360" />
-      <path d="M28 34c4-12 16-16 22-8-6 4-12 12-14 18-4-2-8-6-8-10z" fill="#B06A78" />
-      <path d="M34 28c8-8 18-2 16 8-8 0-14 0-18 4 0-4 0-8 2-12z" fill="#D9A3AB" />
-      <path d="M36 36c5 2 9 1 11-3-1 6-6 9-11 8-3-1-4-3-4-5 1 0 3 0 4 0z" fill="#F6E4E2" />
-    </svg>
-  );
-}
-
-function Ribbon() {
-  const leftA = { x: 58, y: 48 };
-  const leftB = { x: 76, y: 60 };
-  const leftC = { x: 34, y: 124 };
-  const leftD = { x: 16, y: 112 };
-  const rightA = { x: 84, y: 60 };
-  const rightB = { x: 102, y: 48 };
-  const rightC = { x: 144, y: 112 };
-  const rightD = { x: 126, y: 124 };
-  return (
-    <svg className="emblem emblem-ribbon" viewBox="0 0 160 132" aria-hidden="true">
-      <RibbonStripes a={leftA} b={leftB} c={leftC} d={leftD} />
-      <RibbonStripes a={rightA} b={rightB} c={rightC} d={rightD} />
-      <path d="M80 62C56 54 40 36 46 18 50 6 68 4 80 18 92 4 110 6 114 18 120 36 104 54 80 62Z" fill="none" stroke={RED} strokeWidth="16" strokeLinejoin="round" />
-      <path d="M80 58C60 52 48 36 52 22 55 12 70 12 80 22 90 12 105 12 108 22 112 36 100 52 80 58Z" fill="none" stroke="#fff" strokeWidth="4" />
-      <path d="M72 16c5 4 11 4 16 0" fill="none" stroke="#7A1422" strokeWidth="2.2" strokeLinecap="round" />
-      <path d="M22 118 40 128 112 56 96 44Z" fill="#0E2244" />
-      <path d="M26 114 42 124 108 56 94 46Z" fill={NAVY} />
-      <Star x={44} y={108} r={3.4} fill="#fff" />
-      <Star x={58} y={96} r={3.4} fill="#fff" />
-      <Star x={72} y={84} r={3.4} fill="#fff" />
-      <Star x={86} y={72} r={3.4} fill="#fff" />
-      <Star x={52} y={96} r={2.5} fill="#fff" />
-      <Star x={66} y={84} r={2.5} fill="#fff" />
-      <Star x={80} y={72} r={2.5} fill="#fff" />
-    </svg>
-  );
-}
-
-function TieMark() {
-  return (
-    <svg className="emblem emblem-tie" viewBox="0 0 48 96" aria-hidden="true">
-      <path fill={NAVY} d="M15 2h18l5 14H10L15 2Zm-5 14h28L30 40 24 94 18 40 10 16Z" />
-      <path d="M18 22h12" stroke="#D4B483" strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M21 36l3 8 3-8" fill="none" stroke="#152238" strokeWidth="1" opacity="0.45" />
-    </svg>
-  );
 }
 
 function Flag() {
@@ -304,44 +83,324 @@ function Flag() {
   );
 }
 
+function Firework() {
+  const rays = Array.from({ length: 12 }, (_, i) => {
+    const angle = (Math.PI / 6) * i - Math.PI / 2;
+    const long = i % 2 === 0;
+    const length = long ? 24 : 16;
+    return {
+      x2: 32 + Math.cos(angle) * length,
+      y2: 32 + Math.sin(angle) * length,
+      dot: long,
+    };
+  });
+  return (
+    <svg className="emblem emblem-wide" viewBox="0 0 64 64" aria-hidden="true">
+      {rays.map((ray) => (
+        <line
+          key={`${ray.x2}-${ray.y2}`}
+          x1="32"
+          y1="32"
+          x2={ray.x2}
+          y2={ray.y2}
+          stroke={ray.dot ? "#E8C872" : "#F4EFE4"}
+          strokeWidth={ray.dot ? 2.2 : 1.4}
+          strokeLinecap="round"
+        />
+      ))}
+      {rays
+        .filter((ray) => ray.dot)
+        .map((ray) => (
+          <circle key={`d-${ray.x2}`} cx={ray.x2} cy={ray.y2} r="2.1" fill="#F4EFE4" />
+        ))}
+      <circle cx="32" cy="32" r="4.2" fill="#E8C872" />
+      <circle cx="30.4" cy="30.4" r="1.5" fill="#FFF8E8" />
+    </svg>
+  );
+}
+
+function HeartMark() {
+  return (
+    <svg className="emblem" viewBox="0 0 72 66" aria-hidden="true">
+      <path
+        fill="rgba(80,8,18,0.28)"
+        d="M36 60C22 49 6 36 6 21 6 10 14 3 23 3c6 0 9 3 13 9 4-6 7-9 13-9 9 0 17 7 17 18C66 36 50 49 36 60Z"
+        transform="translate(0 2)"
+      />
+      <path
+        fill="#fff7f5"
+        d="M36 58C22 47 6 34 6 19 6 8 14 1 23 1c6 0 9 3 13 9 4-6 7-9 13-9 9 0 17 7 17 18C66 34 50 47 36 58Z"
+      />
+      <path
+        fill="#E11D3A"
+        d="M36 50C25 41 14 32 14 22c0-6 4-10 9-10 3 0 6 2 8 6 2-4 5-6 8-6 5 0 9 4 9 10 0 10-11 19-18 28Z"
+      />
+      <ellipse cx="24" cy="16" rx="5.5" ry="3.2" fill="#fff" opacity="0.72" transform="rotate(-28 24 16)" />
+    </svg>
+  );
+}
+
+function CloverMark() {
+  const leaf =
+    "M0-2C-7-2-14-10-9-17-5-22 0-15 0-11 0-15 5-22 9-17 14-10 7-2 0-2Z";
+  return (
+    <svg className="emblem" viewBox="0 0 80 104" aria-hidden="true">
+      <path d="M40 58c2 14 8 28 6 40" stroke="#0C4A28" strokeWidth="4.2" fill="none" strokeLinecap="round" />
+      <path d="M40 58c2 14 8 28 6 40" stroke="#2E9A55" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+      <g transform="translate(40 36)">
+        {[0, 90, 180, 270].map((deg) => (
+          <g key={deg} transform={`rotate(${deg})`}>
+            <path d={leaf} fill="#0E6B3A" />
+            <path d={leaf} fill="#1F9A52" transform="scale(0.72)" />
+            <path d="M0-6c0-6 0-8 0-10" stroke="#08381E" strokeWidth="0.9" fill="none" strokeLinecap="round" />
+            <ellipse cx="-3.2" cy="-12" rx="2.2" ry="3.4" fill="#fff" opacity="0.28" transform="rotate(-18)" />
+          </g>
+        ))}
+        <circle r="4.2" fill="#E8C872" />
+        <circle cx="-1" cy="-1" r="1.4" fill="#FFF6D8" />
+      </g>
+    </svg>
+  );
+}
+
+function Eggs() {
+  return (
+    <svg className="emblem emblem-eggs" viewBox="0 0 246 120" aria-hidden="true">
+      <Egg x={44} fill="#FBF7F0" accent="#6E9A78" motif="speckle" />
+      <Egg x={123} fill="#F7C9C2" accent="#C4505C" motif="ribbon" />
+      <Egg x={202} fill="#D5EEE4" accent="#3E7C9A" motif="chevron" />
+    </svg>
+  );
+}
+
+function Egg({ x, fill, accent, motif }: { x: number; fill: string; accent: string; motif: "speckle" | "ribbon" | "chevron" }) {
+  const id = `egg-${motif}`;
+  return (
+    <g transform={`translate(${x} 58)`}>
+      <ellipse cx="2" cy="8" rx="30" ry="10" fill="rgba(36,20,14,0.14)" />
+      <defs>
+        <clipPath id={id}>
+          <path d="M0-40c16 2 26 18 26 38 0 16-10 28-26 28S-26 14-26-2C-26-22-16-42 0-40Z" />
+        </clipPath>
+        <linearGradient id={`${id}-shade`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#fff" stopOpacity="0.7" />
+          <stop offset="0.42" stopColor="#fff" stopOpacity="0" />
+          <stop offset="1" stopColor="#24140e" stopOpacity="0.16" />
+        </linearGradient>
+      </defs>
+      <path d="M0-40c16 2 26 18 26 38 0 16-10 28-26 28S-26 14-26-2C-26-22-16-42 0-40Z" fill={fill} />
+      <g clipPath={`url(#${id})`}>
+        {motif === "speckle" ? (
+          <>
+            <path d="M-28 6h56v9H-28z" fill={accent} />
+            <path d="M-28 4.2h56v1.5H-28z" fill="#C6A15B" />
+            {[
+              [-14, -22],
+              [-2, -28],
+              [10, -20],
+              [-8, -10],
+              [6, -8],
+              [14, -30],
+              [-16, -4],
+            ].map(([cx, cy]) => (
+              <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="2.3" fill={accent} />
+            ))}
+          </>
+        ) : null}
+        {motif === "ribbon" ? (
+          <>
+            <path d="M-30-2c8 8 16 8 24 0s16-8 24 0v16c-8-8-16-8-24 0s-16 8-24 0z" fill="#fffaf7" />
+            <path d="M-30-2c8 8 16 8 24 0s16-8 24 0" fill="none" stroke={accent} strokeWidth="1.6" />
+            <path d="M-30 14c8-8 16-8 24 0s16 8 24 0" fill="none" stroke="#C6A15B" strokeWidth="1.4" />
+          </>
+        ) : null}
+        {motif === "chevron" ? (
+          <>
+            <path d="M-30-14h60l-8 10H-22z" fill={accent} />
+            <path d="M-30 2h60l-8 10H-22z" fill="#F4C96A" />
+            <path d="M-30 18h60l-8 10H-22z" fill={accent} opacity="0.85" />
+          </>
+        ) : null}
+      </g>
+      <path d="M0-40c16 2 26 18 26 38 0 16-10 28-26 28S-26 14-26-2C-26-22-16-42 0-40Z" fill={`url(#${id}-shade)`} />
+      <path d="M0-40c16 2 26 18 26 38 0 16-10 28-26 28S-26 14-26-2C-26-22-16-42 0-40Z" fill="none" stroke={INK} strokeWidth="1.5" />
+    </g>
+  );
+}
+
+function RoseMark() {
+  return (
+    <svg className="emblem emblem-rose" viewBox="0 0 96 128" aria-hidden="true">
+      <path d="M48 58c2 18 6 36 4 58" stroke="#245C38" strokeWidth="3.4" fill="none" strokeLinecap="round" />
+      <path d="M48 78c-18 2-28 14-18 24 10-8 16-12 18-16z" fill="#2F7A48" />
+      <path d="M48 92c16-2 28 8 18 18-10-6-16-12-18-16z" fill="#3E9460" />
+      <path d="M46 84c-10 4-14 10-8 12M52 98c8 4 14 8 10 10" stroke="#1C432C" strokeWidth="0.9" fill="none" />
+      <g transform="translate(48 36)">
+        <ellipse cx="0" cy="2" rx="20" ry="15" fill="#A33D52" transform="rotate(-24)" />
+        <ellipse cx="0" cy="2" rx="20" ry="15" fill="#C45368" transform="rotate(28)" />
+        <ellipse cx="0" cy="1" rx="18" ry="14" fill="#D97888" transform="rotate(78)" />
+        <ellipse cx="0" cy="1" rx="18" ry="14" fill="#E7A0AC" transform="rotate(-62)" />
+        <ellipse cx="0" cy="1" rx="11" ry="8.5" fill="#F6D5DB" />
+        <path d="M0 6C-4 2-8 1-8-2c0-3 3-4 5-2 1-3 4-5 6-2 2-2 6-1 6 2 0 4-5 6-9 4z" fill="#9E3048" />
+        <ellipse cx="-6" cy="-6" rx="4" ry="2.2" fill="#fff" opacity="0.55" transform="rotate(-32)" />
+      </g>
+    </svg>
+  );
+}
+
+function Ribbon() {
+  const tailL = "M54 68 18 154 42 144 64 72Z";
+  const tailR = "M96 68 132 154 108 144 86 72Z";
+  const loop = "M75 70C50 68 30 54 34 34 37 16 54 12 66 28 62 12 70 4 75 12 80 4 88 12 84 28 96 12 113 16 116 34 120 54 100 68 75 70Z";
+  return (
+    <svg className="emblem emblem-ribbon" viewBox="0 0 150 164" aria-hidden="true">
+      <path d={tailL} fill="rgba(14,34,68,0.2)" transform="translate(2 3)" />
+      <path d={tailR} fill="rgba(14,34,68,0.2)" transform="translate(2 3)" />
+      <defs>
+        <clipPath id="memorial-left">
+          <path d={tailL} />
+        </clipPath>
+        <clipPath id="memorial-right">
+          <path d={tailR} />
+        </clipPath>
+        <clipPath id="memorial-loop">
+          <path d={loop} />
+        </clipPath>
+      </defs>
+      <g clipPath="url(#memorial-left)">
+        {Array.from({ length: 12 }, (_, i) => (
+          <rect key={i} x="0" y={64 + i * 8} width="80" height="8" fill={i % 2 === 0 ? RED : "#fff"} />
+        ))}
+      </g>
+      <g clipPath="url(#memorial-right)">
+        {Array.from({ length: 12 }, (_, i) => (
+          <rect key={i} x="70" y={64 + i * 8} width="80" height="8" fill={i % 2 === 0 ? "#fff" : RED} />
+        ))}
+      </g>
+      <path d={loop} fill={NAVY} />
+      <g clipPath="url(#memorial-loop)">
+        {[
+          [58, 30],
+          [75, 24],
+          [92, 30],
+          [66, 42],
+          [84, 42],
+          [75, 52],
+        ].map(([x, y]) => (
+          <Star key={`${x}-${y}`} x={x!} y={y!} r={3.1} fill="#fff" />
+        ))}
+      </g>
+      <path d={tailL} fill="none" stroke="#fff" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d={tailR} fill="none" stroke="#fff" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d={loop} fill="none" stroke="#fff" strokeWidth="1.8" />
+      <path d="M64 66h22l-4 10H68z" fill={NAVY} stroke="#fff" strokeWidth="1" />
+    </svg>
+  );
+}
+
+function TieMark() {
+  const blade = "M30 40h30l10 22L45 124 20 62 30 40Z";
+  return (
+    <svg className="emblem emblem-tie" viewBox="0 0 90 132" aria-hidden="true">
+      <path d="M8 10 45 46 82 10 70 4 45 30 20 4Z" fill="#F7F1E8" />
+      <path d="M20 6 45 32 70 6" fill="none" stroke="#E4D3C4" strokeWidth="1.2" />
+      <path d="M32 18h26l5 20H27Z" fill="#152238" />
+      <path d="M36 22h18l2 8H34Z" fill="#3C6494" opacity="0.85" />
+      <defs>
+        <clipPath id="tie-blade">
+          <path d={blade} />
+        </clipPath>
+        <linearGradient id="tie-silk" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#152238" />
+          <stop offset="0.48" stopColor="#3C6494" />
+          <stop offset="1" stopColor="#152238" />
+        </linearGradient>
+      </defs>
+      <g clipPath="url(#tie-blade)">
+        <rect x="16" y="36" width="60" height="96" fill="url(#tie-silk)" />
+        <path d="M8 52h70M4 70h78M0 88h82M-4 106h86" stroke="#E8C872" strokeWidth="3.2" />
+      </g>
+      <path d={blade} fill="none" stroke="#0E2244" strokeWidth="1.2" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function PumpkinMark() {
   return (
-    <svg className="emblem" viewBox="0 0 84 76" aria-hidden="true">
-      <path d="M18 40c0-12 6-20 14-22 2 10 4 18 2 28-8 2-16 0-16-6z" fill="#C56E28" />
-      <path d="M66 40c0-12-6-20-14-22-2 10-4 18-2 28 8 2 16 0 16-6z" fill="#C56E28" />
-      <path d="M42 16c-14 0-24 14-24 28 0 14 10 22 24 22s24-8 24-22c0-14-10-28-24-28z" fill="#E08A3C" />
-      <path d="M42 16c-5 10-7 22-6 34 0 6 2 12 6 16 4-4 6-10 6-16 1-12-1-24-6-34z" fill="#C56E28" />
-      <path d="M30 22c-4 10-5 20-3 34M54 22c4 10 5 20 3 34" fill="none" stroke="#8C4A16" strokeWidth="1.4" />
-      <path d="M42 16c1-10 8-16 14-12-6 2-10 8-11 14" fill="#5C3A16" />
+    <svg className="emblem emblem-pumpkin" viewBox="0 0 120 104" aria-hidden="true">
+      <ellipse cx="60" cy="96" rx="26" ry="4" fill="rgba(20,12,8,0.22)" />
+      <ellipse cx="32" cy="60" rx="20" ry="30" fill="#C45A16" />
+      <ellipse cx="88" cy="60" rx="20" ry="30" fill="#C45A16" />
+      <ellipse cx="46" cy="58" rx="22" ry="34" fill="#E07A28" />
+      <ellipse cx="74" cy="58" rx="22" ry="34" fill="#D86A20" />
+      <ellipse cx="60" cy="56" rx="20" ry="36" fill="#F0943A" />
+      <path d="M46 30c1 18 1 36 0 52M74 30c-1 18-1 36 0 52" stroke="#9A4012" strokeWidth="1.6" fill="none" opacity="0.75" />
+      <ellipse cx="50" cy="44" rx="7" ry="12" fill="#fff" opacity="0.2" />
+      <path d="M60 30c2-14 12-18 18-12-8 0-14 6-15 14" fill="#5C3A16" />
+      <path d="M62 28c2-8 8-12 12-9" stroke="#8A6230" strokeWidth="1.3" fill="none" strokeLinecap="round" />
+      <path d="M40 50l12 9-12 8z" fill="#FFE7A0" />
+      <path d="M80 50l-12 9 12 8z" fill="#FFE7A0" />
+      <path d="M38 76c6 8 14 12 22 12s16-4 22-12c-6 5-14 8-22 8s-16-3-22-8z" fill="#FFE7A0" />
+      <path d="M40 50l12 9-12 8zM80 50l-12 9 12 8z" fill="none" stroke="#9A4012" strokeWidth="1" />
     </svg>
   );
 }
 
-function WheatMark() {
+function TurkeyMark() {
+  const feathers = Array.from({ length: 7 }, (_, i) => -78 + i * 22);
   return (
-    <svg className="emblem" viewBox="0 0 80 92" aria-hidden="true">
-      <path d="M40 86V34M28 86c4-18 6-32 12-46M52 86c-4-18-6-32-12-46" stroke="#3C2418" strokeWidth="3" fill="none" strokeLinecap="round" />
-      <path d="M40 86V34M28 86c4-18 6-32 12-46M52 86c-4-18-6-32-12-46" stroke="#E2B656" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-      {[0, 1, 2, 3, 4].map((i) => (
-        <g key={i}>
-          <ellipse cx="30" cy={30 + i * 8} rx="7" ry="3.1" fill="#E2B656" stroke="#3C2418" strokeWidth="0.8" transform={`rotate(-40 30 ${30 + i * 8})`} />
-          <ellipse cx="50" cy={30 + i * 8} rx="7" ry="3.1" fill="#E2B656" stroke="#3C2418" strokeWidth="0.8" transform={`rotate(40 50 ${30 + i * 8})`} />
-        </g>
+    <svg className="emblem emblem-turkey" viewBox="0 0 150 120" aria-hidden="true">
+      {feathers.map((deg, i) => (
+        <ellipse
+          key={deg}
+          cx="0"
+          cy="-34"
+          rx="8"
+          ry="26"
+          transform={`translate(62 78) rotate(${deg})`}
+          fill={i % 2 === 0 ? "#8A3E1E" : "#C4784A"}
+          stroke="#5C2A12"
+          strokeWidth="0.8"
+        />
       ))}
-      <path d="M30 70c4 4 16 4 20 0" fill="none" stroke="#F4EFE4" strokeWidth="2" strokeLinecap="round" />
+      {feathers.map((deg) => (
+        <ellipse
+          key={`tip-${deg}`}
+          cx="0"
+          cy="-52"
+          rx="4.2"
+          ry="7"
+          transform={`translate(62 78) rotate(${deg})`}
+          fill="#E2B656"
+        />
+      ))}
+      <ellipse cx="78" cy="82" rx="30" ry="22" fill="#6B3A24" />
+      <ellipse cx="70" cy="84" rx="16" ry="10" fill="#C4784A" transform="rotate(-18 70 84)" />
+      <path d="M100 74c10-2 18 6 16 14" stroke="#6B3A24" strokeWidth="8" fill="none" strokeLinecap="round" />
+      <circle cx="118" cy="66" r="11" fill="#6B3A24" />
+      <path d="M126 66l14 4-14 4z" fill="#E2B656" />
+      <ellipse cx="120" cy="76" rx="4" ry="6.5" fill="#B4232A" />
+      <circle cx="122" cy="63" r="1.7" fill="#1A120E" />
+      <circle cx="122.6" cy="62.4" r="0.6" fill="#fff" />
     </svg>
   );
 }
 
-function HollyMark() {
+function TreeMark() {
   return (
-    <svg className="emblem" viewBox="0 0 88 78" aria-hidden="true">
-      <path fill="#1F6B45" stroke="#0E3324" strokeWidth="1" d="M18 28 28 22 24 12 34 18 40 6 44 18 54 14 48 26 58 30 46 34 50 46 38 38 34 50 28 38 16 42 22 32Z" />
-      <path fill="#1F6B45" stroke="#0E3324" strokeWidth="1" d="M46 24 56 16 62 22 58 12 70 16 64 26 76 28 64 34 70 44 58 36 60 48 50 38 44 46 46 34Z" />
-      <path fill="#2E8B57" stroke="#0E3324" strokeWidth="1" d="M34 40 28 52 36 48 34 60 44 50 52 58 50 46 60 48 50 38 44 30Z" />
-      <circle cx="36" cy="30" r="5" fill="#C0392B" stroke="#F4EFE4" strokeWidth="0.8" />
-      <circle cx="52" cy="28" r="5" fill="#C0392B" stroke="#F4EFE4" strokeWidth="0.8" />
-      <circle cx="44" cy="40" r="4.2" fill="#A93226" stroke="#F4EFE4" strokeWidth="0.8" />
+    <svg className="emblem emblem-tree" viewBox="0 0 96 112" aria-hidden="true">
+      <Star x={48} y={12} r={8} fill="#E8C872" />
+      <path d="M48 20 66 42H30Z" fill="#1F6B45" />
+      <path d="M48 34 72 62H24Z" fill="#18573A" />
+      <path d="M48 50 80 86H16Z" fill="#14352A" />
+      <path d="M48 22 58 40H48Z" fill="#2E8B57" opacity="0.85" />
+      <rect x="42" y="86" width="12" height="12" rx="1.5" fill="#6B3A24" />
+      <circle cx="40" cy="58" r="3.3" fill="#C8102E" />
+      <circle cx="56" cy="70" r="3.3" fill="#E8C872" />
+      <circle cx="36" cy="76" r="3.1" fill="#F4EFE4" />
+      <circle cx="58" cy="50" r="2.8" fill="#C8102E" />
+      <circle cx="41.1" cy="56.8" r="1" fill="#fff" opacity="0.7" />
+      <circle cx="57.1" cy="68.8" r="1" fill="#fff" opacity="0.7" />
     </svg>
   );
 }
