@@ -1058,7 +1058,7 @@ function ClientSectionNav({ initial = "client-visits" }: { initial?: string }) {
             type="button"
             aria-current={current === id ? "true" : undefined}
             className={cn(
-              "shrink-0 rounded-full px-3 py-1.5 text-left text-sm transition-colors duration-150 lg:w-full lg:rounded-lg lg:px-2.5",
+              "shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-left text-sm transition-colors duration-150 lg:w-full lg:rounded-lg lg:px-2.5",
               current === id ? "bg-white font-semibold text-ink shadow-[0_0_0_1px_rgba(44,24,16,0.1)]" : "text-muted hover:bg-white/70 hover:text-ink",
             )}
             onClick={() => {
@@ -1375,7 +1375,7 @@ function ClientDetail({
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-[minmax(0,1fr)_10.5rem] lg:items-start lg:gap-8">
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_14rem] lg:items-start lg:gap-8">
         <div className="min-w-0 space-y-6 lg:order-first">
       <div className="flex flex-wrap gap-x-2 gap-y-3">
         {(
