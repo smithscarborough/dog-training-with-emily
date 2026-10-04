@@ -21,7 +21,6 @@ const LINKS = [
 export function SiteHeader(_props?: { solid?: boolean }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [section, setSection] = useState<string | null>(null);
   const { me, user } = useMe();
   const { preview } = useHolidayTouch();
   const { user: sessionUser, isPending } = useCurrentUserState();
@@ -31,26 +30,6 @@ export function SiteHeader(_props?: { solid?: boolean }) {
   else if (!isPending) authMode.current = "out";
   const signedOut = frozenOut || authMode.current === "out";
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const ids = LINKS.map((l) => l.href.replace("/#", ""));
-    const els = ids.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => Boolean(el));
-    if (els.length === 0) return;
-    const hash = window.location.hash.replace(/^#/, "");
-    if (ids.includes(hash)) setSection(hash);
-    const io = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (!visible) return;
-        setSection(visible.target.id);
-      },
-      { rootMargin: "-28% 0px -55% 0px", threshold: [0.1, 0.35, 0.6] },
-    );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, []);
 
   useEffect(() => {
     const scroller = document.getElementById("app-scroll");
@@ -150,22 +129,15 @@ export function SiteHeader(_props?: { solid?: boolean }) {
           <nav className="flex flex-col border-t border-ink/15 bg-bg px-4 py-4 text-center">
             {LINKS.map((l) => {
               const id = l.href.split("#")[1];
-              const current = section === id;
               return (
                 <a
                   key={l.href}
                   href={l.href}
-                  className={cn(
-                    "rounded-md px-3 py-3.5 text-base underline-offset-[10px] decoration-2 decoration-accent transition-colors",
-                    current
-                      ? "font-bold text-accent underline"
-                      : "text-ink hover:font-bold hover:text-accent hover:underline",
-                  )}
+                  className="rounded-md px-3 py-3.5 text-base text-ink underline-offset-[10px] decoration-2 decoration-accent transition-colors hover:font-bold hover:text-accent hover:underline"
                   onClick={(e) => {
                     e.preventDefault();
                     setOpen(false);
                     if (!id) return;
-                    setSection(id);
                     goToHomeSection(id, navigate);
                   }}
                 >
