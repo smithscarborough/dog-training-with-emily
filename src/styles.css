@@ -949,15 +949,17 @@
 }
 .emblem-pumpkin {
   height: 52px;
+  filter: none;
 }
 .emblem-tree {
   height: 68px;
 }
 .emblem-eggs {
   height: 50px;
+  filter: none;
 }
 .emblem-ribbon {
-  height: 58px;
+  height: 62px;
 }
 .emblem-tie {
   height: 52px;
@@ -966,7 +968,8 @@
   height: 32px;
 }
 .emblem-turkey {
-  height: 54px;
+  height: 56px;
+  filter: none;
 }
 .holiday-you {
   position: relative;
@@ -1046,7 +1049,7 @@
     height: 56px;
   }
   .emblem-ribbon {
-    height: 64px;
+    height: 70px;
   }
   .emblem-flag {
     height: 36px;
