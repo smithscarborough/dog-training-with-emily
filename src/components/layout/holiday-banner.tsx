@@ -333,45 +333,55 @@ function TreeMark() {
 }
 
 function Ribbon() {
-  const loop = "M30 80C8 62 8 24 34 12 50 2 78 2 94 12 120 24 120 62 98 80";
   const stars = [
-    [76, 92],
-    [64, 100],
-    [82, 108],
-    [68, 116],
-    [56, 124],
-    [74, 132],
-    [60, 140],
-    [70, 150],
+    [58, 96],
+    [48, 112],
+    [64, 118],
+    [52, 134],
+    [42, 148],
   ];
   return (
-    <svg className="emblem emblem-ribbon" viewBox="0 0 132 168" aria-hidden="true">
+    <svg className="emblem emblem-ribbon" viewBox="0 4 120 150" aria-hidden="true">
       <defs>
         <linearGradient id="rib-navy" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#31598a" />
-          <stop offset="1" stopColor="#101e36" />
+          <stop offset="0" stopColor="#2a4d7c" />
+          <stop offset="1" stopColor="#12243f" />
         </linearGradient>
-        <clipPath id="navy-clip">
-          <path d="M62 74 90 92 46 160 18 146Z" />
+        <linearGradient id="rib-red" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#d64545" />
+          <stop offset="1" stopColor="#8e1a28" />
+        </linearGradient>
+        <clipPath id="navy-tail">
+          <path d="M44 70 72 86 34 152 10 140Z" />
         </clipPath>
       </defs>
-      <path d="M84 76 120 150 104 158 72 88Z" fill="#a12330" />
-      <path d="M88 90 116 148 110 150 84 100Z" fill="#fff" />
-      <path d="M92 106 112 146 106 148 88 116Z" fill="#b22234" />
-      <path d="M74 80 98 154 82 162 60 92Z" fill="#8e1c2c" />
-      <path d="M76 96 94 152 88 154 70 106Z" fill="#fff" />
-      <path d="M78 112 90 150 86 152 74 122Z" fill="#a12330" />
-      <path d="M62 74 90 92 46 160 18 146Z" fill="#fff" />
-      <path d="M66 78 86 92 46 156 24 146Z" fill="url(#rib-navy)" />
-      <g clipPath="url(#navy-clip)">
+      <path d="M72 74 112 142 94 150 62 84Z" fill="#9d2030" />
+      <path d="M78 90 108 140 100 144 74 102Z" fill="#fff" />
+      <path d="M82 106 104 138 98 141 78 116Z" fill="#b22234" />
+      <path d="M60 78 90 146 74 154 48 86Z" fill="#8e1c2c" />
+      <path d="M64 94 86 144 78 148 58 106Z" fill="#fff" />
+      <path d="M66 110 82 142 76 145 62 120Z" fill="#a12330" />
+      <path d="M44 70 72 86 34 152 10 140Z" fill="url(#rib-navy)" />
+      <g clipPath="url(#navy-tail)">
         {stars.map(([x, y]) => (
-          <Star key={`${x}-${y}`} x={x} y={y} r={3.3} fill="#fff" />
+          <Star key={`${x}-${y}`} x={x} y={y} r={5.2} fill="#fff" />
         ))}
       </g>
-      <path d={loop} fill="none" stroke="#fff" strokeWidth="22" strokeLinecap="round" />
-      <path d={loop} fill="none" stroke="#b22234" strokeWidth="15" strokeLinecap="round" />
-      <path d={loop} fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" />
-      <path d="M46 28C58 12 84 12 96 28 82 18 58 18 46 28Z" fill="#6e1520" />
+      <path d="M44 70 72 86 34 152 10 140Z" fill="none" stroke="#f4efe4" strokeWidth="1.4" strokeLinejoin="round" />
+      <path d="M46 74 74 70 78 86 60 92 42 82Z" fill="#b22234" />
+      <path
+        fill="url(#rib-red)"
+        fillRule="evenodd"
+        d="M60 8C92 8 108 32 100 52 94 66 80 76 66 86L58 74C70 66 82 56 86 44 90 30 78 20 60 20 42 20 30 30 34 44 38 56 50 66 62 74L54 86C40 76 26 66 20 52 12 32 28 8 60 8Z"
+      />
+      <path
+        d="M54 80C30 66 26 34 42 18 52 10 70 10 80 18 96 34 92 66 68 80"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="4.5"
+        strokeLinecap="butt"
+      />
+      <path d="M46 28C56 14 74 14 84 28 72 20 56 20 46 28Z" fill="#6b1520" />
     </svg>
   );
 }
