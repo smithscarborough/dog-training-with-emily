@@ -143,7 +143,7 @@ const EGG = "M0-20C11.2-20 16.8-10 16.8-1 16.8 11 11.2 20 0 20-11.2 20-16.8 11-1
 
 function Eggs() {
   return (
-    <svg className="emblem emblem-eggs" viewBox="0 0 168 66" aria-hidden="true">
+    <svg className="emblem emblem-eggs" viewBox="0 6 168 60" aria-hidden="true">
       <defs>
         <filter id="egg-soft" x="-70%" y="-80%" width="240%" height="280%">
           <feGaussianBlur stdDeviation="1.5" />
@@ -229,7 +229,7 @@ const ROSE_INNER = "M0 9C12 7 15-9 6-20 2-24-2-24-6-20-15-9-12 7 0 9Z";
 
 function RoseMark() {
   return (
-    <svg className="emblem emblem-rose" viewBox="0 0 110 120" aria-hidden="true">
+    <svg className="emblem emblem-rose" viewBox="0 16 110 104" aria-hidden="true">
       <defs>
         <radialGradient id="petal" cx="30%" cy="26%" r="80%">
           <stop offset="0" stopColor="#fff1f3" />
@@ -272,7 +272,7 @@ const CLOVER_LEAF = "M0 2C10 2 16-10 7-20 2-24-2-24-7-20-16-10-10 2 0 2Z";
 
 function CloverMark() {
   return (
-    <svg className="emblem emblem-clover" viewBox="0 0 100 112" aria-hidden="true">
+    <svg className="emblem emblem-clover" viewBox="0 20 100 92" aria-hidden="true">
       <defs>
         <radialGradient id="clover" cx="32%" cy="28%" r="75%">
           <stop offset="0" stopColor="#d7f5c4" />
@@ -293,7 +293,7 @@ function CloverMark() {
 
 function PumpkinMark() {
   return (
-    <svg className="emblem emblem-pumpkin" viewBox="0 0 112 104" aria-hidden="true">
+    <svg className="emblem emblem-pumpkin" viewBox="0 8 112 96" aria-hidden="true">
       <defs>
         <radialGradient id="pump" cx="40%" cy="34%" r="72%">
           <stop offset="0" stopColor="#f6c56a" />
@@ -417,7 +417,7 @@ function TurkeyMark() {
   const outer = [-78, -62, -46, -30, -14, 2, 18, 34, 50, 66, 80];
   const inner = [-54, -28, -2, 24, 50];
   return (
-    <svg className="emblem emblem-turkey" viewBox="0 0 170 132" aria-hidden="true">
+    <svg className="emblem emblem-turkey" viewBox="0 30 170 102" aria-hidden="true">
       <defs>
         <filter id="tsoft" x="-60%" y="-60%" width="220%" height="220%">
           <feGaussianBlur stdDeviation="1.6" />
