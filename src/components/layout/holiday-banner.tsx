@@ -40,7 +40,7 @@ function ThanksLine() {
 
 function Emblem({ id }: { id: HolidayId }) {
   if (id === "new-year") return <Firework />;
-  if (id === "valentine") return <PhotoEmblem src="/images/holidays/heart-mark.webp" className="emblem-heart" />;
+  if (id === "valentine") return <PhotoEmblem src="/images/holidays/heart-red.webp" className="emblem-heart" />;
   if (id === "patrick") return <PhotoEmblem src="/images/holidays/clover-mark.webp" className="emblem-clover" />;
   if (id === "easter") return <Eggs />;
   if (id === "mothers") return <PhotoEmblem src="/images/holidays/rose-mark.webp" className="emblem-rose" />;

@@ -939,19 +939,19 @@
   filter: drop-shadow(0 3px 4px rgba(36, 20, 14, 0.22));
 }
 .emblem-heart {
-  height: 78px;
+  height: 46px;
 }
 .emblem-clover {
-  height: 104px;
+  height: 56px;
 }
 .emblem-rose {
-  height: 112px;
+  height: 58px;
 }
 .emblem-pumpkin {
   height: 52px;
 }
 .emblem-tree {
-  height: 140px;
+  height: 68px;
 }
 .emblem-eggs {
   height: 50px;
@@ -990,8 +990,11 @@
   box-shadow: inset 0 5px 0 #d4b483, inset 0 -5px 0 #d4b483;
 }
 .holiday-banner.is-valentine {
-  background: #c8102e;
-  box-shadow: inset 0 5px 0 #f4efe4, inset 0 -5px 0 #f4efe4;
+  background: #9a1c33;
+  box-shadow:
+    inset 0 5px 0 #ffffff,
+    inset 0 -5px 0 #ffffff,
+    0 1px 0 #8a624c;
 }
 .holiday-banner.is-patrick {
   background: #0c5a38;
@@ -1049,13 +1052,13 @@
     height: 36px;
   }
   .emblem-heart {
-    height: 92px;
+    height: 56px;
   }
   .emblem-clover {
-    height: 124px;
+    height: 66px;
   }
   .emblem-rose {
-    height: 132px;
+    height: 68px;
   }
   .emblem-pumpkin {
     height: 64px;
@@ -1065,7 +1068,7 @@
     height: 64px;
   }
   .emblem-tree {
-    height: 168px;
+    height: 80px;
   }
 }
 .holiday-preview {
