@@ -920,13 +920,9 @@
   left: 50%;
   bottom: 0;
   z-index: 2;
-  transform: translate(-50%, 100%);
+  transform: translate(-50%, calc(100% - 10px));
   line-height: 0;
   pointer-events: none;
-}
-.holiday-emblem.is-halloween {
-  z-index: 2;
-  transform: translate(-50%, calc(100% - 10px));
 }
 .emblem {
   display: block;
