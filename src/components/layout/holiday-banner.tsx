@@ -40,16 +40,20 @@ function ThanksLine() {
 
 function Emblem({ id }: { id: HolidayId }) {
   if (id === "new-year") return <Firework />;
-  if (id === "valentine") return <HeartMark />;
-  if (id === "patrick") return <CloverMark />;
+  if (id === "valentine") return <PhotoEmblem src="/images/holidays/heart-mark.webp" className="emblem-heart" />;
+  if (id === "patrick") return <PhotoEmblem src="/images/holidays/clover-mark.webp" className="emblem-clover" />;
   if (id === "easter") return <Eggs />;
-  if (id === "mothers") return <RoseMark />;
+  if (id === "mothers") return <PhotoEmblem src="/images/holidays/rose-mark.webp" className="emblem-rose" />;
   if (id === "memorial") return <Ribbon />;
   if (id === "fathers") return <TieMark />;
   if (id === "july4") return <Flag />;
-  if (id === "halloween") return <PumpkinMark />;
+  if (id === "halloween") return <PhotoEmblem src="/images/holidays/pumpkin-mark.webp" className="emblem-pumpkin" />;
   if (id === "thanksgiving") return <TurkeyMark />;
-  return <TreeMark />;
+  return <PhotoEmblem src="/images/holidays/tree-mark.webp" className="emblem-tree" />;
+}
+
+function PhotoEmblem({ src, className }: { src: string; className: string }) {
+  return <img src={src} alt="" className={`emblem emblem-photo frame-none ${className}`} />;
 }
 
 function starPoints(cx: number, cy: number, r: number) {
@@ -135,148 +139,96 @@ function Firework() {
   );
 }
 
-function HeartMark() {
-  return (
-    <svg className="emblem" viewBox="0 0 72 66" aria-hidden="true">
-      <path
-        fill="rgba(80,8,18,0.28)"
-        d="M36 60C22 49 6 36 6 21 6 10 14 3 23 3c6 0 9 3 13 9 4-6 7-9 13-9 9 0 17 7 17 18C66 36 50 49 36 60Z"
-        transform="translate(0 2)"
-      />
-      <path
-        fill="#fff7f5"
-        d="M36 58C22 47 6 34 6 19 6 8 14 1 23 1c6 0 9 3 13 9 4-6 7-9 13-9 9 0 17 7 17 18C66 34 50 47 36 58Z"
-      />
-      <path
-        fill="#E11D3A"
-        d="M36 50C25 41 14 32 14 22c0-6 4-10 9-10 3 0 6 2 8 6 2-4 5-6 8-6 5 0 9 4 9 10 0 10-11 19-18 28Z"
-      />
-      <ellipse cx="24" cy="16" rx="5.5" ry="3.2" fill="#fff" opacity="0.72" transform="rotate(-28 24 16)" />
-    </svg>
-  );
-}
-
-function CloverMark() {
-  const leaf = "M0 2C-9 2-18-7-13-18-9-26 0-20 0-14 0-20 9-26 13-18 18-7 9 2 0 2Z";
-  return (
-    <svg className="emblem" viewBox="0 0 92 112" aria-hidden="true">
-      <defs>
-        <radialGradient id="clover-leaf" cx="32%" cy="28%" r="78%">
-          <stop offset="0%" stopColor="#5ed08c" />
-          <stop offset="48%" stopColor="#1c9450" />
-          <stop offset="100%" stopColor="#0a5530" />
-        </radialGradient>
-      </defs>
-      <path d="M46 54c2 16 7 32 5 52" stroke="#084428" strokeWidth="4.4" fill="none" strokeLinecap="round" />
-      <path d="M46 54c2 16 7 32 5 52" stroke="#3cb371" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-      <g transform="translate(46 36)">
-        {[0, 90, 180, 270].map((deg) => (
-          <g key={deg} transform={`rotate(${deg}) translate(0 -11)`}>
-            <path d={leaf} fill="url(#clover-leaf)" stroke="#08381e" strokeWidth="0.7" />
-            <path d="M0 1C-1-7-1-12 0-17" stroke="#06321c" strokeWidth="0.8" fill="none" opacity="0.55" />
-            <ellipse cx="-4" cy="-10" rx="3.2" ry="5" fill="#fff" opacity="0.22" transform="rotate(-16)" />
-          </g>
-        ))}
-        <circle r="5.2" fill="#e8c872" stroke="#8a6824" strokeWidth="0.7" />
-        <circle cx="-1.3" cy="-1.3" r="1.7" fill="#fff6d4" />
-      </g>
-    </svg>
-  );
-}
+const EGG = "M0-20C11.5-20 17.5-10 17.5-1 17.5 11 11.5 20 0 20-11.5 20-17.5 11-17.5-1-17.5-10-11.5-20 0-20Z";
 
 function Eggs() {
   return (
-    <svg className="emblem emblem-eggs" viewBox="0 0 236 126" aria-hidden="true">
-      <Egg x={40} fill="#fbf6ee" accent="#5f9474" motif="speckle" />
-      <Egg x={118} fill="#f6c3bb" accent="#c44555" motif="ribbon" />
-      <Egg x={196} fill="#d7f0e6" accent="#3d7c9c" motif="chevron" />
-    </svg>
-  );
-}
-
-const EGG = "M0 0C14 1 25 28 25 60 25 96 14 116 0 116-14 116-25 96-25 60-25 28-14 1 0 0Z";
-
-function Egg({ x, fill, accent, motif }: { x: number; fill: string; accent: string; motif: "speckle" | "ribbon" | "chevron" }) {
-  const id = `egg-${motif}`;
-  return (
-    <g transform={`translate(${x} 2)`}>
-      <ellipse cx="1" cy="112" rx="18" ry="4.5" fill="rgba(36,20,14,0.16)" />
+    <svg className="emblem emblem-eggs" viewBox="0 0 156 54" aria-hidden="true">
       <defs>
-        <clipPath id={id}>
+        <linearGradient id="egg-ivory" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#fffdf9" />
+          <stop offset="0.46" stopColor="#f4ecdf" />
+          <stop offset="1" stopColor="#e3d0b6" />
+        </linearGradient>
+        <linearGradient id="egg-blush" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#fff7f5" />
+          <stop offset="0.42" stopColor="#f6c9c5" />
+          <stop offset="1" stopColor="#e09099" />
+        </linearGradient>
+        <linearGradient id="egg-mint" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#f7fffb" />
+          <stop offset="0.5" stopColor="#d7f2e4" />
+          <stop offset="1" stopColor="#b4d9cb" />
+        </linearGradient>
+        <linearGradient id="egg-gold" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#f8e7b4" />
+          <stop offset="0.48" stopColor="#d4b06a" />
+          <stop offset="1" stopColor="#8d6a32" />
+        </linearGradient>
+        <linearGradient id="egg-satin" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset="0.5" stopColor="#f4ece8" />
+          <stop offset="1" stopColor="#ffffff" />
+        </linearGradient>
+        <clipPath id="egg-shell">
           <path d={EGG} />
         </clipPath>
-        <linearGradient id={`${id}-body`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#fff" />
-          <stop offset="0.35" stopColor={fill} />
-          <stop offset="1" stopColor={fill} />
-        </linearGradient>
       </defs>
-      <path d={EGG} fill={`url(#${id}-body)`} />
-      <g clipPath={`url(#${id})`}>
-        {motif === "speckle" ? (
-          <>
-            <path d="M-25 70h50v7H-25z" fill={accent} />
-            <path d="M-25 68h50" stroke="#c6a15b" strokeWidth="1.3" />
-            {[
-              [-12, 18, 1.7],
-              [-2, 12, 2.1],
-              [9, 20, 1.6],
-              [-8, 32, 1.5],
-              [6, 36, 2],
-              [13, 28, 1.4],
-              [-14, 46, 1.6],
-              [2, 50, 1.3],
-              [11, 84, 1.5],
-              [-6, 90, 1.8],
-            ].map(([cx, cy, r]) => (
-              <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={r} fill={accent} />
-            ))}
-          </>
-        ) : null}
-        {motif === "ribbon" ? (
-          <>
-            <path d="M-26 48h52v18H-26z" fill="#fffaf7" />
-            <path d="M-26 48h52M-26 66h52" stroke={accent} strokeWidth="1.4" />
-            <path d="M-4 48c0 6-8 8-8 14 0-6 8-8 8-14 0 6 8 8 8 14 0-6-8-8-8-14z" fill={accent} />
-            <circle cx="-8" cy="62" r="2.2" fill="#c6a15b" />
-            <circle cx="8" cy="62" r="2.2" fill="#c6a15b" />
-          </>
-        ) : null}
-        {motif === "chevron" ? (
-          <>
-            <path d="M-26 28h52l-7 9H-19z" fill={accent} />
-            <path d="M-26 46h52l-7 9H-19z" fill="#f4c96a" />
-            <path d="M-26 64h52l-7 9H-19z" fill={accent} opacity="0.9" />
-            <path d="M-26 82h52l-7 9H-19z" fill="#fff" opacity="0.55" />
-          </>
-        ) : null}
+      <ellipse cx="26" cy="49" rx="12" ry="1.7" fill="rgba(36,20,14,0.16)" />
+      <ellipse cx="78" cy="49" rx="12" ry="1.7" fill="rgba(36,20,14,0.16)" />
+      <ellipse cx="130" cy="49" rx="12" ry="1.7" fill="rgba(36,20,14,0.16)" />
+      <g transform="translate(26 26)">
+        <path d={EGG} fill="url(#egg-ivory)" />
+        <g clipPath="url(#egg-shell)">
+          <rect x="-20" y="-2.1" width="40" height="4.2" fill="url(#egg-gold)" />
+          <path d="M-18-2.1h36" stroke="#fff6d8" strokeWidth="0.6" />
+          {[
+            [-9, -12, 1.15],
+            [-2, -13, 1.45],
+            [7, -10, 1.05],
+            [11, -3, 1.2],
+            [-12, -3, 0.9],
+            [2, -6, 1.05],
+            [-6, 7, 1.25],
+            [8, 6, 0.95],
+            [-2, 11, 1.15],
+            [6, 13, 0.8],
+            [-11, 9, 0.85],
+          ].map(([cx, cy, r]) => (
+            <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={r} fill="#6d9274" opacity={cy < 0 ? 0.85 : 0.7} />
+          ))}
+          <ellipse cx="-6" cy="-8" rx="4.6" ry="7" fill="#fff" opacity="0.55" transform="rotate(-24 -6 -8)" />
+        </g>
+        <path d={EGG} fill="none" stroke="rgba(90,62,40,0.28)" strokeWidth="0.8" />
       </g>
-      <ellipse cx="-8" cy="28" rx="8" ry="16" fill="#fff" opacity="0.38" transform="rotate(-18 -8 28)" />
-      <path d={EGG} fill="none" stroke={INK} strokeWidth="1.35" />
-    </g>
-  );
-}
-
-function RoseMark() {
-  return (
-    <svg className="emblem emblem-rose" viewBox="0 0 100 132" aria-hidden="true">
-      <path d="M42 0h16c0 8-2 12-8 14s-8-6-8-14z" fill="#c45368" />
-      <path d="M50 12c1 22 2 36 0 52" stroke="#245c38" strokeWidth="3.2" fill="none" strokeLinecap="round" />
-      <path d="M50 46c-16 4-26 16-16 26 8-8 14-12 16-16z" fill="#2f7a48" />
-      <path d="M50 62c14 0 26 10 16 20-8-6-14-12-16-14z" fill="#3e9460" />
-      <path d="M48 52c-8 4-12 8-6 10M54 68c8 3 12 7 8 9" stroke="#1c432c" strokeWidth="0.8" fill="none" />
-      <g transform="translate(50 92)">
-        <path d="M-24 2c-6-20 6-34 18-28 2 12-2 22-6 26-6 2-10 2-12 2z" fill="#9a384c" />
-        <path d="M24 2c6-20-6-34-18-28-2 12 2 22 6 26 6 2 10 2 12 2z" fill="#c45368" />
-        <path d="M-16-2c-2-16 8-26 16-20 1 8-2 16-4 18-5 2-10 2-12 2z" fill="#d97888" />
-        <path d="M16-2c2-16-8-26-16-20-1 8 2 16 4 18 5 2 10 2 12 2z" fill="#e7a0ac" />
-        <path d="M0 4c-10-2-14-14-8-22 6 6 8 14 8 18 0-6 4-14 10-18 4 10-2 20-10 22z" fill="#f4d5db" />
-        <path d="M0 2c-3-8-1-14 0-16 1 2 3 8 0 16z" fill="#9e3048" />
-        <ellipse cx="-7" cy="-12" rx="4" ry="2.4" fill="#fff" opacity="0.55" transform="rotate(-28)" />
+      <g transform="translate(78 26)">
+        <path d={EGG} fill="url(#egg-blush)" />
+        <g clipPath="url(#egg-shell)">
+          <rect x="-20" y="-3.4" width="40" height="6.6" fill="url(#egg-satin)" />
+          <path d="M-20-3.4h40M-20 3.2h40" stroke="#e7b4b4" strokeWidth="0.45" />
+          <path d="M-1.1-0.6C-1.1-5.4-8.2-6.6-10.2-2.8-11.8 0.2-7.8 3.6-4.4 2.6-2.6 2-1.5 0.8-1.1-0.6Z" fill="#fff" />
+          <path d="M1.1-0.6C1.1-5.4 8.2-6.6 10.2-2.8 11.8 0.2 7.8 3.6 4.4 2.6 2.6 2 1.5 0.8 1.1-0.6Z" fill="#fff" />
+          <path d="M-1.4 1.4-6.6 9.2-3.8 9.8-0.2 2.8Z" fill="#fff" />
+          <path d="M1.4 1.4 6.6 9.2 3.8 9.8 0.2 2.8Z" fill="#fff" />
+          <circle cy="0.6" r="1.9" fill="#f6e4b4" stroke="#a67c38" strokeWidth="0.45" />
+          <ellipse cx="-6" cy="-9" rx="4.4" ry="6.4" fill="#fff" opacity="0.42" transform="rotate(-24 -6 -9)" />
+        </g>
+        <path d={EGG} fill="none" stroke="rgba(120,60,68,0.28)" strokeWidth="0.8" />
+      </g>
+      <g transform="translate(130 26)">
+        <path d={EGG} fill="url(#egg-mint)" />
+        <g clipPath="url(#egg-shell)" fill="none" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M-13-7 0 1 13-7" stroke="#7f9788" strokeWidth="1.15" />
+          <path d="M-13 0 0 8 13 0" stroke="#c6a15b" strokeWidth="1.15" />
+          <path d="M-13 7 0 15 13 7" stroke="#7f9788" strokeWidth="1.15" />
+          <ellipse cx="-6" cy="-8" rx="4.6" ry="7" fill="#fff" stroke="none" opacity="0.5" transform="rotate(-24 -6 -8)" />
+        </g>
+        <path d={EGG} fill="none" stroke="rgba(50,90,74,0.28)" strokeWidth="0.8" />
       </g>
     </svg>
   );
 }
+
 
 type Pt = { x: number; y: number };
 
@@ -362,42 +314,6 @@ function TieMark() {
   );
 }
 
-function PumpkinMark() {
-  return (
-    <svg className="emblem emblem-pumpkin" viewBox="0 0 128 112" aria-hidden="true">
-      <defs>
-        <linearGradient id="pumpkin-lobe" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#ffb15a" />
-          <stop offset="0.45" stopColor="#ef7d2c" />
-          <stop offset="1" stopColor="#c45112" />
-        </linearGradient>
-        <radialGradient id="pumpkin-glow" cx="50%" cy="45%" r="60%">
-          <stop offset="0" stopColor="#fff4c2" />
-          <stop offset="1" stopColor="#f0b44a" />
-        </radialGradient>
-      </defs>
-      <ellipse cx="64" cy="104" rx="28" ry="4" fill="rgba(20,12,8,0.2)" />
-      <ellipse cx="30" cy="64" rx="18" ry="32" fill="#b84a10" />
-      <ellipse cx="98" cy="64" rx="18" ry="32" fill="#b84a10" />
-      <ellipse cx="46" cy="62" rx="22" ry="36" fill="url(#pumpkin-lobe)" />
-      <ellipse cx="82" cy="62" rx="22" ry="36" fill="#d86a20" />
-      <ellipse cx="64" cy="60" rx="20" ry="38" fill="#f0943a" />
-      <path d="M46 30c2 20 2 40 0 58M64 26c1 22 1 44 0 62M82 30c-2 20-2 40 0 58" stroke="#8d3c0e" strokeWidth="1.7" fill="none" opacity="0.8" />
-      <ellipse cx="52" cy="46" rx="7" ry="14" fill="#fff" opacity="0.22" />
-      <path d="M64 24c1-12 8-20 16-16-7 1-12 8-13 16" fill="#5c3a16" />
-      <path d="M66 22c1-8 6-12 11-10" stroke="#8a6230" strokeWidth="1.4" fill="none" strokeLinecap="round" />
-      <path d="M40 52l14 11-14 9z" fill="#6a3010" />
-      <path d="M43 55l9 7-9 6z" fill="url(#pumpkin-glow)" />
-      <path d="M88 52l-14 11 14 9z" fill="#6a3010" />
-      <path d="M85 55l-9 7 9 6z" fill="url(#pumpkin-glow)" />
-      <path d="M64 66l8 10h-16z" fill="#6a3010" />
-      <path d="M64 69l5 7h-10z" fill="url(#pumpkin-glow)" />
-      <path d="M36 82c4 4 8 2 10-2 2 6 6 8 10 4 2 6 8 8 12 2 3 6 9 6 14 0-8 10-22 14-36 10-6-2-8-6-10-14z" fill="#6a3010" />
-      <path d="M40 82c3 3 7 2 9-1 2 5 6 6 9 3 2 5 7 6 11 2 3 5 8 5 12 1-7 8-20 11-32 8-5-2-7-5-9-13z" fill="url(#pumpkin-glow)" />
-    </svg>
-  );
-}
-
 function TurkeyMark() {
   const feathers = Array.from({ length: 7 }, (_, i) => -78 + i * 22);
   return (
@@ -438,37 +354,3 @@ function TurkeyMark() {
   );
 }
 
-function TreeMark() {
-  return (
-    <svg className="emblem emblem-tree" viewBox="-4 0 128 136" aria-hidden="true">
-      <defs>
-        <linearGradient id="tree-a" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#2f8f5b" />
-          <stop offset="1" stopColor="#14553a" />
-        </linearGradient>
-        <linearGradient id="tree-b" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#257a4c" />
-          <stop offset="1" stopColor="#0f3f2c" />
-        </linearGradient>
-      </defs>
-      <Star x={60} y={11} r={8.5} fill="#e8c872" />
-      <path d="M60 16c2 2 4 3 6 2-8 6-16 16-18 28h24C68 34 64 24 60 16z" fill="#e8c872" opacity="0.9" />
-      <path d="M60 18C82 34 96 46 98 56H22C24 46 38 34 60 18Z" fill="url(#tree-a)" />
-      <path d="M60 20C74 32 84 42 86 52" fill="none" stroke="#d7f0e2" strokeWidth="1.2" opacity="0.55" />
-      <path d="M60 44C90 62 108 78 112 92H8C12 78 30 62 60 44Z" fill="url(#tree-b)" />
-      <path d="M60 46C78 58 92 70 96 84" fill="none" stroke="#d7f0e2" strokeWidth="1.2" opacity="0.4" />
-      <path d="M60 70C96 90 116 108 122 124H-2C4 108 24 90 60 70Z" fill="#123f2c" />
-      <path d="M22 56h76" stroke="#0d3324" strokeWidth="1" opacity="0.35" />
-      <path d="M8 92h104" stroke="#0d3324" strokeWidth="1" opacity="0.35" />
-      <rect x="52" y="122" width="16" height="12" rx="1.5" fill="#6b3a24" />
-      <circle cx="46" cy="78" r="4.2" fill="#c8102e" />
-      <circle cx="74" cy="96" r="4.4" fill="#e8c872" />
-      <circle cx="40" cy="108" r="3.8" fill="#f4efe4" />
-      <circle cx="78" cy="70" r="3.4" fill="#c8102e" />
-      <circle cx="58" cy="112" r="3.6" fill="#2e8b57" stroke="#f4efe4" strokeWidth="0.8" />
-      <circle cx="44.6" cy="76.4" r="1.2" fill="#fff" opacity="0.75" />
-      <circle cx="72.6" cy="94.4" r="1.2" fill="#fff" opacity="0.75" />
-      <path d="M34 86c10 4 18 2 28-2 8 3 16 2 24-3" fill="none" stroke="#e8c872" strokeWidth="1.3" strokeLinecap="round" />
-    </svg>
-  );
-}
