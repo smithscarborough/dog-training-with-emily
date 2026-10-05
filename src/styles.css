@@ -931,7 +931,7 @@
   filter: drop-shadow(0 2px 2px rgba(36, 20, 14, 0.2));
 }
 .emblem-wide {
-  height: 38px;
+  height: 50px;
 }
 .emblem-photo {
   outline: none;
@@ -1043,7 +1043,7 @@
     height: 44px;
   }
   .emblem-wide {
-    height: 42px;
+    height: 58px;
   }
   .emblem-eggs {
     height: 56px;

@@ -96,45 +96,38 @@ function Flag() {
 }
 
 function Firework() {
-  const rays = Array.from({ length: 18 }, (_, i) => {
-    const angle = (Math.PI / 9) * i - Math.PI / 2;
-    const kind = i % 3;
-    const length = kind === 0 ? 30 : kind === 1 ? 20 : 13;
-    return {
-      x2: 40 + Math.cos(angle) * length,
-      y2: 40 + Math.sin(angle) * length,
-      kind,
-      angle,
-    };
+  const rays = Array.from({ length: 12 }, (_, i) => {
+    const angle = (Math.PI / 6) * i - Math.PI / 2;
+    const long = i % 2 === 0;
+    return { angle, long, length: long ? 34 : 22 };
   });
   return (
     <svg className="emblem emblem-wide" viewBox="0 0 80 80" aria-hidden="true">
-      <circle cx="40" cy="40" r="18" fill="#E8C872" opacity="0.16" />
       {rays.map((ray) => (
         <line
-          key={`${ray.x2}-${ray.y2}`}
-          x1={40 + Math.cos(ray.angle) * 5}
-          y1={40 + Math.sin(ray.angle) * 5}
-          x2={ray.x2}
-          y2={ray.y2}
-          stroke={ray.kind === 0 ? "#F8E7B0" : ray.kind === 1 ? "#E8C872" : "#F4EFE4"}
-          strokeWidth={ray.kind === 0 ? 2.1 : 1.25}
+          key={ray.angle}
+          x1={40 + Math.cos(ray.angle) * 7}
+          y1={40 + Math.sin(ray.angle) * 7}
+          x2={40 + Math.cos(ray.angle) * ray.length}
+          y2={40 + Math.sin(ray.angle) * ray.length}
+          stroke={ray.long ? "#c4963a" : "#8a6424"}
+          strokeWidth={ray.long ? 2.6 : 1.7}
           strokeLinecap="round"
         />
       ))}
       {rays
-        .filter((ray) => ray.kind === 0)
+        .filter((ray) => ray.long)
         .map((ray) => (
-          <Star key={`s-${ray.x2}`} x={ray.x2} y={ray.y2} r={3.1} fill="#FFF8E8" />
+          <Star
+            key={`s-${ray.angle}`}
+            x={40 + Math.cos(ray.angle) * ray.length}
+            y={40 + Math.sin(ray.angle) * ray.length}
+            r={4}
+            fill="#f0d078"
+          />
         ))}
-      {rays
-        .filter((ray) => ray.kind === 1)
-        .map((ray) => (
-          <circle key={`d-${ray.x2}`} cx={ray.x2} cy={ray.y2} r="1.7" fill="#F4EFE4" />
-        ))}
-      <circle cx="40" cy="40" r="6.5" fill="#E8C872" />
-      <circle cx="40" cy="40" r="3.2" fill="#FFF8E8" />
-      <circle cx="38.6" cy="38.4" r="1.3" fill="#fff" />
+      <circle cx="40" cy="40" r="7.2" fill="#e2b44a" />
+      <circle cx="40" cy="40" r="3.5" fill="#fff4d4" />
     </svg>
   );
 }
